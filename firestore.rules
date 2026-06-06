@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Site settings — public read, admin write only
+    match /settings/site {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@candidcanvas.com';
+    }
+
+    // Bookings — users create own, admin manages all
+    match /bookings/{bookingId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null &&
+        (request.auth.uid == resource.data.userId ||
+         request.auth.token.email == 'admin@candidcanvas.com');
+      allow delete: if request.auth != null &&
+        request.auth.token.email == 'admin@candidcanvas.com';
+    }
+
+    // Gallery — public read, admin write
+    match /gallery/{imageId} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        request.auth.token.email == 'admin@candidcanvas.com';
+    }
+
+    // Testimonials — public read, admin write
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        request.auth.token.email == 'admin@candidcanvas.com';
+    }
+
+    // Site gallery collection
+    match /siteGallery/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Site slider collection (homepage cinematic slider)
+    match /siteSlider/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Site packages collection
+    match /sitePackages/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Site reviews collection
+    match /siteReviews/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Site data (settings, visitors)
+    match /siteData/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Messages — authenticated users only
+    match /messages/{doc} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Users — own document only
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
