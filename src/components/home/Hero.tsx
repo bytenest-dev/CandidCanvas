@@ -47,10 +47,14 @@ export default function Hero() {
           transition={{ delay: 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="flex justify-center mb-6"
         >
+          {/* Visually-hidden h1 for SEO — screen readers & Google see this */}
+          <h1 className="sr-only">Candid Canvas BD — Premium Photography &amp; Cinematography in Bangladesh</h1>
           <img
             src={logoImg}
-            alt="Candid Canvas BD"
+            alt="Candid Canvas BD — Premium Photography & Cinematography"
             className="h-32 md:h-44 w-auto object-contain drop-shadow-lg"
+            fetchPriority="high"
+            decoding="async"
           />
         </motion.div>
 

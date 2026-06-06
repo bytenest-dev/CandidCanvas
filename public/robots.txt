@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /sign-in
+
+Sitemap: https://candid-canvas.netlify.app/sitemap.xml

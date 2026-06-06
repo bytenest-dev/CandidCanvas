@@ -147,8 +147,42 @@ export default function BookingPage() {
   return (
     <>
       <Helmet>
-        <title>Book A Session — Candid Canvas BD</title>
-        <meta name="description" content="Book your photography or cinematography session with Candid Canvas BD." />
+        <title>Book a Photography Session | Candid Canvas BD</title>
+        <meta name="description" content="Book your wedding, event, corporate or reels photography session with Candid Canvas BD. Easy online booking in Bangladesh. Confirm in 24 hours." />
+        <meta name="keywords" content="book photographer bangladesh, book wedding photographer dhaka, photography booking online bangladesh, hire photographer bangladesh" />
+        <link rel="canonical" href="https://candid-canvas.netlify.app/book" />
+        <meta name="robots" content="index, follow" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="Book a Photography Session | Candid Canvas BD" />
+        <meta property="og:description" content="Book your photography or cinematography session online. Wedding, events, corporate & reels. Confirmation within 24 hours." />
+        <meta property="og:url" content="https://candid-canvas.netlify.app/book" />
+        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta property="og:image:alt" content="Book a Photography Session — Candid Canvas BD" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Book a Photography Session | Candid Canvas BD" />
+        <meta name="twitter:description" content="Easy online photography booking in Bangladesh. Wedding, events, corporate & reels sessions." />
+        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+
+        {/* Breadcrumb Schema */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Book a Photography Session",
+          "description": "Online booking page for Candid Canvas BD photography and cinematography sessions.",
+          "url": "https://candid-canvas.netlify.app/book",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
+              { "@type": "ListItem", "position": 2, "name": "Book a Session", "item": "https://candid-canvas.netlify.app/book" }
+            ]
+          }
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-[#F8F9FA] py-32 px-6">

@@ -87,8 +87,53 @@ export default function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact — Candid Canvas BD</title>
-        <meta name="description" content="Get in touch with Candid Canvas BD. Book a photography session or inquire about our services." />
+        <title>Contact Candid Canvas BD | Book a Photography Session</title>
+        <meta name="description" content="Get in touch with Candid Canvas BD. Call, WhatsApp, or email us to book a wedding, event, corporate or reels photography session in Bangladesh." />
+        <meta name="keywords" content="contact photographer bangladesh, book photography session dhaka, hire photographer bangladesh, candid canvas bd contact, wedding photographer booking" />
+        <link rel="canonical" href="https://candid-canvas.netlify.app/contact" />
+        <meta name="robots" content="index, follow" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="Contact Candid Canvas BD | Book a Photography Session" />
+        <meta property="og:description" content="Ready to book? Contact Candid Canvas BD via phone, WhatsApp or our online form. We cover weddings, events, corporate and reels in Bangladesh." />
+        <meta property="og:url" content="https://candid-canvas.netlify.app/contact" />
+        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta property="og:image:alt" content="Contact Candid Canvas BD Photography" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Contact Candid Canvas BD" />
+        <meta name="twitter:description" content="Book a photography or cinematography session in Bangladesh. Wedding, events, corporate & reels. Contact us today." />
+        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+
+        {/* Breadcrumb + ContactPage Schema */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact Candid Canvas BD",
+          "description": "Contact page for Candid Canvas BD photography and cinematography services.",
+          "url": "https://candid-canvas.netlify.app/contact",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
+              { "@type": "ListItem", "position": 2, "name": "Contact", "item": "https://candid-canvas.netlify.app/contact" }
+            ]
+          },
+          "mainEntity": {
+            "@type": "LocalBusiness",
+            "@id": "https://candid-canvas.netlify.app/#business",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "telephone": "+8801849244610",
+              "contactType": "customer service",
+              "areaServed": "BD",
+              "availableLanguage": ["Bengali", "English"]
+            }
+          }
+        })}</script>
       </Helmet>
 
       {/* Header */}

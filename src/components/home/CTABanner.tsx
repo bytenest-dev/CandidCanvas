@@ -13,8 +13,11 @@ export default function CTABanner() {
       <div className="absolute inset-0">
         <img
           src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"
-          alt="Background"
+          alt=""
+          role="presentation"
           className="w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-[#080808]/75" />
       </div>

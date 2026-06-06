@@ -696,7 +696,10 @@ export default function AdminPage() {
 
   return (
     <>
-      <Helmet><title>Admin Panel â€” Candid Canvas BD</title></Helmet>
+      <Helmet>
+        <title>Admin Panel - Candid Canvas BD</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
 
       {/* Hidden inputs */}

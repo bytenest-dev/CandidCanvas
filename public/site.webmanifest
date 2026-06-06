@@ -1,0 +1,25 @@
+{
+  "name": "Candid Canvas BD",
+  "short_name": "Candid Canvas",
+  "description": "Premium photography & cinematography in Dhaka, Bangladesh. Preserving your special moments with cinematic storytelling.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["photography", "business", "lifestyle"],
+  "lang": "en-BD"
+}

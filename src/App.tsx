@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SiteProvider, useSite } from './context/SiteContext';
@@ -216,10 +216,15 @@ function Layout() {
               <Route path="*" element={
                 <PageTransition>
                   <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
-                    <div className="text-center">
+                    <Helmet>
+                      <title>Page Not Found | Candid Canvas BD</title>
+                      <meta name="robots" content="noindex, nofollow" />
+                    </Helmet>
+                    <div className="text-center px-6">
                       <h1 className="font-heading text-7xl text-[#111827] mb-4">404</h1>
-                      <p className="text-[#6B7280] mb-6">This page doesn't exist.</p>
-                      <a href="/" className="px-6 py-3 bg-[#111827] text-white text-sm rounded hover:bg-[#374151] transition-colors">Go Home</a>
+                      <p className="text-[#6B7280] mb-2 font-medium">Page not found</p>
+                      <p className="text-[#9CA3AF] text-sm mb-8">The page you're looking for doesn't exist or has been moved.</p>
+                      <a href="/" className="px-6 py-3 bg-[#111827] text-white text-sm rounded hover:bg-[#374151] transition-colors">← Back to Home</a>
                     </div>
                   </div>
                 </PageTransition>

@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -74,7 +75,14 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
+    <>
+      <Helmet>
+        <title>Sign In | Candid Canvas BD</title>
+        <meta name="description" content="Sign in to your Candid Canvas BD account to manage bookings and messages." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://candid-canvas.netlify.app/sign-in" />
+      </Helmet>
+      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -212,5 +220,6 @@ export default function SignInPage() {
         </p>
       </motion.div>
     </div>
+    </>
   );
 }

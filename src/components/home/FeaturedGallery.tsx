@@ -65,6 +65,8 @@ export default function FeaturedGallery() {
                 <img
                   src={img.url}
                   alt={img.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-700"
                   loading="lazy"
                   style={{ transform: 'scale(1)', transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1)' }}

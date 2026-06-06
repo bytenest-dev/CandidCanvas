@@ -1,14 +1,180 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-BD">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Candid Canvas BD — Premium Photography & Cinematography</title>
-    <meta name="description" content="Candid Canvas BD — Premium photography, cinematography, reels and event coverage in Dhaka, Bangladesh. Preserving your special moments with cinematic storytelling." />
+
+    <!-- ── Favicon & PWA ───────────────────────────────────────── -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#111827" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Candid Canvas BD" />
+
+    <!-- ── Primary Meta (Fallback – overridden per-page by React Helmet) ── -->
+    <title>Candid Canvas BD | Premium Photography &amp; Cinematography in Bangladesh</title>
+    <meta name="description" content="Candid Canvas BD — Premium photography, cinematography, reels and event coverage in Dhaka, Bangladesh. Preserving your special moments with cinematic storytelling." />
+    <meta name="keywords" content="wedding photography bangladesh, photographer dhaka, cinematography bangladesh, event photography, candid photography, reels production, corporate photography" />
+    <meta name="author" content="Candid Canvas BD" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="https://candid-canvas.netlify.app/" />
+
+    <!-- ── Open Graph (Facebook, WhatsApp, LinkedIn) ──────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Candid Canvas BD" />
+    <meta property="og:title" content="Candid Canvas BD | Premium Photography &amp; Cinematography in Bangladesh" />
+    <meta property="og:description" content="Premium photography, cinematography, reels and event coverage in Dhaka, Bangladesh. Preserving your special moments with cinematic storytelling." />
+    <meta property="og:url" content="https://candid-canvas.netlify.app/" />
+    <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Candid Canvas BD — Premium Photography &amp; Cinematography" />
+    <meta property="og:locale" content="en_BD" />
+
+    <!-- ── Twitter Card ────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Candid Canvas BD | Premium Photography &amp; Cinematography" />
+    <meta name="twitter:description" content="Premium photography, cinematography, reels and event coverage in Dhaka, Bangladesh. Preserving your special moments." />
+    <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+    <meta name="twitter:image:alt" content="Candid Canvas BD Logo" />
+
+    <!-- ── Geo / Local SEO ────────────────────────────────────── -->
+    <meta name="geo.region" content="BD-13" />
+    <meta name="geo.placename" content="Dhaka, Bangladesh" />
+    <meta name="geo.position" content="23.8103;90.4125" />
+    <meta name="ICBM" content="23.8103, 90.4125" />
+
+    <!-- ── Google Search Console Verification (add token when ready) ── -->
+    <!-- <meta name="google-site-verification" content="YOUR_TOKEN_HERE" /> -->
+
+    <!-- ── Bing Webmaster Tools Verification ──────────────────── -->
+    <!-- <meta name="msvalidate.01" content="YOUR_TOKEN_HERE" /> -->
+
+    <!-- ── Font Preconnect & Preload ──────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+    <!-- ── Structured Data: Organization + LocalBusiness ─────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": ["LocalBusiness", "ProfessionalService"],
+          "@id": "https://candid-canvas.netlify.app/#business",
+          "name": "Candid Canvas BD",
+          "alternateName": "Candid Canvas",
+          "description": "Premium photography and cinematography services in Dhaka, Bangladesh. Specializing in weddings, events, corporate, reels, and cinematic storytelling.",
+          "url": "https://candid-canvas.netlify.app",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://candid-canvas.netlify.app/logo.png",
+            "width": 200,
+            "height": 200
+          },
+          "image": "https://candid-canvas.netlify.app/logo.png",
+          "telephone": "+8801849244610",
+          "email": "candidcanvasbd@gmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Dhaka",
+            "addressCountry": "BD",
+            "addressRegion": "Dhaka Division"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 23.8103,
+            "longitude": 90.4125
+          },
+          "areaServed": [
+            { "@type": "Country", "name": "Bangladesh" },
+            { "@type": "City", "name": "Dhaka" },
+            { "@type": "City", "name": "Bogura" },
+            { "@type": "City", "name": "Chittagong" }
+          ],
+          "priceRange": "৳৳৳",
+          "currenciesAccepted": "BDT",
+          "paymentAccepted": "Cash, bKash, Bank Transfer",
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+              "opens": "09:00",
+              "closes": "22:00"
+            }
+          ],
+          "sameAs": [
+            "https://www.facebook.com/candidcanvasbd",
+            "https://www.instagram.com/candidcanvasbd",
+            "https://www.youtube.com/@candidcanvasbd"
+          ],
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Photography & Cinematography Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Wedding Photography",
+                  "description": "Professional candid and portrait wedding photography in Bangladesh"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Cinematography",
+                  "description": "Cinematic wedding films and event videography"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Social Media Reels",
+                  "description": "Short-form video content and reels production for social media"
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Event Photography",
+                  "description": "Corporate events, birthdays, festivals and outdoor photography"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://candid-canvas.netlify.app/#website",
+          "url": "https://candid-canvas.netlify.app",
+          "name": "Candid Canvas BD",
+          "description": "Premium photography & cinematography in Bangladesh",
+          "publisher": {
+            "@id": "https://candid-canvas.netlify.app/#business"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://candid-canvas.netlify.app/gallery?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

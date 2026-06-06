@@ -377,7 +377,9 @@ export default function DashboardPage() {
   return (
     <>
       <Helmet>
-        <title>Dashboard — Candid Canvas BD</title>
+        <title>My Dashboard | Candid Canvas BD</title>
+        <meta name="description" content="Manage your photography bookings and messages with Candid Canvas BD." />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="min-h-screen bg-[#F8F9FA] flex">

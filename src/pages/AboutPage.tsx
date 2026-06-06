@@ -35,14 +35,48 @@ export default function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>About — Candid Canvas BD</title>
-        <meta name="description" content="Learn about Candid Canvas BD — our story, philosophy, team, and vision for premium photography in Bangladesh." />
+        <title>About Candid Canvas BD | Our Story, Team &amp; Vision</title>
+        <meta name="description" content="Meet the team behind Candid Canvas BD — 500+ projects, 4+ years of premium photography &amp; cinematography in Bangladesh. Our story, philosophy and creative vision." />
+        <meta name="keywords" content="about candid canvas bd, photography studio bangladesh, wedding photographer dhaka team, professional photographer bangladesh, photography studio story" />
+        <link rel="canonical" href="https://candid-canvas.netlify.app/about" />
+        <meta name="robots" content="index, follow" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="About Candid Canvas BD | Our Story, Team &amp; Vision" />
+        <meta property="og:description" content="500+ projects, 4+ years of excellence in Bangladesh photography. Meet the team, learn our story and discover what makes Candid Canvas BD different." />
+        <meta property="og:url" content="https://candid-canvas.netlify.app/about" />
+        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta property="og:image:alt" content="Candid Canvas BD Photography Team" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="About Candid Canvas BD | Our Story &amp; Team" />
+        <meta name="twitter:description" content="500+ projects. 4+ years. Meet the team behind Bangladesh's premium photography studio." />
+        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+
+        {/* Breadcrumb + AboutPage Schema */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About Candid Canvas BD",
+          "description": "Learn about Candid Canvas BD — our story, philosophy, team, and vision for premium photography in Bangladesh.",
+          "url": "https://candid-canvas.netlify.app/about",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
+              { "@type": "ListItem", "position": 2, "name": "About", "item": "https://candid-canvas.netlify.app/about" }
+            ]
+          }
+        })}</script>
       </Helmet>
 
       {/* Hero */}
       <div className="relative pt-32 pb-24 bg-[#080808] overflow-hidden">
         <div className="absolute inset-0 opacity-30">
-          <img src="https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&q=80" alt="" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&q=80" alt="" role="presentation" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           <div className="absolute inset-0 bg-[#080808]/60" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 text-center">
@@ -160,7 +194,7 @@ export default function AboutPage() {
                 className="text-center"
               >
                 <div className="relative w-32 h-32 mx-auto mb-5 rounded-full overflow-hidden">
-                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                  <img src={member.image} alt={`${member.name} — ${member.role} at Candid Canvas BD`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 </div>
                 <h3 className="font-heading text-xl text-[#111827]">{member.name}</h3>
                 <p className="text-xs text-[#6B7280] tracking-wide mt-1 mb-3">{member.role}</p>

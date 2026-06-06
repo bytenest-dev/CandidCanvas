@@ -25,7 +25,9 @@ export default function BrandStory() {
             <div className="relative aspect-[3/4] rounded overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=900&q=80"
-                alt="Photography storytelling"
+                alt="Professional photography storytelling session — Candid Canvas BD"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

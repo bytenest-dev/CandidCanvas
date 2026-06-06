@@ -26,8 +26,43 @@ export default function GalleryPage() {
   return (
     <>
       <Helmet>
-        <title>Gallery — Candid Canvas BD</title>
-        <meta name="description" content="Browse our portfolio of weddings, events, portraits and cinematic work." />
+        <title>Photography Portfolio &amp; Gallery | Candid Canvas BD</title>
+        <meta name="description" content="Browse our photography portfolio — weddings, birthdays, corporate events, festivals, outdoor and cinematic sessions in Bangladesh. 500+ stunning moments captured." />
+        <meta name="keywords" content="wedding photography portfolio bangladesh, photography gallery dhaka, event photography portfolio, candid photos bangladesh, cinematography portfolio" />
+        <link rel="canonical" href="https://candid-canvas.netlify.app/gallery" />
+        <meta name="robots" content="index, follow" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="Photography Portfolio &amp; Gallery | Candid Canvas BD" />
+        <meta property="og:description" content="Browse our stunning photography portfolio — weddings, birthdays, events, outdoor and cinematic sessions across Bangladesh." />
+        <meta property="og:url" content="https://candid-canvas.netlify.app/gallery" />
+        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta property="og:image:alt" content="Candid Canvas BD Photography Gallery" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Photography Gallery | Candid Canvas BD" />
+        <meta name="twitter:description" content="500+ stunning moments captured — weddings, events, outdoor & cinematic photography in Bangladesh." />
+        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+
+        {/* Breadcrumb Schema */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Photography Portfolio & Gallery",
+          "description": "Wedding, event, and cinematic photography portfolio by Candid Canvas BD.",
+          "url": "https://candid-canvas.netlify.app/gallery",
+          "isPartOf": { "@id": "https://candid-canvas.netlify.app/#website" },
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
+              { "@type": "ListItem", "position": 2, "name": "Gallery", "item": "https://candid-canvas.netlify.app/gallery" }
+            ]
+          }
+        })}</script>
       </Helmet>
 
       {/* Header */}
@@ -77,9 +112,10 @@ export default function GalleryPage() {
               >
                 <img
                   src={img.url}
-                  alt={img.title}
+                  alt={`${img.title} — ${img.category} photography by Candid Canvas BD`}
                   className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center">
                   <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-all duration-300" />
