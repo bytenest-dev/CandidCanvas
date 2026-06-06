@@ -81,6 +81,8 @@ interface SiteContextType {
   setSettings: (s: SiteSettings | ((prev: SiteSettings) => SiteSettings)) => void;
   reviews: ReviewItem[];
   setReviews: (items: ReviewItem[]) => void;
+  galleryCategories: string[];
+  setGalleryCategories: (cats: string[]) => void;
   siteLoading: boolean;
   refreshSiteData: () => void;
 }
@@ -96,6 +98,8 @@ const SiteContext = createContext<SiteContextType>({
   setSettings: () => {},
   reviews: [],
   setReviews: () => {},
+  galleryCategories: ['Wedding', 'Birthday', 'Corporate', 'Festival', 'Outdoor', 'Cinematic', 'General'],
+  setGalleryCategories: () => {},
   siteLoading: true,
   refreshSiteData: () => {},
 });
@@ -141,18 +145,33 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const [packages, setPackagesState] = useState<PackageItem[]>([]);
   const [settings, setSettingsState] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [reviews, setReviewsState] = useState<ReviewItem[]>([]);
+  const [galleryCategories, setGalleryCategoriesState] = useState<string[]>([
+    'Wedding', 'Birthday', 'Corporate', 'Festival', 'Outdoor', 'Cinematic', 'General',
+  ]);
   const [siteLoading, setSiteLoading] = useState(true);
 
   const loadData = async () => {
     setSiteLoading(true);
     try {
       // Load all data from Firestore in parallel
-      const [galleryData, sliderData, packagesData, settingsData, reviewsData] = await Promise.all([
+      const [galleryData, sliderData, packagesData, settingsData, reviewsData, categoriesData] = await Promise.all([
         loadFromFirestore('siteGallery'),
         loadFromFirestore('siteSlider'),
         loadFromFirestore('sitePackages'),
         loadSettingsFromFirestore(),
         loadFromFirestore('siteReviews'),
+        // Load gallery categories from a single doc
+        (async () => {
+          try {
+            const { doc, getDoc } = await import('firebase/firestore');
+            const { db } = await import('../lib/firebase');
+            const snap = await getDoc(doc(db, 'siteData', 'galleryCategories'));
+            if (snap.exists() && Array.isArray(snap.data().categories)) {
+              return snap.data().categories as string[];
+            }
+          } catch { /* silent */ }
+          return null;
+        })(),
       ]);
 
       if (galleryData && galleryData.length > 0) {
@@ -180,6 +199,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
       if (reviewsData) {
         setReviewsState(reviewsData as ReviewItem[]);
+      }
+
+      if (categoriesData) {
+        setGalleryCategoriesState(categoriesData);
       }
     } catch (e) {
       console.error('Failed to load site data:', e);
@@ -272,6 +295,16 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     await saveToFirestore('siteData', 'settings', newSettings);
   };
 
+  // Gallery Categories: persist to Firestore
+  const setGalleryCategories = async (cats: string[]) => {
+    setGalleryCategoriesState(cats);
+    try {
+      const { doc, setDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      await setDoc(doc(db, 'siteData', 'galleryCategories'), { categories: cats });
+    } catch { /* silent */ }
+  };
+
   // Reviews: persist changes to Firestore
   const setReviews = async (items: ReviewItem[]) => {
     setReviewsState(items);
@@ -286,7 +319,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       });
       await batch.commit();
     } catch {
-      // silent - may not have permission
+      // silent
     }
   };
 
@@ -297,6 +330,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       packages, setPackages,
       settings, setSettings,
       reviews, setReviews,
+      galleryCategories, setGalleryCategories,
       siteLoading,
       refreshSiteData: loadData,
     }}>

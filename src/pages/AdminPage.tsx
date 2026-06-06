@@ -52,7 +52,7 @@ interface AdminSidebarProps {
   orders: Array<{ status: string }>;
   messages: Array<{ status: string }>;
   reviews: Array<{ approved: boolean }>;
-  user: { displayName?: string; email?: string } | null;
+  user: { displayName?: string | null; email?: string | null; photoURL?: string | null } | null;
   onLogout: () => void;
 }
 
@@ -112,10 +112,13 @@ function AdminSidebar({
       </nav>
       <div className="p-4 border-t border-white/10 flex-shrink-0">
         <div className="flex items-center gap-2.5 mb-3">
-          {/* Website logo as admin profile picture */}
-          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
-            <img src={logoImg} alt="Candid Canvas BD" className="w-8 h-8 object-contain" />
-          </div>
+          {/* Admin Google profile photo */}
+          <UserAvatar
+            photoURL={user?.photoURL}
+            displayName={user?.displayName || 'Admin'}
+            size="sm"
+            className="flex-shrink-0"
+          />
           <div className="min-w-0">
             <p className="text-white text-xs font-medium truncate">{user?.displayName || 'Admin'}</p>
             <p className="text-white/40 text-[10px] truncate">{user?.email}</p>
@@ -134,7 +137,7 @@ function AdminSidebar({
 
 export default function AdminPage() {
   const { user, logout, isAdmin } = useAuth();
-  const { gallery, setGallery, slider, setSlider, packages, setPackages, settings, setSettings, reviews, setReviews, refreshSiteData } = useSite();
+  const { gallery, setGallery, slider, setSlider, packages, setPackages, settings, setSettings, reviews, setReviews, galleryCategories, setGalleryCategories, refreshSiteData } = useSite();
   const navigate = useNavigate();
   const { toasts, toast, dismiss } = useToast();
 
@@ -175,6 +178,9 @@ export default function AdminPage() {
   const [isUploading, setIsUploading] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
+  // Gallery category management
+  const [showCatManager, setShowCatManager] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
 
   // Package state
   const [pkgModal, setPkgModal] = useState(false);
@@ -807,6 +813,13 @@ export default function AdminPage() {
               <Link to="/" className="hidden sm:block text-xs text-[#6B7280] hover:text-[#111827] px-2 py-1 rounded-lg hover:bg-[#F8F9FA] transition-colors">
                 â† View Site
               </Link>
+                          {/* Admin Google profile photo in top bar */}
+              <UserAvatar
+                photoURL={user?.photoURL}
+                displayName={user?.displayName || 'Admin'}
+                size="sm"
+                className="hidden sm:flex"
+              />
             </div>
           </header>
 
@@ -1992,7 +2005,7 @@ export default function AdminPage() {
             <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">Category</label>
             <select value={editCat} onChange={e => setEditCat(e.target.value)}
               className="w-full border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#111827]">
-              {GALLERY_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+              {galleryCategories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <button onClick={saveEdit} className="w-full py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">

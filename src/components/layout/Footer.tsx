@@ -175,7 +175,7 @@ export default function Footer() {
 
           {/* ByteNest credit */}
           <a
-            href="https://bytenest.dev"
+            href="https://bytenest-dev.netlify.app"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2.5 group"

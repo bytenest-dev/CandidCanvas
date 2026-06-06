@@ -15,9 +15,6 @@ interface ActiveSlide {
 export default function CinematicSlider() {
   const { gallery, slider, siteLoading } = useSite();
 
-  // Build the active slides list:
-  // 1. If admin has created slider items — use those (they have custom title/subtitle + enabled flag)
-  // 2. Otherwise — use ALL gallery images automatically as slides
   const activeSlides: ActiveSlide[] = (() => {
     const enabledSlider = slider.filter(s => s.enabled).sort((a, b) => a.order - b.order);
     if (enabledSlider.length > 0) {
@@ -28,7 +25,6 @@ export default function CinematicSlider() {
         subtitle: s.subtitle,
       }));
     }
-    // Auto-use gallery images — no title overlay needed
     if (gallery.length > 0) {
       return gallery.map(g => ({
         id: g.id,
@@ -41,34 +37,52 @@ export default function CinematicSlider() {
   })();
 
   const [current, setCurrent] = useState(0);
+  // paused is ONLY true when the user is actively hovering
   const [paused, setPaused] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const total = activeSlides.length;
 
-  // Reset current index when slides change
+  // Reset index when slide list changes
   useEffect(() => { setCurrent(0); }, [total]);
 
   // Preload next image
   useEffect(() => {
     if (total === 0) return;
     const nextIdx = (current + 1) % total;
-    const img = new Image();
+    const img = new window.Image();
     img.src = activeSlides[nextIdx].url;
-  }, [current, total]);
+  }, [current, total]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const goTo = useCallback((idx: number) => {
-    setCurrent((idx + total) % total);
-  }, [total]);
+  const goTo = useCallback((idx: number, t: number) => {
+    setCurrent(((idx % t) + t) % t);
+  }, []);
 
-  const next = useCallback(() => goTo(current + 1), [current, goTo]);
-  const prev = useCallback(() => goTo(current - 1), [current, goTo]);
+  // ── Auto-advance using a ref-based interval so it never goes stale ──
+  const currentRef = useRef(current);
+  currentRef.current = current;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
+  const totalRef = useRef(total);
+  totalRef.current = total;
 
-  // Auto-advance
   useEffect(() => {
-    if (paused || total <= 1) return;
-    timerRef.current = setInterval(next, SLIDE_DURATION);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, next, total]);
+    if (total <= 1) return;
+
+    const id = setInterval(() => {
+      // Read live values via refs — no stale closure
+      if (!pausedRef.current) {
+        setCurrent(prev => (prev + 1) % totalRef.current);
+      }
+    }, SLIDE_DURATION);
+
+    return () => clearInterval(id);
+  }, [total]); // re-create only when total changes
+
+  const next = useCallback(() => {
+    setCurrent(prev => (prev + 1) % totalRef.current);
+  }, []);
+  const prev = useCallback(() => {
+    setCurrent(prev => (prev - 1 + totalRef.current) % totalRef.current);
+  }, []);
 
   // Touch swipe
   const touchStart = useRef<number>(0);
@@ -78,7 +92,6 @@ export default function CinematicSlider() {
     if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
   };
 
-  // Loading skeleton
   if (siteLoading) {
     return (
       <div className="w-full bg-[#111827] shimmer" style={{ aspectRatio: '16/7', minHeight: '400px' }} />
@@ -119,10 +132,11 @@ export default function CinematicSlider() {
           >
             <img
               src={slide.url}
-              alt={slide.title}
+              alt={slide.title || 'Photography by Candid Canvas BD'}
               className="w-full h-full object-cover"
               draggable={false}
               loading="eager"
+              decoding="async"
             />
           </motion.div>
 
@@ -189,7 +203,7 @@ export default function CinematicSlider() {
           {activeSlides.map((_, i) => (
             <button
               key={i}
-              onClick={() => goTo(i)}
+              onClick={() => goTo(i, total)}
               aria-label={`Go to slide ${i + 1}`}
             >
               <span
@@ -205,15 +219,17 @@ export default function CinematicSlider() {
       )}
 
       {/* ── Progress bar ── */}
-      {total > 1 && !paused && (
+      {total > 1 && (
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10 z-20">
-          <motion.div
-            key={`progress-${current}`}
-            className="h-full bg-white/50"
-            initial={{ width: '0%' }}
-            animate={{ width: '100%' }}
-            transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
-          />
+          {!paused && (
+            <motion.div
+              key={`progress-${current}`}
+              className="h-full bg-white/50"
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
+            />
+          )}
         </div>
       )}
 
