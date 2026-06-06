@@ -15,9 +15,10 @@ import { getStatusColor, getStatusLabel, formatDate } from '../lib/utils';
 import { type OrderEmailData } from '../lib/emailService';
 import { uploadToCloudinary, uploadMultipleToCloudinary } from '../lib/cloudinary';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import Modal from '../components/ui/Modal';
+import UserAvatar from '../components/ui/UserAvatar';
 import ToastContainer from '../components/ui/Toast';
 import EmailPreviewModal from '../components/ui/EmailPreviewModal';
+import Modal from '../components/ui/Modal';
 import { useToast } from '../hooks/useToast';
 import logoImg from '../assets/logo.png';
 
@@ -773,6 +774,8 @@ export default function AdminPage() {
               <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-[#374151] hover:bg-[#F8F9FA] rounded-lg flex-shrink-0">
                 <Menu size={20} />
               </button>
+              {/* Logo visible on mobile only */}
+              <img src={logoImg} alt="Candid Canvas BD" className="lg:hidden h-7 w-auto object-contain flex-shrink-0" />
               <div className="min-w-0">
                 <h1 className="font-semibold text-[#111827] text-base truncate">
                   {ADMIN_NAV.find(n => n.id === activeTab)?.label || 'Dashboard'}
@@ -1071,6 +1074,19 @@ export default function AdminPage() {
                                   <button onClick={() => setViewOrder(o)} title="View Details"
                                     className="p-1.5 text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 rounded-lg transition-colors">
                                     <ChevronDown size={14} />
+                                  </button>
+                                  <button onClick={async () => {
+                                    if (!window.confirm('Delete this order permanently?')) return;
+                                    try {
+                                      const { doc, deleteDoc } = await import('firebase/firestore');
+                                      const { db } = await import('../lib/firebase');
+                                      await deleteDoc(doc(db, 'bookings', o.id));
+                                      setOrders(prev => prev.filter(x => x.id !== o.id));
+                                      toast.success('Order deleted');
+                                    } catch { toast.error('Failed to delete order'); }
+                                  }} title="Delete Order"
+                                    className="p-1.5 text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    <Trash2 size={14} />
                                   </button>
                                 </div>
                               </td>
@@ -1519,10 +1535,10 @@ export default function AdminPage() {
             {/* â”€â”€ PACKAGES â”€â”€ */}
             {activeTab === 'packages' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
                   <p className="text-[#6B7280] text-sm">{packages.length} package{packages.length !== 1 ? 's' : ''}</p>
                   <button onClick={openAdd}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
                     <Plus size={14} /> Add Package
                   </button>
                 </div>
@@ -1807,6 +1823,48 @@ export default function AdminPage() {
                     className="mt-4 px-5 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
                     Save Settings
                   </button>
+
+                {/* Change Password */}
+                <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Settings size={16} className="text-[#374151]" />
+                    <h3 className="font-semibold text-[#111827]">Change Password</h3>
+                  </div>
+                  <p className="text-xs text-[#9CA3AF] mb-4">Update your admin account password.</p>
+                  <div className="space-y-3 max-w-sm">
+                    <input
+                      id="new-password-input"
+                      type="password"
+                      placeholder="New password (min 6 characters)"
+                      className="w-full border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                    />
+                    <button
+                      onClick={async () => {
+                        const input = document.getElementById('new-password-input') as HTMLInputElement;
+                        const newPwd = input?.value?.trim();
+                        if (!newPwd || newPwd.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+                        try {
+                          const { updatePassword } = await import('firebase/auth');
+                          const { auth } = await import('../lib/firebase');
+                          if (!auth.currentUser) { toast.error('Not authenticated'); return; }
+                          await updatePassword(auth.currentUser, newPwd);
+                          input.value = '';
+                          toast.success('Password updated successfully');
+                        } catch (e: unknown) {
+                          const msg = (e as { message?: string })?.message || '';
+                          if (msg.includes('requires-recent-login')) {
+                            toast.error('Please sign out and sign in again before changing password');
+                          } else {
+                            toast.error('Failed to update password');
+                          }
+                        }
+                      }}
+                      className="w-full py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors"
+                    >
+                      Update Password
+                    </button>
+                  </div>
+                </div>
                 </div>
 
               </motion.div>

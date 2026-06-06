@@ -9,6 +9,7 @@ import { Camera, CalendarCheck, CheckCircle, Lock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useAuth } from '../context/AuthContext';
+import { useSite } from '../context/SiteContext';
 
 const schema = z.object({
   name: z.string().min(2, 'Name required'),
@@ -30,6 +31,8 @@ export default function BookingPage() {
   const [submitted, setSubmitted] = useState(false);
   const [bookingId, setBookingId] = useState('');
   const { user } = useAuth();
+  const { packages } = useSite();
+  const activePackages = packages.filter(p => p.active);
 
   // Auth guard — must be logged in to book
   if (!user) {
@@ -217,13 +220,23 @@ export default function BookingPage() {
                     <label className="block text-sm font-medium text-[#374151] mb-1.5">Package *</label>
                     <select {...register('package')} className="w-full border border-[#E5E7EB] rounded bg-white px-4 py-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#374151]">
                       <option value="">Select a package</option>
-                      <option value="essentials">Essentials — ৳15,000</option>
-                      <option value="signature">Signature — ৳35,000 ⭐ Popular</option>
-                      <option value="prestige">Prestige — ৳65,000</option>
-                      <option value="reels">Reels Only — ৳8,000</option>
-                      <option value="corporate">Corporate Event — ৳25,000</option>
-                      <option value="birthday">Birthday Special — ৳12,000</option>
-                      <option value="custom">Custom Package</option>
+                      {activePackages.length > 0 ? (
+                        activePackages.map(pkg => (
+                          <option key={pkg.id} value={pkg.name}>
+                            {pkg.name} — {pkg.price}{pkg.popular ? ' ⭐ Popular' : ''}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="essentials">Essentials — ৳15,000</option>
+                          <option value="signature">Signature — ৳35,000 ⭐ Popular</option>
+                          <option value="prestige">Prestige — ৳65,000</option>
+                          <option value="reels">Reels Only — ৳8,000</option>
+                          <option value="corporate">Corporate Event — ৳25,000</option>
+                          <option value="birthday">Birthday Special — ৳12,000</option>
+                          <option value="custom">Custom Package</option>
+                        </>
+                      )}
                     </select>
                     {errors.package && <p className="mt-1 text-xs text-[#EF4444]">{errors.package.message}</p>}
                   </div>

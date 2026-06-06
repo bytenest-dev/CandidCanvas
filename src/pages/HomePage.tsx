@@ -17,6 +17,8 @@ export default function HomePage() {
       </Helmet>
       <Hero />
       <CinematicSlider />
+      {/* Spacer after slider */}
+      <div className="h-16 sm:h-20 lg:h-24 bg-white" />
       <Testimonials />
       <CTABanner />
     </>
