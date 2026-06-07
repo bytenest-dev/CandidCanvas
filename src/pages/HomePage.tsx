@@ -12,8 +12,8 @@ export default function HomePage() {
     <>
       <Helmet>
         {/* ── Primary SEO ── */}
-        <title>Candid Canvas BD | Premium Photography &amp; Cinematography in Bangladesh</title>
-        <meta name="description" content="Candid Canvas BD offers premium wedding photography, cinematography, reels and event coverage in Bogura, Bangladesh. 500+ projects. 98% client satisfaction." />
+        <title>Candid Canvas BD | Wedding Photography &amp; Cinematography | Bogura, Bangladesh</title>
+        <meta name="description" content="Candid Canvas BD  Official website. Premium wedding photography, cinematography &amp; reels in Bogura, Bangladesh. 500+ projects, 98% satisfaction. Book now." />
         <meta name="keywords" content="wedding photography bangladesh, wedding photographer bogura, candid photography bangladesh, cinematography bogura, event photography bangladesh, reels production bogura, corporate photography bangladesh, birthday photography" />
         <link rel="canonical" href={`${BASE_URL}/`} />
         <meta name="robots" content="index, follow" />
@@ -61,6 +61,35 @@ export default function HomePage() {
       <div className="h-16 sm:h-20 lg:h-24 bg-white" />
       <Testimonials />
       <CTABanner />
+
+      {/* ── Brand SEO Content Block — visible to Google, subtle for users ── */}
+      <section className="bg-white border-t border-[#F3F4F6] py-10 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="font-heading text-2xl text-[#111827] mb-3">
+            Candid Canvas BD — Photography &amp; Cinematography Studio
+          </h2>
+          <p className="text-[#6B7280] text-sm leading-relaxed max-w-2xl mx-auto mb-4">
+            <strong>Candid Canvas BD</strong> is a professional photography and cinematography studio based in Bogura, Bangladesh.
+            We specialize in wedding photography, cinematic films, social media reels, corporate events, birthday sessions,
+            festival coverage, and outdoor portrait photography. With 500+ completed projects and 98% client satisfaction,
+            Candid Canvas BD is trusted across Bangladesh for preserving life's most special moments.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 text-xs text-[#9CA3AF]">
+            {[
+              'Wedding Photography Bangladesh',
+              'Photographer Bogura',
+              'Cinematography Bangladesh',
+              'Event Photography',
+              'Reels Production',
+              'Corporate Photography',
+              'Birthday Photography',
+              'Candid Canvas BD',
+            ].map(tag => (
+              <span key={tag} className="px-3 py-1 bg-[#F8F9FA] rounded-full border border-[#E5E7EB]">{tag}</span>
+            ))}
+          </div>
+        </div>
+      </section>
     </>
   );
 }

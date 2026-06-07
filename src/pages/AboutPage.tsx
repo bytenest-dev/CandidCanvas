@@ -35,7 +35,7 @@ export default function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>About Candid Canvas BD | Our Story, Team &amp; Vision</title>
+        <title>About Candid Canvas BD | Photography Studio | Bogura, Bangladesh</title>
         <meta name="description" content="Meet the team behind Candid Canvas BD — 500+ projects, 4+ years of premium photography &amp; cinematography in Bangladesh. Our story, philosophy and creative vision." />
         <meta name="keywords" content="about candid canvas bd, photography studio bangladesh, wedding photographer bogura team, professional photographer bangladesh, photography studio story" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/about" />

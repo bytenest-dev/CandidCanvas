@@ -19,7 +19,7 @@ export default function PackagesPage() {
   return (
     <>
       <Helmet>
-        <title>Photography Packages &amp; Pricing | Candid Canvas BD</title>
+        <title>Candid Canvas BD | Photography Packages &amp; Pricing | Bangladesh</title>
         <meta name="description" content="Transparent photography &amp; cinematography packages in Bangladesh. Wedding, reels, events &amp; corporate packages. Competitive pricing, no hidden fees. Book online." />
         <meta name="keywords" content="photography packages bangladesh, wedding photography pricing dhaka, cinematography packages, event photography cost bangladesh, photography packages price" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/packages" />

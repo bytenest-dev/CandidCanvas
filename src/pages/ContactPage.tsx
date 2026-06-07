@@ -87,7 +87,7 @@ export default function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact Candid Canvas BD | Book a Photography Session</title>
+        <title>Contact Candid Canvas BD | Book a Session | Bogura, Bangladesh</title>
         <meta name="description" content="Get in touch with Candid Canvas BD. Call, WhatsApp, or email us to book a wedding, event, corporate or reels photography session in Bangladesh." />
         <meta name="keywords" content="contact photographer bangladesh, book photography session bogura, hire photographer bogura bangladesh, candid canvas bd contact, wedding photographer booking" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/contact" />

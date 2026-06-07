@@ -26,7 +26,7 @@ export default function GalleryPage() {
   return (
     <>
       <Helmet>
-        <title>Photography Portfolio &amp; Gallery | Candid Canvas BD</title>
+        <title>Candid Canvas BD | Photography Portfolio &amp; Gallery | Bangladesh</title>
         <meta name="description" content="Browse our photography portfolio — weddings, birthdays, corporate events, festivals, outdoor and cinematic sessions in Bangladesh. 500+ stunning moments captured." />
         <meta name="keywords" content="wedding photography portfolio bangladesh, photography gallery dhaka, event photography portfolio, candid photos bangladesh, cinematography portfolio" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/gallery" />

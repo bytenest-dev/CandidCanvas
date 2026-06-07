@@ -147,7 +147,7 @@ export default function BookingPage() {
   return (
     <>
       <Helmet>
-        <title>Book a Photography Session | Candid Canvas BD</title>
+        <title>Candid Canvas BD | Book a Photography Session | Bangladesh</title>
         <meta name="description" content="Book your wedding, event, corporate or reels photography session with Candid Canvas BD. Easy online booking in Bangladesh. Confirm in 24 hours." />
         <meta name="keywords" content="book photographer bangladesh, book wedding photographer bogura, photography booking online bangladesh, hire photographer bogura bangladesh" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/book" />
