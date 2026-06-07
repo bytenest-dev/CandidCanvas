@@ -4,7 +4,7 @@ import CinematicSlider from '../components/home/CinematicSlider';
 import Testimonials from '../components/home/Testimonials';
 import CTABanner from '../components/home/CTABanner';
 
-const BASE_URL = 'https://bytenest-dev.github.io/CandidCanvas';
+const BASE_URL = 'https://candidcanvas.pro.bd';
 const OG_IMAGE = `${BASE_URL}/logo.png`;
 
 export default function HomePage() {

@@ -52,5 +52,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          # Uncomment and set this if you add a custom domain later:
-          # cname: candidcanvas.com
+          cname: candidcanvas.pro.bd
