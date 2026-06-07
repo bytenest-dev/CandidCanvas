@@ -14,7 +14,7 @@ import { useSite, type GalleryItem, type SliderItem, type PackageItem, type Revi
 import { getStatusColor, getStatusLabel, formatDate } from '../lib/utils';
 import { type OrderEmailData } from '../lib/emailService';
 import { uploadToCloudinary, uploadMultipleToCloudinary } from '../lib/cloudinary';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import UserAvatar from '../components/ui/UserAvatar';
 import ToastContainer from '../components/ui/Toast';
 import EmailPreviewModal from '../components/ui/EmailPreviewModal';
@@ -178,6 +178,14 @@ export default function AdminPage() {
   const [totalVisitors, setTotalVisitors] = useState(0);
   const [visitorGraph, setVisitorGraph] = useState<{ date: string; visitors: number }[]>([]);
   const [chartData, setChartData] = useState<{ month: string; bookings: number; revenue: number }[]>([]);
+
+  // Users modal state
+  const [showUsersModal, setShowUsersModal] = useState(false);
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [suspendModal, setSuspendModal] = useState<{user: any} | null>(null);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [suspendUntil, setSuspendUntil] = useState('');
 
   // Slider state
   const [sliderForm, setSliderForm] = useState({ title: '', subtitle: '' });
@@ -371,6 +379,17 @@ export default function AdminPage() {
     loadMessages();
   }, [loadOrders, loadStats, loadMessages]);
 
+  const loadUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const { collection, getDocs } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const snap = await getDocs(collection(db, 'users'));
+      const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setUsersList(users);
+    } catch { }
+    finally { setUsersLoading(false); }
+  }, []);
   // ── Auth guard ───────────────────────────────────────────────────────────
   if (!isAdmin) {
     return (
@@ -861,20 +880,23 @@ export default function AdminPage() {
                   <span className="text-[#9CA3AF] ml-2 text-xs">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 </p>
 
-                {/* Stats Grid - 7 cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4 mb-6">
+                {/* Stats Grid - 6 cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
                   {[
-                    { label: 'Total Orders', value: orders.length, color: 'bg-blue-50 text-blue-600', icon: ShoppingBag },
-                    { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, color: 'bg-yellow-50 text-yellow-600', icon: Eye },
-                    { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: 'bg-green-50 text-green-600', icon: CheckCircle },
-                    { label: 'This Month', value: thisMonthBookings, color: 'bg-indigo-50 text-indigo-600', icon: TrendingUp },
-                    { label: 'All Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users },
-                    { label: 'Google Users', value: googleUsers, color: 'bg-purple-50 text-purple-600', icon: Users },
-                    { label: 'Total Visitors', value: totalVisitors, color: 'bg-orange-50 text-orange-600', icon: Globe },
+                    { label: 'Total Orders', value: orders.length, color: 'bg-blue-50 text-blue-600', icon: ShoppingBag, onClick: undefined },
+                    { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, color: 'bg-yellow-50 text-yellow-600', icon: Eye, onClick: undefined },
+                    { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: 'bg-green-50 text-green-600', icon: CheckCircle, onClick: undefined },
+                    { label: 'This Month', value: thisMonthBookings, color: 'bg-indigo-50 text-indigo-600', icon: TrendingUp, onClick: undefined },
+                    { label: 'Registered Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users, onClick: () => { setShowUsersModal(true); loadUsers(); } },
+                    { label: 'Total Visitors', value: totalVisitors, color: 'bg-orange-50 text-orange-600', icon: Globe, onClick: undefined },
                   ].map(s => {
                     const Icon = s.icon;
                     return (
-                      <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-shadow">
+                      <div
+                        key={s.label}
+                        className={`bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-shadow ${s.onClick ? 'cursor-pointer' : ''}`}
+                        onClick={s.onClick}
+                      >
                         <div className={`w-9 h-9 rounded-lg ${s.color} flex items-center justify-center mb-3`}>
                           <Icon size={16} />
                         </div>
@@ -916,24 +938,43 @@ export default function AdminPage() {
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Quick Actions */}
+                  {/* Order Status Pie Chart */}
                   <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-                    <h2 className="font-semibold text-[#111827] text-sm mb-4">Quick Actions</h2>
-                    <div className="space-y-2">
-                      {[
-                        { label: `${orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length} Orders Pending`, border: 'border-l-yellow-400', tab: 'orders', badge: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length },
-                        { label: `${reviews.filter(r => !r.approved).length} Reviews to Approve`, border: 'border-l-purple-400', tab: 'reviews', badge: reviews.filter(r => !r.approved).length },
-                        { label: `${gallery.length} Gallery Images`, border: 'border-l-blue-400', tab: 'gallery', badge: 0 },
-                        { label: `${packages.filter(p => p.active).length} Active Packages`, border: 'border-l-green-400', tab: 'packages', badge: 0 },
-                        { label: `${orders.filter(o => o.status === 'completed').length} Completed Sessions`, border: 'border-l-gray-400', tab: 'orders', badge: 0 },
-                      ].map(a => (
-                        <button key={a.label} onClick={() => setActiveTab(a.tab)}
-                          className={`w-full text-left px-3 py-2.5 bg-[#F8F9FA] rounded-lg text-xs text-[#374151] hover:bg-[#F0F0F0] border-l-4 ${a.border} transition-colors flex items-center justify-between`}>
-                          <span>{a.label}</span>
-                          {a.badge > 0 && <span className="bg-[#111827] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{a.badge}</span>}
-                        </button>
-                      ))}
-                    </div>
+                    <h2 className="font-semibold text-[#111827] text-sm mb-1">Order Status</h2>
+                    <p className="text-xs text-[#9CA3AF] mb-3">Distribution by status</p>
+                    {orders.length === 0 ? (
+                      <div className="h-[180px] flex items-center justify-center text-[#9CA3AF] text-xs">No orders yet</div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Pending', value: orders.filter(o => ['submitted','under_review'].includes(o.status)).length || 0 },
+                              { name: 'Completed', value: orders.filter(o => o.status === 'completed').length || 0 },
+                              { name: 'Rejected', value: orders.filter(o => o.status === 'rejected').length || 0 },
+                              { name: 'In Progress', value: orders.filter(o => ['contacted','approved'].includes(o.status)).length || 0 },
+                            ].filter(d => d.value > 0)}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={70}
+                            paddingAngle={3}
+                            dataKey="value"
+                          >
+                            {[
+                              { name: 'Pending', value: 0 },
+                              { name: 'Completed', value: 0 },
+                              { name: 'Rejected', value: 0 },
+                              { name: 'In Progress', value: 0 },
+                            ].map((_, index) => (
+                              <Cell key={index} fill={['#F59E0B','#10B981','#EF4444','#3B82F6'][index]} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB' }} />
+                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </div>
 
@@ -2194,9 +2235,194 @@ export default function AdminPage() {
         </div>
       </Modal>
 
+      {/* Users List Modal */}
+      {showUsersModal && (
+        <div className="fixed inset-0 z-[300] bg-black/60 flex items-center justify-center p-4" onClick={() => setShowUsersModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold text-[#111827]">Registered Users</h2>
+                <p className="text-xs text-[#9CA3AF]">{usersList.length} total users</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={loadUsers} className="p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F8F9FA] rounded-lg transition-colors">
+                  <RefreshCw size={15} />
+                </button>
+                <button onClick={() => setShowUsersModal(false)} className="p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F8F9FA] rounded-lg">
+                  <XCircle size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {usersLoading ? (
+                <div className="flex items-center justify-center p-12">
+                  <div className="w-6 h-6 border-2 border-[#111827] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : usersList.length === 0 ? (
+                <div className="text-center p-12 text-[#9CA3AF] text-sm">No users found</div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                      <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">User</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">Provider</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">Status</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F3F4F6]">
+                    {usersList.map(u => (
+                      <tr key={u.id} className="hover:bg-[#F8F9FA]">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            {u.photoURL ? (
+                              <img src={u.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-[#E5E7EB] flex items-center justify-center text-xs font-medium text-[#6B7280]">
+                                {(u.displayName || u.email || '?')[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-medium text-[#111827] text-xs">{u.displayName || 'No name'}</p>
+                              <p className="text-[#9CA3AF] text-[11px]">{u.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                            u.provider === 'google' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {u.provider === 'google' ? '🔵 Google' : '📧 Email'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          {u.suspended ? (
+                            <div>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-700">
+                                🚫 Suspended
+                              </span>
+                              {u.suspendUntil && (
+                                <p className="text-[10px] text-[#9CA3AF] mt-0.5">Until: {new Date(u.suspendUntil).toLocaleDateString()}</p>
+                              )}
+                              {u.suspendReason && (
+                                <p className="text-[10px] text-[#9CA3AF]">Reason: {u.suspendReason}</p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-700">
+                              ✅ Active
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-1.5">
+                            {u.suspended ? (
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const { doc, updateDoc } = await import('firebase/firestore');
+                                    const { db } = await import('../lib/firebase');
+                                    await updateDoc(doc(db, 'users', u.id), { suspended: false, suspendReason: '', suspendUntil: null });
+                                    setUsersList(prev => prev.map(usr => usr.id === u.id ? { ...usr, suspended: false, suspendReason: '', suspendUntil: null } : usr));
+                                    toast.success('User unsuspended');
+                                  } catch { toast.error('Failed to unsuspend user'); }
+                                }}
+                                className="px-2.5 py-1 text-[11px] bg-green-50 text-green-700 hover:bg-green-100 rounded-lg transition-colors font-medium"
+                              >
+                                Unsuspend
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => { setSuspendModal({ user: u }); setSuspendReason(''); setSuspendUntil(''); }}
+                                className="px-2.5 py-1 text-[11px] bg-yellow-50 text-yellow-700 hover:bg-yellow-100 rounded-lg transition-colors font-medium"
+                              >
+                                Suspend
+                              </button>
+                            )}
+                            <button
+                              onClick={async () => {
+                                if (!window.confirm(`Delete user ${u.displayName || u.email}? This cannot be undone.`)) return;
+                                try {
+                                  const { doc, deleteDoc } = await import('firebase/firestore');
+                                  const { db } = await import('../lib/firebase');
+                                  await deleteDoc(doc(db, 'users', u.id));
+                                  setUsersList(prev => prev.filter(usr => usr.id !== u.id));
+                                  setTotalUsers(prev => prev - 1);
+                                  toast.success('User deleted');
+                                } catch { toast.error('Failed to delete user'); }
+                              }}
+                              className="px-2.5 py-1 text-[11px] bg-red-50 text-red-700 hover:bg-red-100 rounded-lg transition-colors font-medium"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suspend Modal */}
+      {suspendModal && (
+        <div className="fixed inset-0 z-[400] bg-black/60 flex items-center justify-center p-4" onClick={() => setSuspendModal(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="font-semibold text-[#111827] mb-1">Suspend User</h3>
+            <p className="text-xs text-[#9CA3AF] mb-5">{suspendModal.user.displayName || suspendModal.user.email}</p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wider">Suspend Until (optional)</label>
+                <input
+                  type="date"
+                  value={suspendUntil}
+                  onChange={e => setSuspendUntil(e.target.value)}
+                  min={new Date().toISOString().slice(0,10)}
+                  className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827] bg-[#F8F9FA] focus:bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wider">Reason</label>
+                <textarea
+                  value={suspendReason}
+                  onChange={e => setSuspendReason(e.target.value)}
+                  placeholder="Why is this user being suspended?"
+                  rows={3}
+                  className="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827] bg-[#F8F9FA] focus:bg-white resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setSuspendModal(null)} className="flex-1 px-4 py-2.5 border border-[#E5E7EB] rounded-xl text-sm text-[#374151] hover:bg-[#F8F9FA] transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const { doc, updateDoc } = await import('firebase/firestore');
+                    const { db } = await import('../lib/firebase');
+                    const updateData: any = { suspended: true, suspendReason: suspendReason || 'No reason provided' };
+                    if (suspendUntil) updateData.suspendUntil = suspendUntil;
+                    await updateDoc(doc(db, 'users', suspendModal.user.id), updateData);
+                    setUsersList(prev => prev.map(u => u.id === suspendModal.user.id ? { ...u, ...updateData } : u));
+                    setSuspendModal(null);
+                    toast.success('User suspended');
+                  } catch { toast.error('Failed to suspend user'); }
+                }}
+                className="flex-1 px-4 py-2.5 bg-[#111827] text-white rounded-xl text-sm font-semibold hover:bg-[#374151] transition-colors"
+              >
+                Confirm Suspend
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* View Message Modal */}
-      {viewMessage && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+      {viewMessage && (        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setViewMessage(null)} />
           <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-start justify-between gap-4">
