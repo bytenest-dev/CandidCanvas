@@ -271,50 +271,62 @@ export default function AdminPage() {
     }
   }, []);
 
+
+  // Monthly visitor comparison state
+  const [prevMonthVisitors, setPrevMonthVisitors] = useState(0);
+  const [thisMonthVisitors, setThisMonthVisitors] = useState(0);
+
   const loadStats = useCallback(async () => {
     try {
-      const { collection, getDocs, doc, getDoc, query, where } = await import('firebase/firestore');
+      const { collection, doc, onSnapshot } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
 
-      // -- 1. Count ALL registered users --------------------------
-      try {
-        const usersSnap = await getDocs(collection(db, 'users'));
-        setTotalUsers(usersSnap.size);
-        // Count Google sign-in users
-        const googleCount = usersSnap.docs.filter(d => {
+      // 1. Real-time total visitor counter
+      onSnapshot(doc(db, 'siteData', 'visitors'), snap => {
+        setTotalVisitors(snap.exists() ? (snap.data().count || 0) : 0);
+      });
+
+      // 2. Real-time last 14 days visitor graph
+      const today = new Date();
+      const dateKeys: string[] = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        dateKeys.push(d.toISOString().slice(0, 10));
+      }
+      const graphData: Record<string, number> = {};
+      dateKeys.forEach(dateStr => {
+        onSnapshot(doc(db, 'siteData', `visitors_${dateStr}`), snap => {
+          graphData[dateStr] = snap.exists() ? (snap.data().count || 0) : 0;
+          setVisitorGraph(dateKeys.map(k => ({
+            date: k.slice(5),
+            visitors: graphData[k] || 0,
+          })));
+        });
+      });
+
+      // 3. Monthly comparison - this month vs last month
+      const thisMonthStr = today.toISOString().slice(0, 7);
+      const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastMonthStr = lastMonthDate.toISOString().slice(0, 7);
+      onSnapshot(doc(db, 'siteData', `visitors_month_${thisMonthStr}`), snap => {
+        setThisMonthVisitors(snap.exists() ? (snap.data().count || 0) : 0);
+      });
+      onSnapshot(doc(db, 'siteData', `visitors_month_${lastMonthStr}`), snap => {
+        setPrevMonthVisitors(snap.exists() ? (snap.data().count || 0) : 0);
+      });
+
+      // 4. Real-time user count
+      onSnapshot(collection(db, 'users'), snap => {
+        setTotalUsers(snap.size);
+        const googleCount = snap.docs.filter(d => {
           const data = d.data();
           return data.provider === 'google' || (data.photoURL && data.photoURL.includes('googleusercontent'));
         }).length;
         setGoogleUsers(googleCount);
-      } catch { /* permission denied � need firestore rules update */ }
+      });
 
-      // -- 2. Total visitor counter --------------------------------
-      try {
-        const visitorRef = doc(db, 'siteData', 'visitors');
-        const visitorSnap = await getDoc(visitorRef);
-        setTotalVisitors(visitorSnap.exists() ? (visitorSnap.data().count || 0) : 0);
-      } catch { /* silent */ }
-
-      // -- 3. Last 14 days visitor graph data ----------------------
-      try {
-        const last14: { date: string; visitors: number }[] = [];
-        const today = new Date();
-        const fetchPromises = Array.from({ length: 14 }, (_, i) => {
-          const d = new Date(today);
-          d.setDate(d.getDate() - (13 - i));
-          const dateStr = d.toISOString().slice(0, 10);
-          return getDoc(doc(db, 'siteData', `visitors_${dateStr}`)).then(snap => ({
-            date: dateStr.slice(5), // MM-DD
-            visitors: snap.exists() ? (snap.data().count || 0) : 0,
-          }));
-        });
-        const results = await Promise.all(fetchPromises);
-        setVisitorGraph(results);
-      } catch { /* silent */ }
-
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
   }, []);
 
   const loadMessages = useCallback(async () => {
@@ -979,26 +991,44 @@ export default function AdminPage() {
                 </div>
 
                 {/* Visitor Graph � last 14 days */}
+                {/* Website Visitors - Real-time with monthly comparison */}
                 <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                       <h2 className="font-semibold text-[#111827] text-sm">Website Visitors</h2>
-                      <p className="text-xs text-[#9CA3AF]">
-                        Last 14 days � Total: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span>
-                        {' '}� Google sign-ins: <span className="font-semibold text-[#374151]">{googleUsers}</span>
-                        {' '}� All users: <span className="font-semibold text-[#374151]">{totalUsers}</span>
+                      <p className="text-xs text-[#9CA3AF] mt-0.5">
+                        Last 14 days — Total all-time: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span>
                       </p>
                     </div>
-                    <span className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
-                      <Globe size={12} /> Real-time
-                    </span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {/* Monthly comparison badges */}
+                      <div className="flex items-center gap-2">
+                        <div className="bg-[#F8F9FA] border border-[#E5E7EB] rounded-lg px-3 py-1.5 text-center">
+                          <p className="text-[10px] text-[#9CA3AF] leading-none mb-0.5">This Month</p>
+                          <p className="text-sm font-bold text-[#111827]">{thisMonthVisitors.toLocaleString()}</p>
+                        </div>
+                        <div className="text-[#9CA3AF] text-xs">vs</div>
+                        <div className="bg-[#F8F9FA] border border-[#E5E7EB] rounded-lg px-3 py-1.5 text-center">
+                          <p className="text-[10px] text-[#9CA3AF] leading-none mb-0.5">Last Month</p>
+                          <p className="text-sm font-bold text-[#6B7280]">{prevMonthVisitors.toLocaleString()}</p>
+                        </div>
+                        {prevMonthVisitors > 0 && (
+                          <div className={`px-2 py-1 rounded-lg text-xs font-bold ${thisMonthVisitors >= prevMonthVisitors ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                            {thisMonthVisitors >= prevMonthVisitors ? "+" : ""}{Math.round(((thisMonthVisitors - prevMonthVisitors) / prevMonthVisitors) * 100)}%
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                        <Globe size={12} /> Real-time
+                      </span>
+                    </div>
                   </div>
                   {visitorGraph.length === 0 ? (
                     <div className="h-[140px] flex items-center justify-center text-[#9CA3AF] text-xs">
                       Visitor data will appear as people visit the site
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={140}>
+                    <ResponsiveContainer width="100%" height={160}>
                       <AreaChart data={visitorGraph} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
                         <defs>
                           <linearGradient id="visitorGrad" x1="0" y1="0" x2="0" y2="1">
@@ -1007,13 +1037,10 @@ export default function AdminPage() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                        <Tooltip
-                          contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                          formatter={(v) => [v, 'Visitors']}
-                        />
-                        <Area type="monotone" dataKey="visitors" stroke="#3B82F6" strokeWidth={2} fill="url(#visitorGrad)" dot={{ fill: '#3B82F6', r: 3 }} activeDot={{ r: 5 }} />
+                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #E5E7EB", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }} formatter={(v) => [v, "Visitors"]} />
+                        <Area type="monotone" dataKey="visitors" stroke="#3B82F6" strokeWidth={2} fill="url(#visitorGrad)" dot={{ fill: "#3B82F6", r: 3 }} activeDot={{ r: 5 }} />
                       </AreaChart>
                     </ResponsiveContainer>
                   )}

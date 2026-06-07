@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import {
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
@@ -12,7 +10,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
 import type { User } from '../types';
 
-// ─── DEMO admin credentials (change after Firebase is configured) ───
+const ADMIN_EMAILS = ['admin@candidcanvas.com', 'team.candidcanvas.bd@gmail.com'];
 const DEMO_ADMIN_EMAIL = 'admin@candidcanvas.com';
 const DEMO_ADMIN_PASSWORD = '1234567890';
 
@@ -21,9 +19,7 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  /** Sign in with email + password. Works for both admin and regular customers. */
   signInAsAdmin: (email: string, password: string) => Promise<{ error?: string }>;
-  /** Alias for signInAsAdmin — handles both admin and customer login */
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   isAdmin: boolean;
@@ -46,19 +42,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Handle redirect result from Google sign-in
-    getRedirectResult(auth).catch(() => { /* ignore */ });
-
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
         try {
           const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
           if (userDoc.exists()) {
-            setUser({ ...userDoc.data(), uid: fbUser.uid } as User);
+            const data = userDoc.data();
+            // Always reflect latest Google profile photo
+            const updatedUser = {
+              ...data,
+              uid: fbUser.uid,
+              photoURL: fbUser.photoURL || data.photoURL || undefined,
+              displayName: fbUser.displayName || data.displayName || 'User',
+            } as User;
+            setUser(updatedUser);
           } else {
-            // Determine role and provider
-            const role = fbUser.email === DEMO_ADMIN_EMAIL ? 'admin' : 'customer';
+            const isAdminEmail = ADMIN_EMAILS.includes(fbUser.email || '');
+            const role = isAdminEmail ? 'admin' : 'customer';
             const provider = fbUser.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email';
             const newUser = {
               email: fbUser.email || '',
@@ -75,14 +76,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser({ uid: fbUser.uid, ...newUser } as User);
           }
         } catch {
-          // Firebase not configured – demo mode
-          const role = fbUser.email === DEMO_ADMIN_EMAIL ? 'admin' : 'customer';
+          // Firebase not configured or permission denied — fallback
+          const isAdminEmail = ADMIN_EMAILS.includes(fbUser.email || '');
           setUser({
             uid: fbUser.uid,
             email: fbUser.email || '',
             displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
             photoURL: fbUser.photoURL || undefined,
-            role: role as 'admin' | 'customer',
+            role: isAdminEmail ? 'admin' : 'customer',
             createdAt: new Date(),
           });
         }
@@ -96,25 +97,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      // Use redirect instead of popup to avoid COOP/cross-origin warnings
-      await signInWithRedirect(auth, googleProvider);
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      // Fallback to popup if redirect fails
-      try {
-        await signInWithPopup(auth, googleProvider);
-      } catch { /* ignore */ }
+      // Popup works reliably once candidcanvas.pro.bd is added to Firebase authorized domains
+      await signInWithPopup(auth, googleProvider);
+    } catch (error: unknown) {
+      const code = (error as { code?: string })?.code;
+      // User closed the popup — not a real error
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+      console.error('Google sign-in error:', code || error);
     }
   };
 
   const signInAsAdmin = async (email: string, password: string): Promise<{ error?: string }> => {
-    // Demo mode: check hardcoded credentials when Firebase isn't configured
     if (email === DEMO_ADMIN_EMAIL && password === DEMO_ADMIN_PASSWORD) {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         return {};
       } catch {
-        // Firebase not configured — set user directly in demo mode
         const demoAdmin: User = {
           uid: 'demo-admin-uid',
           email: DEMO_ADMIN_EMAIL,
@@ -128,8 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return {};
       }
     }
-
-    // Try Firebase email/password auth
     try {
       await signInWithEmailAndPassword(auth, email, password);
       return {};
@@ -145,11 +141,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth);
-      // onAuthStateChanged will fire and set user/firebaseUser to null automatically
     } catch { /* ignore */ }
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || ADMIN_EMAILS.includes(user?.email || '');
 
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, signInWithGoogle, signInAsAdmin, signInWithEmail: signInAsAdmin, logout, isAdmin }}>

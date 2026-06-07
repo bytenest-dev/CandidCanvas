@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface GalleryItem {
   id: string;
@@ -60,7 +60,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   metaTitle: 'Candid Canvas BD — Premium Photography & Cinematography',
   metaDescription: 'Premium photography & cinematography in Dhaka, Bangladesh.',
   phone: '+8801849244610',
-  email: 'candidcanvasbd@gmail.com',
+  email: 'team.candidcanvas.bd@gmail.com',
   maintenanceMode: false,
   maintenanceMessage: 'We are currently performing maintenance. We will be back shortly.',
   vacationMode: false,

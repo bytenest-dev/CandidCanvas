@@ -1,4 +1,4 @@
-import { type ClassValue, clsx } from 'clsx';
+﻿import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -58,7 +58,7 @@ export const SOCIAL_LINKS = {
   tiktok: 'https://www.tiktok.com/@candidcanvasbd',
   whatsapp: 'https://wa.me/8801849244610',
   phone: '+8801849244610',
-  email: 'candidcanvasbd@gmail.com',
+  email: 'team.candidcanvas.bd@gmail.com',
   maps: 'https://www.google.com/maps/place/Candid+Canvas+BD,+Gohail+Rd,+Bogura',
   location: 'Gohail Rd, Bogura, Bangladesh',
 };

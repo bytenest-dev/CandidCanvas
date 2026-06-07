@@ -38,6 +38,10 @@ function VisitorTracker() {
         const { doc, updateDoc, increment, setDoc, getDoc } = await import('firebase/firestore');
         const { db } = await import('./lib/firebase');
 
+        const today = new Date();
+        const dateStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+        const monthStr = dateStr.slice(0, 7); // YYYY-MM
+
         // 1. Increment total visitor counter
         const totalRef = doc(db, 'siteData', 'visitors');
         const totalSnap = await getDoc(totalRef);
@@ -47,14 +51,22 @@ function VisitorTracker() {
           await setDoc(totalRef, { count: 1 });
         }
 
-        // 2. Increment today's daily counter for the visitor graph
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-        const dailyRef = doc(db, 'siteData', `visitors_${today}`);
+        // 2. Increment today's daily counter
+        const dailyRef = doc(db, 'siteData', `visitors_${dateStr}`);
         const dailySnap = await getDoc(dailyRef);
         if (dailySnap.exists()) {
-          await updateDoc(dailyRef, { count: increment(1), date: today });
+          await updateDoc(dailyRef, { count: increment(1), date: dateStr, month: monthStr });
         } else {
-          await setDoc(dailyRef, { count: 1, date: today });
+          await setDoc(dailyRef, { count: 1, date: dateStr, month: monthStr });
+        }
+
+        // 3. Increment monthly counter (for month-over-month comparison)
+        const monthRef = doc(db, 'siteData', `visitors_month_${monthStr}`);
+        const monthSnap = await getDoc(monthRef);
+        if (monthSnap.exists()) {
+          await updateDoc(monthRef, { count: increment(1), month: monthStr });
+        } else {
+          await setDoc(monthRef, { count: 1, month: monthStr });
         }
       } catch { /* silent */ }
     }

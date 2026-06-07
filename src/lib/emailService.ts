@@ -1,4 +1,4 @@
-export interface OrderEmailData {
+﻿export interface OrderEmailData {
   clientName: string;
   clientEmail: string;
   orderId: string;
@@ -102,7 +102,7 @@ const EMAIL_TEMPLATES = {
   <div class="footer">
     <div class="footer-brand">📷 Candid Canvas BD</div>
     <div class="footer-contact">
-      📧 candidcanvasbd@gmail.com<br>
+      📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610<br>
       🌐 Premium Photography & Cinematography, Dhaka, Bangladesh
     </div>
@@ -170,7 +170,7 @@ const EMAIL_TEMPLATES = {
   <div class="footer">
     <div class="footer-brand">📷 Candid Canvas BD</div>
     <div class="footer-contact">
-      📧 candidcanvasbd@gmail.com<br>
+      📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610<br>
       🌐 Premium Photography & Cinematography, Dhaka, Bangladesh
     </div>
@@ -233,7 +233,7 @@ const EMAIL_TEMPLATES = {
   <div class="footer">
     <div class="footer-brand">📷 Candid Canvas BD</div>
     <div class="footer-contact">
-      📧 candidcanvasbd@gmail.com<br>
+      📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610
     </div>
     <div class="footer-note">Booking reference: ${data.orderId}</div>
@@ -298,7 +298,7 @@ const EMAIL_TEMPLATES = {
   <div class="footer">
     <div class="footer-brand">📷 Candid Canvas BD</div>
     <div class="footer-contact">
-      📧 candidcanvasbd@gmail.com<br>
+      📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610<br>
       🌐 Premium Photography & Cinematography, Dhaka, Bangladesh
     </div>

@@ -4,7 +4,10 @@ service cloud.firestore {
 
     // Helper: is the requester the admin account?
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'admin@candidcanvas.com';
+      return request.auth != null && (
+        request.auth.token.email == 'admin@candidcanvas.com' ||
+        request.auth.token.email == 'team.candidcanvas.bd@gmail.com'
+      );
     }
 
     // Site settings — public read, admin write only
@@ -68,11 +71,13 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
-    // Users — own document OR admin can read all
+    // Users — admin can read/write ALL user docs; users can read/write own
     match /users/{uid} {
       allow read: if request.auth != null &&
         (request.auth.uid == uid || isAdmin());
-      allow write: if request.auth != null && request.auth.uid == uid;
+      // Admin can update/delete any user; users can only update their own
+      allow update, delete: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth != null;
     }
   }
 }
