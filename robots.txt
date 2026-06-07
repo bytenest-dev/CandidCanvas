@@ -1,7 +1,7 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /dashboard
 Disallow: /sign-in
 
-Sitemap: https://candidcanvas.pro.bd/sitemap.xml
+Sitemap: https://www.candidcanvas.pro.bd/sitemap.xml

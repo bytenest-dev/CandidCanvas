@@ -4,48 +4,48 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <url>
-    <loc>https://candidcanvas.pro.bd/</loc>
+    <loc>https://www.candidcanvas.pro.bd/</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en-BD" href="https://candidcanvas.pro.bd/"/>
+    <xhtml:link rel="alternate" hreflang="en-BD" href="https://www.candidcanvas.pro.bd/"/>
     <image:image>
-      <image:loc>https://candidcanvas.pro.bd/logo.png</image:loc>
+      <image:loc>https://www.candidcanvas.pro.bd/logo.png</image:loc>
       <image:title>Candid Canvas BD — Best Photography Studio Bangladesh</image:title>
       <image:caption>Candid Canvas BD | Wedding Photography &amp; Cinematography Bangladesh</image:caption>
     </image:image>
   </url>
 
   <url>
-    <loc>https://candidcanvas.pro.bd/gallery</loc>
+    <loc>https://www.candidcanvas.pro.bd/gallery</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
 
   <url>
-    <loc>https://candidcanvas.pro.bd/packages</loc>
+    <loc>https://www.candidcanvas.pro.bd/packages</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
 
   <url>
-    <loc>https://candidcanvas.pro.bd/book</loc>
+    <loc>https://www.candidcanvas.pro.bd/book</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
   </url>
 
   <url>
-    <loc>https://candidcanvas.pro.bd/contact</loc>
+    <loc>https://www.candidcanvas.pro.bd/contact</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://candidcanvas.pro.bd/about</loc>
+    <loc>https://www.candidcanvas.pro.bd/about</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
