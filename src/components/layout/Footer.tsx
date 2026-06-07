@@ -168,7 +168,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-white/40">
             © {new Date().getFullYear()} Candid Canvas BD. All rights reserved.
           </p>
@@ -178,21 +178,16 @@ export default function Footer() {
             href="https://bytenest-dev.netlify.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 group"
+            className="flex items-center gap-2 group px-3 py-1.5 rounded-full border border-white/10 hover:border-white/25 hover:bg-white/5 transition-all duration-300"
           >
             <img
               src={devImg}
               alt="ByteNest"
-              className="h-6 w-auto object-contain opacity-50 group-hover:opacity-90 transition-opacity"
+              className="h-5 w-5 object-contain rounded-full opacity-60 group-hover:opacity-100 transition-opacity"
             />
-            <div className="text-right">
-              <p className="text-[10px] text-white/35 group-hover:text-white/60 transition-colors font-medium tracking-wide leading-none">
-                Made by ByteNest
-              </p>
-              <p className="text-[9px] text-white/25 group-hover:text-white/45 transition-colors italic leading-none mt-0.5">
-                Where Ideas Become Products
-              </p>
-            </div>
+            <span className="text-[11px] text-white/40 group-hover:text-white/70 transition-colors font-medium tracking-wide">
+              Made by <span className="text-white/60 group-hover:text-white/90">ByteNest</span>
+            </span>
           </a>
 
           <div className="flex items-center gap-4">
