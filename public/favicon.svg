@@ -1,15 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#111827"/>
-  <!-- Camera body -->
-  <rect x="10" y="22" width="44" height="30" rx="5" fill="#ffffff"/>
-  <!-- Lens outer -->
-  <circle cx="32" cy="37" r="11" fill="#111827"/>
-  <!-- Lens inner -->
-  <circle cx="32" cy="37" r="7" fill="#374151"/>
-  <!-- Lens shine -->
-  <circle cx="29" cy="34" r="2.5" fill="#6B7280" opacity="0.6"/>
-  <!-- Viewfinder bump -->
-  <rect x="24" y="15" width="16" height="9" rx="3" fill="#ffffff"/>
-  <!-- Flash -->
-  <rect x="14" y="26" width="6" height="4" rx="1" fill="#9CA3AF"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" fill="none">
+  <!-- Circular clip -->
+  <defs>
+    <clipPath id="circle">
+      <circle cx="32" cy="32" r="32"/>
+    </clipPath>
+  </defs>
+  <!-- White circle background -->
+  <circle cx="32" cy="32" r="32" fill="#ffffff"/>
+  <!-- Logo image clipped to circle -->
+  <image href="/logo.png" x="0" y="0" width="64" height="64" clip-path="url(#circle)" preserveAspectRatio="xMidYMid meet"/>
 </svg>
