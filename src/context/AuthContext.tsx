@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
@@ -44,6 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle redirect result from Google sign-in
+    getRedirectResult(auth).catch(() => { /* ignore */ });
+
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
@@ -91,9 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      // Use redirect instead of popup to avoid COOP/cross-origin warnings
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error('Google sign-in error:', error);
+      // Fallback to popup if redirect fails
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch { /* ignore */ }
     }
   };
 
@@ -135,9 +145,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth);
+      // onAuthStateChanged will fire and set user/firebaseUser to null automatically
     } catch { /* ignore */ }
-    setUser(null);
-    setFirebaseUser(null);
   };
 
   const isAdmin = user?.role === 'admin';
