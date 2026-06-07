@@ -1096,9 +1096,17 @@ export default function AdminPage() {
                                   <button onClick={async () => {
                                     if (!window.confirm('Delete this order permanently?')) return;
                                     try {
-                                      const { doc, deleteDoc } = await import('firebase/firestore');
+                                      const { collection, query, where, getDocs, deleteDoc, doc } = await import('firebase/firestore');
                                       const { db } = await import('../lib/firebase');
-                                      await deleteDoc(doc(db, 'bookings', o.id));
+                                      // Orders are stored with a custom 'id' field — query by it
+                                      const q = query(collection(db, 'bookings'), where('id', '==', o.id));
+                                      const snap = await getDocs(q);
+                                      if (!snap.empty) {
+                                        await deleteDoc(snap.docs[0].ref);
+                                      } else {
+                                        // Fallback: try deleting by Firestore doc ID directly
+                                        await deleteDoc(doc(db, 'bookings', o.id));
+                                      }
                                       setOrders(prev => prev.filter(x => x.id !== o.id));
                                       toast.success('Order deleted');
                                     } catch { toast.error('Failed to delete order'); }
@@ -1952,11 +1960,11 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Mobile Bottom Nav Bar (like StarTech) â”€â”€ */}
+      {/* Mobile Bottom Nav Bar - all 8 tabs scrollable */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#111827] border-t border-white/10 shadow-2xl">
-        <div className="flex items-center justify-around px-1 py-1.5">
-          {ADMIN_NAV.slice(0, 5).map(({ id, label, icon: Icon }) => {
-            const pendingOrders = id === 'orders' ? orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length : 0;
+        <div className="flex items-center overflow-x-auto px-1 py-1.5 gap-0.5" style={{scrollbarWidth:'none',msOverflowStyle:'none'}}>
+          {ADMIN_NAV.map(({ id, label, icon: Icon }) => {
+            const pendingOrders = id === 'orders' ? orders.filter(o => ['submitted','under_review'].includes(o.status)).length : 0;
             const unreadMsgs = id === 'messages' ? messages.filter(m => m.status === 'unread').length : 0;
             const pendingReviews = id === 'reviews' ? reviews.filter(r => !r.approved).length : 0;
             const badge = pendingOrders || unreadMsgs || pendingReviews;
@@ -1964,34 +1972,21 @@ export default function AdminPage() {
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all min-w-[48px] relative ${
-                  activeTab === id ? 'text-white' : 'text-white/40 hover:text-white/70'
-                }`}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all flex-shrink-0 relative ${activeTab === id ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
               >
-                {activeTab === id && (
-                  <span className="absolute inset-0 bg-white/10 rounded-xl" />
-                )}
+                {activeTab === id && <span className="absolute inset-0 bg-white/10 rounded-xl" />}
                 <div className="relative">
                   <Icon size={18} />
                   {badge > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">{badge > 9 ? '9+' : badge}</span>
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
+                      {badge > 9 ? '9+' : badge}
+                    </span>
                   )}
                 </div>
-                <span className="text-[9px] font-medium leading-none">{label}</span>
+                <span className="text-[9px] font-medium leading-none whitespace-nowrap">{label}</span>
               </button>
             );
           })}
-          {/* Settings button */}
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all min-w-[48px] relative ${
-              activeTab === 'settings' ? 'text-white' : 'text-white/40 hover:text-white/70'
-            }`}
-          >
-            {activeTab === 'settings' && <span className="absolute inset-0 bg-white/10 rounded-xl" />}
-            <Settings size={18} />
-            <span className="text-[9px] font-medium leading-none">Settings</span>
-          </button>
         </div>
       </div>
 
