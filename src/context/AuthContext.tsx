@@ -52,13 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (userDoc.exists()) {
             setUser({ ...userDoc.data(), uid: fbUser.uid } as User);
           } else {
-            // Determine role: admin email gets admin role
+            // Determine role and provider
             const role = fbUser.email === DEMO_ADMIN_EMAIL ? 'admin' : 'customer';
+            const provider = fbUser.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email';
             const newUser = {
               email: fbUser.email || '',
               displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
               photoURL: fbUser.photoURL || undefined,
               role,
+              provider,
               createdAt: new Date(),
             };
             await setDoc(doc(db, 'users', fbUser.uid), {

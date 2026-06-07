@@ -174,7 +174,9 @@ export default function AdminPage() {
 
   // Stats
   const [totalUsers, setTotalUsers] = useState(0);
+  const [googleUsers, setGoogleUsers] = useState(0);
   const [totalVisitors, setTotalVisitors] = useState(0);
+  const [visitorGraph, setVisitorGraph] = useState<{ date: string; visitors: number }[]>([]);
   const [chartData, setChartData] = useState<{ month: string; bookings: number; revenue: number }[]>([]);
 
   // Slider state
@@ -263,21 +265,45 @@ export default function AdminPage() {
 
   const loadStats = useCallback(async () => {
     try {
-      const { collection, getDocs } = await import('firebase/firestore');
+      const { collection, getDocs, doc, getDoc, query, where } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
-      // Count registered users
-      const usersSnap = await getDocs(collection(db, 'users'));
-      setTotalUsers(usersSnap.size);
-      // Visitor count: stored in siteData/visitors
-      const { doc, getDoc, setDoc, increment, updateDoc } = await import('firebase/firestore');
-      const visitorRef = doc(db, 'siteData', 'visitors');
-      const visitorSnap = await getDoc(visitorRef);
-      if (visitorSnap.exists()) {
-        setTotalVisitors(visitorSnap.data().count || 0);
-      } else {
-        await setDoc(visitorRef, { count: 0 });
-        setTotalVisitors(0);
-      }
+
+      // ── 1. Count ALL registered users ──────────────────────────
+      try {
+        const usersSnap = await getDocs(collection(db, 'users'));
+        setTotalUsers(usersSnap.size);
+        // Count Google sign-in users
+        const googleCount = usersSnap.docs.filter(d => {
+          const data = d.data();
+          return data.provider === 'google' || (data.photoURL && data.photoURL.includes('googleusercontent'));
+        }).length;
+        setGoogleUsers(googleCount);
+      } catch { /* permission denied — need firestore rules update */ }
+
+      // ── 2. Total visitor counter ────────────────────────────────
+      try {
+        const visitorRef = doc(db, 'siteData', 'visitors');
+        const visitorSnap = await getDoc(visitorRef);
+        setTotalVisitors(visitorSnap.exists() ? (visitorSnap.data().count || 0) : 0);
+      } catch { /* silent */ }
+
+      // ── 3. Last 14 days visitor graph data ──────────────────────
+      try {
+        const last14: { date: string; visitors: number }[] = [];
+        const today = new Date();
+        const fetchPromises = Array.from({ length: 14 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(d.getDate() - (13 - i));
+          const dateStr = d.toISOString().slice(0, 10);
+          return getDoc(doc(db, 'siteData', `visitors_${dateStr}`)).then(snap => ({
+            date: dateStr.slice(5), // MM-DD
+            visitors: snap.exists() ? (snap.data().count || 0) : 0,
+          }));
+        });
+        const results = await Promise.all(fetchPromises);
+        setVisitorGraph(results);
+      } catch { /* silent */ }
+
     } catch {
       // silent
     }
@@ -835,33 +861,34 @@ export default function AdminPage() {
                   <span className="text-[#9CA3AF] ml-2 text-xs">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 </p>
 
-                {/* Stats Grid - 6 cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">
+                {/* Stats Grid - 7 cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4 mb-6">
                   {[
                     { label: 'Total Orders', value: orders.length, color: 'bg-blue-50 text-blue-600', icon: ShoppingBag },
                     { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, color: 'bg-yellow-50 text-yellow-600', icon: Eye },
                     { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: 'bg-green-50 text-green-600', icon: CheckCircle },
                     { label: 'This Month', value: thisMonthBookings, color: 'bg-indigo-50 text-indigo-600', icon: TrendingUp },
-                    { label: 'Registered Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users },
+                    { label: 'All Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users },
+                    { label: 'Google Users', value: googleUsers, color: 'bg-purple-50 text-purple-600', icon: Users },
                     { label: 'Total Visitors', value: totalVisitors, color: 'bg-orange-50 text-orange-600', icon: Globe },
                   ].map(s => {
                     const Icon = s.icon;
                     return (
-                      <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4">
+                      <div key={s.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-shadow">
                         <div className={`w-9 h-9 rounded-lg ${s.color} flex items-center justify-center mb-3`}>
                           <Icon size={16} />
                         </div>
-                        <div className="font-heading text-2xl sm:text-3xl text-[#111827] leading-none">{s.value}</div>
+                        <div className="font-heading text-2xl sm:text-3xl text-[#111827] leading-none">{s.value.toLocaleString()}</div>
                         <div className="text-xs text-[#6B7280] mt-1.5 leading-tight">{s.label}</div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Charts + Quick Actions */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+                {/* Charts grid - 3 columns */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
 
-                  {/* Bookings chart */}
+                  {/* Booking Trend chart */}
                   <div className="lg:col-span-2 bg-white rounded-xl border border-[#E5E7EB] p-5">
                     <div className="flex items-center justify-between mb-4">
                       <div>
@@ -872,7 +899,7 @@ export default function AdminPage() {
                         <TrendingUp size={12} /> Live Data
                       </span>
                     </div>
-                    <ResponsiveContainer width="100%" height={200}>
+                    <ResponsiveContainer width="100%" height={180}>
                       <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
                         <defs>
                           <linearGradient id="bookGrad" x1="0" y1="0" x2="0" y2="1">
@@ -883,10 +910,7 @@ export default function AdminPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                         <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                        <Tooltip
-                          contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                          formatter={(v) => [v, 'Bookings']}
-                        />
+                        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} formatter={(v) => [v, 'Bookings']} />
                         <Area type="monotone" dataKey="bookings" stroke="#111827" strokeWidth={2.5} fill="url(#bookGrad)" dot={{ fill: '#111827', r: 3 }} activeDot={{ r: 5 }} />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -906,13 +930,52 @@ export default function AdminPage() {
                         <button key={a.label} onClick={() => setActiveTab(a.tab)}
                           className={`w-full text-left px-3 py-2.5 bg-[#F8F9FA] rounded-lg text-xs text-[#374151] hover:bg-[#F0F0F0] border-l-4 ${a.border} transition-colors flex items-center justify-between`}>
                           <span>{a.label}</span>
-                          {a.badge > 0 && (
-                            <span className="bg-[#111827] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{a.badge}</span>
-                          )}
+                          {a.badge > 0 && <span className="bg-[#111827] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{a.badge}</span>}
                         </button>
                       ))}
                     </div>
                   </div>
+                </div>
+
+                {/* Visitor Graph — last 14 days */}
+                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="font-semibold text-[#111827] text-sm">Website Visitors</h2>
+                      <p className="text-xs text-[#9CA3AF]">
+                        Last 14 days · Total: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span>
+                        {' '}· Google sign-ins: <span className="font-semibold text-[#374151]">{googleUsers}</span>
+                        {' '}· All users: <span className="font-semibold text-[#374151]">{totalUsers}</span>
+                      </p>
+                    </div>
+                    <span className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                      <Globe size={12} /> Real-time
+                    </span>
+                  </div>
+                  {visitorGraph.length === 0 ? (
+                    <div className="h-[140px] flex items-center justify-center text-[#9CA3AF] text-xs">
+                      Visitor data will appear as people visit the site
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={140}>
+                      <AreaChart data={visitorGraph} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+                        <defs>
+                          <linearGradient id="visitorGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip
+                          contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                          formatter={(v) => [v, 'Visitors']}
+                        />
+                        <Area type="monotone" dataKey="visitors" stroke="#3B82F6" strokeWidth={2} fill="url(#visitorGrad)" dot={{ fill: '#3B82F6', r: 3 }} activeDot={{ r: 5 }} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
                 {/* Order status breakdown bar chart */}

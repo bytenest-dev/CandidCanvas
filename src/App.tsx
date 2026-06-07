@@ -26,22 +26,35 @@ function ScrollToTop() {
   return null;
 }
 
-// Track visitor count in Firestore (once per session)
+// Track visitor count in Firestore (once per session, with daily breakdown for graph)
 function VisitorTracker() {
   useEffect(() => {
     const key = 'ccbd_visited';
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
+
     async function track() {
       try {
         const { doc, updateDoc, increment, setDoc, getDoc } = await import('firebase/firestore');
         const { db } = await import('./lib/firebase');
-        const ref = doc(db, 'siteData', 'visitors');
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          await updateDoc(ref, { count: increment(1) });
+
+        // 1. Increment total visitor counter
+        const totalRef = doc(db, 'siteData', 'visitors');
+        const totalSnap = await getDoc(totalRef);
+        if (totalSnap.exists()) {
+          await updateDoc(totalRef, { count: increment(1) });
         } else {
-          await setDoc(ref, { count: 1 });
+          await setDoc(totalRef, { count: 1 });
+        }
+
+        // 2. Increment today's daily counter for the visitor graph
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const dailyRef = doc(db, 'siteData', `visitors_${today}`);
+        const dailySnap = await getDoc(dailyRef);
+        if (dailySnap.exists()) {
+          await updateDoc(dailyRef, { count: increment(1), date: today });
+        } else {
+          await setDoc(dailyRef, { count: 1, date: today });
         }
       } catch { /* silent */ }
     }
