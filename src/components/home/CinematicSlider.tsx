@@ -94,7 +94,7 @@ export default function CinematicSlider() {
 
   if (siteLoading) {
     return (
-      <div className="w-full bg-[#111827] shimmer" style={{ height: 'clamp(420px, 72vh, 92vh)' }} />
+      <div className="w-full bg-[#111827] shimmer" style={{ height: 'clamp(500px, 85vh, 100vh)' }} />
     );
   }
 
@@ -106,7 +106,7 @@ export default function CinematicSlider() {
   return (
     <section
       className="relative w-full overflow-hidden bg-black"
-      style={{ height: 'clamp(420px, 72vh, 92vh)' }}
+      style={{ height: 'clamp(500px, 85vh, 100vh)' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={handleTouchStart}
@@ -133,7 +133,7 @@ export default function CinematicSlider() {
             <img
               src={slide.url}
               alt={slide.title || 'Photography by Candid Canvas BD'}
-              className="w-full h-full object-cover object-top"
+              className="w-full h-full object-cover object-center"
               draggable={false}
               loading="eager"
               decoding="async"
