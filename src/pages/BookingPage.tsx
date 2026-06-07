@@ -155,7 +155,7 @@ export default function BookingPage() {
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Book a Photography Session | Candid Canvas BD" />
         <meta property="og:description" content="Book your photography or cinematography session online. Wedding, events, corporate & reels. Confirmation within 24 hours." />
         <meta property="og:url" content="https://candid-canvas.netlify.app/book" />

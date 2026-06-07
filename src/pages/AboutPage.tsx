@@ -43,7 +43,7 @@ export default function AboutPage() {
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="About Candid Canvas BD | Our Story, Team &amp; Vision" />
         <meta property="og:description" content="500+ projects, 4+ years of excellence in Bangladesh photography. Meet the team, learn our story and discover what makes Candid Canvas BD different." />
         <meta property="og:url" content="https://candid-canvas.netlify.app/about" />

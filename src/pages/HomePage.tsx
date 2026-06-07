@@ -17,6 +17,7 @@ export default function HomePage() {
         <meta name="keywords" content="Candid Canvas, Candid Canvas BD, candid canvas photography, wedding photography bangladesh, wedding photographer bogura, candid photography bangladesh, cinematography bogura, event photography bangladesh, reels production bogura, corporate photography bangladesh, birthday photography" />
         <link rel="canonical" href={`${BASE_URL}/`} />
         <meta name="robots" content="index, follow" />
+        <meta name="application-name" content={SITE_NAME} />
 
         {/* ── Open Graph ── */}
         <meta property="og:type" content="website" />
@@ -50,7 +51,7 @@ export default function HomePage() {
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": `${BASE_URL}/` }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_URL}/` }
             ]
           }
         })}</script>
