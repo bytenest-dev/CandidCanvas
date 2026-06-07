@@ -12,34 +12,38 @@ interface ActiveSlide {
   subtitle?: string;
 }
 
+// Detect natural image dimensions so we can size the container correctly
+function useImageSize(url: string) {
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    if (!url) return;
+    const img = new window.Image();
+    img.onload = () => setSize({ w: img.naturalWidth, h: img.naturalHeight });
+    img.src = url;
+  }, [url]);
+  return size;
+}
+
 export default function CinematicSlider() {
   const { gallery, slider, siteLoading } = useSite();
 
   const activeSlides: ActiveSlide[] = (() => {
     const enabledSlider = slider.filter(s => s.enabled).sort((a, b) => a.order - b.order);
     if (enabledSlider.length > 0) {
-      return enabledSlider.map(s => ({
-        id: s.id,
-        url: s.url,
-        title: s.title,
-        subtitle: s.subtitle,
-      }));
+      return enabledSlider.map(s => ({ id: s.id, url: s.url, title: s.title, subtitle: s.subtitle }));
     }
     if (gallery.length > 0) {
-      return gallery.map(g => ({
-        id: g.id,
-        url: g.url,
-        title: g.title,
-        subtitle: g.category,
-      }));
+      return gallery.map(g => ({ id: g.id, url: g.url, title: g.title, subtitle: g.category }));
     }
     return [];
   })();
 
   const [current, setCurrent] = useState(0);
-  // paused is ONLY true when the user is actively hovering
   const [paused, setPaused] = useState(false);
   const total = activeSlides.length;
+
+  // Get natural size of current slide
+  const currentSize = useImageSize(activeSlides[current]?.url ?? '');
 
   // Reset index when slide list changes
   useEffect(() => { setCurrent(0); }, [total]);
@@ -50,13 +54,12 @@ export default function CinematicSlider() {
     const nextIdx = (current + 1) % total;
     const img = new window.Image();
     img.src = activeSlides[nextIdx].url;
-  }, [current, total]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [current, total]); // eslint-disable-line
 
   const goTo = useCallback((idx: number, t: number) => {
     setCurrent(((idx % t) + t) % t);
   }, []);
 
-  // ── Auto-advance using a ref-based interval so it never goes stale ──
   const currentRef = useRef(current);
   currentRef.current = current;
   const pausedRef = useRef(paused);
@@ -66,25 +69,15 @@ export default function CinematicSlider() {
 
   useEffect(() => {
     if (total <= 1) return;
-
     const id = setInterval(() => {
-      // Read live values via refs — no stale closure
-      if (!pausedRef.current) {
-        setCurrent(prev => (prev + 1) % totalRef.current);
-      }
+      if (!pausedRef.current) setCurrent(prev => (prev + 1) % totalRef.current);
     }, SLIDE_DURATION);
-
     return () => clearInterval(id);
-  }, [total]); // re-create only when total changes
+  }, [total]);
 
-  const next = useCallback(() => {
-    setCurrent(prev => (prev + 1) % totalRef.current);
-  }, []);
-  const prev = useCallback(() => {
-    setCurrent(prev => (prev - 1 + totalRef.current) % totalRef.current);
-  }, []);
+  const next = useCallback(() => setCurrent(prev => (prev + 1) % totalRef.current), []);
+  const prev = useCallback(() => setCurrent(prev => (prev - 1 + totalRef.current) % totalRef.current), []);
 
-  // Touch swipe
   const touchStart = useRef<number>(0);
   const handleTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -93,9 +86,7 @@ export default function CinematicSlider() {
   };
 
   if (siteLoading) {
-    return (
-      <div className="w-full bg-[#111827] shimmer" style={{ height: 'clamp(500px, 85vh, 100vh)' }} />
-    );
+    return <div className="w-full bg-[#0a0a0a] shimmer" style={{ minHeight: '60vh' }} />;
   }
 
   if (total === 0) return null;
@@ -103,10 +94,27 @@ export default function CinematicSlider() {
   const padNum = (n: number) => String(n + 1).padStart(2, '0');
   const slide = activeSlides[current];
 
+  // Compute the best display style:
+  // Portrait images (h > w): show full image with natural ratio, max 95vh
+  // Landscape images (w >= h): fill width, fixed cinematic height
+  const isPortrait = currentSize ? currentSize.h > currentSize.w : false;
+  const aspectStyle: React.CSSProperties = isPortrait
+    ? {
+        // Portrait: use natural aspect ratio so full image shows, cap at 95vh
+        aspectRatio: currentSize ? `${currentSize.w} / ${currentSize.h}` : '3/4',
+        maxHeight: '95vh',
+        width: '100%',
+      }
+    : {
+        // Landscape: full width, cinematic height
+        height: 'clamp(480px, 80vh, 90vh)',
+        width: '100%',
+      };
+
   return (
     <section
-      className="relative w-full overflow-hidden bg-black"
-      style={{ height: 'clamp(500px, 85vh, 100vh)' }}
+      className="relative w-full overflow-hidden bg-[#0a0a0a]"
+      style={aspectStyle}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={handleTouchStart}
@@ -126,14 +134,19 @@ export default function CinematicSlider() {
           {/* Ken Burns zoom */}
           <motion.div
             className="absolute inset-0"
-            initial={{ scale: 1.07 }}
+            initial={{ scale: 1.05 }}
             animate={{ scale: 1.0 }}
             transition={{ duration: 6, ease: 'linear' }}
           >
             <img
               src={slide.url}
               alt={slide.title || 'Photography by Candid Canvas BD'}
-              className="w-full h-full object-cover object-center"
+              className="w-full h-full"
+              style={{
+                objectFit: isPortrait ? 'contain' : 'cover',
+                objectPosition: 'center',
+                backgroundColor: '#0a0a0a',
+              }}
               draggable={false}
               loading="eager"
               decoding="async"
@@ -141,24 +154,24 @@ export default function CinematicSlider() {
           </motion.div>
 
           {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/25 pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-transparent pointer-events-none" />
 
           {/* Slide text */}
           {(slide.title || slide.subtitle) && (
-            <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-10 lg:px-16 pb-14 sm:pb-18">
+            <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-10 lg:px-16 pb-12 sm:pb-16">
               <motion.div
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               >
                 {slide.title && (
-                  <h2 className="font-heading text-2xl sm:text-4xl lg:text-5xl text-white mb-1.5 drop-shadow-lg leading-tight">
+                  <h2 className="font-heading text-3xl sm:text-5xl lg:text-6xl text-white mb-1.5 drop-shadow-lg leading-tight tracking-wide">
                     {slide.title}
                   </h2>
                 )}
                 {slide.subtitle && (
-                  <p className="text-white/65 text-xs sm:text-sm tracking-widest uppercase">
+                  <p className="text-white/60 text-xs sm:text-sm tracking-widest uppercase font-mono">
                     {slide.subtitle}
                   </p>
                 )}
@@ -174,16 +187,16 @@ export default function CinematicSlider() {
           <button
             onClick={prev}
             aria-label="Previous slide"
-            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all duration-200 hover:scale-105 active:scale-95"
+            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white transition-all duration-200 hover:scale-105 active:scale-95"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={20} />
           </button>
           <button
             onClick={next}
             aria-label="Next slide"
-            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all duration-200 hover:scale-105 active:scale-95"
+            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white transition-all duration-200 hover:scale-105 active:scale-95"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={20} />
           </button>
         </>
       )}
@@ -201,18 +214,10 @@ export default function CinematicSlider() {
       {total > 1 && total <= 20 && (
         <div className="absolute bottom-4 right-5 sm:right-7 z-20 flex items-center gap-1.5">
           {activeSlides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i, total)}
-              aria-label={`Go to slide ${i + 1}`}
-            >
-              <span
-                className={`block rounded-full transition-all duration-300 ${
-                  i === current
-                    ? 'w-5 h-1.5 bg-white'
-                    : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
-                }`}
-              />
+            <button key={i} onClick={() => goTo(i, total)} aria-label={`Go to slide ${i + 1}`}>
+              <span className={`block rounded-full transition-all duration-300 ${
+                i === current ? 'w-5 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+              }`} />
             </button>
           ))}
         </div>
