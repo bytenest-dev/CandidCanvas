@@ -132,7 +132,7 @@ export default function SignInPage() {
         <title>Sign In | Candid Canvas BD</title>
         <meta name="description" content="Sign in to your Candid Canvas BD account to manage bookings and messages." />
         <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://candidcanvas.pro.bd/sign-in" />
+        <link rel="canonical" href="https://www.candidcanvas.pro.bd/sign-in" />
       </Helmet>
       <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
       <motion.div

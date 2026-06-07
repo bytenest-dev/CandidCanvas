@@ -3,12 +3,10 @@ import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
-import { GALLERY_CATEGORIES } from '../lib/utils';
-import type { GalleryCategory } from '../types';
 
 export default function GalleryPage() {
-  const { gallery } = useSite();
-  const [category, setCategory] = useState<GalleryCategory>('all');
+  const { gallery, galleryCategories } = useSite();
+  const [category, setCategory] = useState<string>('all');
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const filtered = category === 'all'
@@ -29,35 +27,35 @@ export default function GalleryPage() {
         <title>Photography Portfolio | Candid Canvas BD Gallery | Bangladesh</title>
         <meta name="description" content="Browse Candid Canvas BD's photography portfolio — stunning wedding photography, birthday sessions, corporate events, festivals, outdoor portraits and cinematic sessions across Bangladesh. 500+ moments preserved." />
         <meta name="keywords" content="candid canvas bd gallery, candid canvas portfolio, wedding photography portfolio bangladesh, photography gallery bogura, event photography portfolio bangladesh, candid photos bangladesh, cinematography portfolio bangladesh, best photography portfolio bangladesh, candid canvas bd photos, wedding photos bangladesh" />
-        <link rel="canonical" href="https://candidcanvas.pro.bd/gallery" />
+        <link rel="canonical" href="https://www.candidcanvas.pro.bd/gallery" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Candid Canvas BD" />
         <meta property="og:title" content="Photography Portfolio &amp; Gallery | Candid Canvas BD Bangladesh" />
         <meta property="og:description" content="Browse Candid Canvas BD's stunning photography portfolio — weddings, events, outdoor & cinematic sessions across Bangladesh. 500+ beautiful moments." />
-        <meta property="og:url" content="https://candidcanvas.pro.bd/gallery" />
-        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta property="og:url" content="https://www.candidcanvas.pro.bd/gallery" />
+        <meta property="og:image" content="https://www.candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Candid Canvas BD Photography Gallery Bangladesh" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Candid Canvas BD Photography Gallery | Bangladesh" />
         <meta name="twitter:description" content="500+ stunning moments — wedding, events, outdoor & cinematic photography by Candid Canvas BD, Bangladesh." />
-        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta name="twitter:image" content="https://www.candidcanvas.pro.bd/logo.png" />
 
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "CollectionPage",
           "name": "Candid Canvas BD Photography Portfolio & Gallery",
           "description": "Wedding, event, and cinematic photography portfolio by Candid Canvas BD, Bangladesh.",
-          "url": "https://candidcanvas.pro.bd/gallery",
-          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
-          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
+          "url": "https://www.candidcanvas.pro.bd/gallery",
+          "isPartOf": { "@id": "https://www.candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://www.candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
-              { "@type": "ListItem", "position": 2, "name": "Gallery", "item": "https://candidcanvas.pro.bd/gallery" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Gallery", "item": "https://www.candidcanvas.pro.bd/gallery" }
             ]
           }
         })}</script>
@@ -79,17 +77,17 @@ export default function GalleryPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
         {/* Category Filter */}
         <div className="flex flex-wrap gap-2 mb-12">
-          {GALLERY_CATEGORIES.map((cat) => (
+          {['all', ...galleryCategories].map((cat) => (
             <button
-              key={cat.value}
-              onClick={() => setCategory(cat.value as GalleryCategory)}
+              key={cat}
+              onClick={() => setCategory(cat)}
               className={`px-4 py-2 text-xs tracking-widest uppercase font-mono rounded-sm transition-all duration-200 ${
-                category === cat.value
+                category === cat
                   ? 'bg-[#111827] text-white'
                   : 'border border-[#E5E7EB] text-[#6B7280] hover:border-[#374151] hover:text-[#111827]'
               }`}
             >
-              {cat.label}
+              {cat === 'all' ? 'All' : cat}
             </button>
           ))}
         </div>

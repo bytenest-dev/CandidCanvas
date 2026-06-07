@@ -106,7 +106,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             setUser({ uid: fbUser.uid, ...newUser } as User);
           }
-        } catch {
+        } catch (err: unknown) {
+          const code = (err as { code?: string })?.code;
+          // If permission denied, we can't verify suspension — sign out for safety
+          // Only fall back to local data for non-permission errors
+          if (code === 'permission-denied') {
+            await signOut(auth);
+            setUser(null);
+            setLoading(false);
+            return;
+          }
           setSuspendedInfo(null);
           const isAdminEmail = ADMIN_EMAILS.includes(fbUser.email || '');
           setUser({

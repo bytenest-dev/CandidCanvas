@@ -101,7 +101,7 @@ function AdminSidebar({
             onClick={() => { setActiveTab(id); setSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
               activeTab === id
-                ? 'bg-white/15 text-white font-medium'
+                ? 'bg-gradient-to-r from-white/20 to-white/10 text-white font-medium shadow-sm'
                 : 'text-white/50 hover:bg-white/10 hover:text-white'
             }`}
           >
@@ -295,6 +295,10 @@ export default function AdminPage() {
         dateKeys.push(d.toISOString().slice(0, 10));
       }
       const graphData: Record<string, number> = {};
+      dateKeys.forEach(k => { graphData[k] = 0; });
+      // Set initial empty graph
+      setVisitorGraph(dateKeys.map(k => ({ date: k.slice(5), visitors: 0 })));
+      // Then subscribe to real-time updates for each day
       dateKeys.forEach(dateStr => {
         onSnapshot(doc(db, 'siteData', `visitors_${dateStr}`), snap => {
           graphData[dateStr] = snap.exists() ? (snap.data().count || 0) : 0;
@@ -837,7 +841,7 @@ export default function AdminPage() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
           {/* Top Bar */}
-          <header className="flex-shrink-0 bg-white border-b border-[#E5E7EB] px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+          <header className="flex-shrink-0 bg-white border-b border-[#E5E7EB] px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-3 min-w-0">
               <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-[#374151] hover:bg-[#F8F9FA] rounded-lg flex-shrink-0">
                 <Menu size={20} />
@@ -882,7 +886,7 @@ export default function AdminPage() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6 bg-[#F8F9FA]">
 
             {/* ── OVERVIEW ── */}
             {activeTab === 'overview' && (
@@ -906,7 +910,7 @@ export default function AdminPage() {
                     return (
                       <div
                         key={s.label}
-                        className={`bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-shadow ${s.onClick ? 'cursor-pointer' : ''}`}
+                        className={`bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-lg transition-all duration-200 ${s.onClick ? 'cursor-pointer active:scale-95' : ''}`}
                         onClick={s.onClick}
                       >
                         <div className={`w-9 h-9 rounded-lg ${s.color} flex items-center justify-center mb-3`}>
@@ -923,7 +927,7 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
 
                   {/* Booking Trend chart */}
-                  <div className="lg:col-span-2 bg-white rounded-xl border border-[#E5E7EB] p-5">
+                  <div className="lg:col-span-2 bg-white rounded-xl border border-[#E5E7EB] p-5 border-t-2 border-t-[#111827]">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h2 className="font-semibold text-[#111827] text-sm">Booking Trend</h2>
@@ -951,7 +955,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* Order Status Pie Chart */}
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 border-t-2 border-t-purple-400">
                     <h2 className="font-semibold text-[#111827] text-sm mb-1">Order Status</h2>
                     <p className="text-xs text-[#9CA3AF] mb-3">Distribution by status</p>
                     {orders.length === 0 ? (
@@ -992,7 +996,7 @@ export default function AdminPage() {
 
                 {/* Visitor Graph — last 14 days */}
                 {/* Website Visitors - Real-time with monthly comparison */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5">
+                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5 border-t-2 border-t-blue-400">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                       <h2 className="font-semibold text-[#111827] text-sm">Website Visitors</h2>

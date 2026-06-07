@@ -90,40 +90,40 @@ export default function ContactPage() {
         <title>Contact Candid Canvas BD | Book Photography Session Bangladesh</title>
         <meta name="description" content="Contact Candid Canvas BD — Bangladesh's best photography studio. Call, WhatsApp or email to book wedding photography, cinematography, reels &amp; events in Bogura and across Bangladesh. Fast response guaranteed." />
         <meta name="keywords" content="contact candid canvas bd, contact candid canvas, candid canvas bd phone number, candid canvas bd whatsapp, book photography session bogura, hire candid canvas bd, photographer contact bangladesh, wedding photographer contact bogura, candid canvas bd email, photography booking bogura bangladesh" />
-        <link rel="canonical" href="https://candidcanvas.pro.bd/contact" />
+        <link rel="canonical" href="https://www.candidcanvas.pro.bd/contact" />
         <meta name="robots" content="index, follow" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Candid Canvas BD" />
         <meta property="og:title" content="Contact Candid Canvas BD | Book Photography Bangladesh" />
         <meta property="og:description" content="Contact Candid Canvas BD — Book wedding photography, cinematography &amp; reels in Bangladesh. WhatsApp, call or email. Fast response." />
-        <meta property="og:url" content="https://candidcanvas.pro.bd/contact" />
-        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta property="og:url" content="https://www.candidcanvas.pro.bd/contact" />
+        <meta property="og:image" content="https://www.candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Contact Candid Canvas BD Bangladesh" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Contact Candid Canvas BD | Photography Bangladesh" />
         <meta name="twitter:description" content="Book Candid Canvas BD for wedding photography, cinematography &amp; events. Call, WhatsApp or email. Serving all Bangladesh." />
-        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta name="twitter:image" content="https://www.candidcanvas.pro.bd/logo.png" />
 
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ContactPage",
           "name": "Contact Candid Canvas BD — Photography Studio Bangladesh",
           "description": "Contact Candid Canvas BD for photography and cinematography bookings in Bangladesh.",
-          "url": "https://candidcanvas.pro.bd/contact",
-          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
-          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
+          "url": "https://www.candidcanvas.pro.bd/contact",
+          "isPartOf": { "@id": "https://www.candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://www.candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
-              { "@type": "ListItem", "position": 2, "name": "Contact", "item": "https://candidcanvas.pro.bd/contact" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Contact", "item": "https://www.candidcanvas.pro.bd/contact" }
             ]
           },
           "mainEntity": {
             "@type": "LocalBusiness",
-            "@id": "https://candidcanvas.pro.bd/#business",
+            "@id": "https://www.candidcanvas.pro.bd/#business",
             "contactPoint": {
               "@type": "ContactPoint",
               "telephone": "+8801849244610",

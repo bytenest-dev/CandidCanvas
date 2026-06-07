@@ -3,7 +3,7 @@
  * Centralised constants so every page uses the same base URL and OG image.
  */
 
-export const SITE_URL = 'https://candidcanvas.pro.bd';
+export const SITE_URL = 'https://www.candidcanvas.pro.bd';
 export const SITE_NAME = 'Candid Canvas BD';
 export const SITE_TAGLINE = 'Preserving Special Moments';
 export const OG_IMAGE = `${SITE_URL}/logo.png`;

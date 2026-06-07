@@ -150,35 +150,35 @@ export default function BookingPage() {
         <title>Book Candid Canvas BD | Online Photography Booking Bangladesh</title>
         <meta name="description" content="Book Candid Canvas BD online — Bangladesh's best photography studio. Wedding photography, cinematography, reels, corporate &amp; birthday sessions. Easy booking, 24-hour confirmation. Serving Bogura, Dhaka &amp; all of Bangladesh." />
         <meta name="keywords" content="book candid canvas bd, book photographer bangladesh, book wedding photographer bogura, hire candid canvas, photography booking online bangladesh, hire photographer bogura, book cinematographer bangladesh, wedding photographer booking bangladesh, photography session booking, candid canvas bd booking" />
-        <link rel="canonical" href="https://candidcanvas.pro.bd/book" />
+        <link rel="canonical" href="https://www.candidcanvas.pro.bd/book" />
         <meta name="robots" content="index, follow" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Candid Canvas BD" />
         <meta property="og:title" content="Book Candid Canvas BD | Best Photography Booking Bangladesh" />
         <meta property="og:description" content="Book Candid Canvas BD — wedding photography, cinematography, reels &amp; events online. 24-hour confirmation. Best photographer in Bangladesh." />
-        <meta property="og:url" content="https://candidcanvas.pro.bd/book" />
-        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta property="og:url" content="https://www.candidcanvas.pro.bd/book" />
+        <meta property="og:image" content="https://www.candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Book Candid Canvas BD Photography Session" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Book Candid Canvas BD | Best Photography Bangladesh" />
         <meta name="twitter:description" content="Book Bangladesh's best photography studio — Candid Canvas BD. Wedding, events, reels &amp; corporate. 24-hr confirmation." />
-        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta name="twitter:image" content="https://www.candidcanvas.pro.bd/logo.png" />
 
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebPage",
           "name": "Book Candid Canvas BD — Photography Session Booking",
           "description": "Online booking for Candid Canvas BD photography and cinematography sessions in Bangladesh.",
-          "url": "https://candidcanvas.pro.bd/book",
-          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
-          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
+          "url": "https://www.candidcanvas.pro.bd/book",
+          "isPartOf": { "@id": "https://www.candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://www.candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
-              { "@type": "ListItem", "position": 2, "name": "Book a Session", "item": "https://candidcanvas.pro.bd/book" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Book a Session", "item": "https://www.candidcanvas.pro.bd/book" }
             ]
           }
         })}</script>

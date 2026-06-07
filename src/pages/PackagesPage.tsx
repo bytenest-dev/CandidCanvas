@@ -22,35 +22,35 @@ export default function PackagesPage() {
         <title>Photography Packages &amp; Pricing | Candid Canvas BD Bangladesh</title>
         <meta name="description" content="Candid Canvas BD photography packages — transparent pricing for wedding photography, cinematography, reels, corporate events &amp; birthday sessions in Bangladesh. No hidden fees. Best rates in Bogura. Book online." />
         <meta name="keywords" content="candid canvas bd packages, candid canvas bd pricing, photography packages bangladesh, wedding photography price bangladesh, wedding photography cost bogura, cinematography packages bangladesh, reels production price, event photography packages bangladesh, photography pricing bogura, best photography packages bangladesh, affordable photographer bangladesh" />
-        <link rel="canonical" href="https://candidcanvas.pro.bd/packages" />
+        <link rel="canonical" href="https://www.candidcanvas.pro.bd/packages" />
         <meta name="robots" content="index, follow" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Candid Canvas BD" />
         <meta property="og:title" content="Photography Packages &amp; Pricing | Candid Canvas BD Bangladesh" />
         <meta property="og:description" content="Candid Canvas BD — Transparent photography packages for wedding, events, reels &amp; corporate in Bangladesh. Competitive pricing, no hidden fees." />
-        <meta property="og:url" content="https://candidcanvas.pro.bd/packages" />
-        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta property="og:url" content="https://www.candidcanvas.pro.bd/packages" />
+        <meta property="og:image" content="https://www.candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Candid Canvas BD Photography Packages Bangladesh" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Candid Canvas BD Photography Packages &amp; Pricing" />
         <meta name="twitter:description" content="Best photography packages in Bangladesh — wedding, events, reels &amp; corporate by Candid Canvas BD. Book now." />
-        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta name="twitter:image" content="https://www.candidcanvas.pro.bd/logo.png" />
 
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemPage",
           "name": "Candid Canvas BD Photography Packages & Pricing",
           "description": "Photography and cinematography service packages with transparent pricing by Candid Canvas BD, Bangladesh.",
-          "url": "https://candidcanvas.pro.bd/packages",
-          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
-          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
+          "url": "https://www.candidcanvas.pro.bd/packages",
+          "isPartOf": { "@id": "https://www.candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://www.candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
-              { "@type": "ListItem", "position": 2, "name": "Packages", "item": "https://candidcanvas.pro.bd/packages" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Packages", "item": "https://www.candidcanvas.pro.bd/packages" }
             ]
           }
         })}</script>

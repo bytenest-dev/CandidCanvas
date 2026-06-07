@@ -4,7 +4,7 @@ import CinematicSlider from '../components/home/CinematicSlider';
 import Testimonials from '../components/home/Testimonials';
 import CTABanner from '../components/home/CTABanner';
 
-const BASE = 'https://candidcanvas.pro.bd';
+const BASE = 'https://www.candidcanvas.pro.bd';
 
 export default function HomePage() {
   return (
