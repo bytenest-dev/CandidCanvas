@@ -44,7 +44,7 @@ const ADMIN_NAV = [
 const GALLERY_CATS = ['Wedding', 'Birthday', 'Corporate', 'Festival', 'Outdoor', 'Cinematic', 'General'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Message interface � defined outside component to prevent re-declaration on every render
+// Message interface — defined outside component to prevent re-declaration on every render
 interface Message {
   id: string;
   name: string;
@@ -990,7 +990,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Visitor Graph � last 14 days */}
+                {/* Visitor Graph — last 14 days */}
                 {/* Website Visitors - Real-time with monthly comparison */}
                 <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -1229,7 +1229,7 @@ export default function AdminPage() {
                                     try {
                                       const { collection, query, where, getDocs, deleteDoc, doc } = await import('firebase/firestore');
                                       const { db } = await import('../lib/firebase');
-                                      // Orders are stored with a custom 'id' field � query by it
+                                      // Orders are stored with a custom 'id' field — query by it
                                       const q = query(collection(db, 'bookings'), where('id', '==', o.id));
                                       const snap = await getDocs(q);
                                       if (!snap.empty) {

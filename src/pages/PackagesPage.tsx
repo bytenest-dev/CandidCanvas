@@ -5,11 +5,11 @@ import { Check, Star, ArrowRight, Package } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
 
 function formatBDT(price: string) {
-  // If already formatted (e.g. "?35,000"), return as-is
-  if (price.startsWith('?')) return price;
+  // If already formatted (e.g. "৳35,000"), return as-is
+  if (price.startsWith('৳')) return price;
   const n = parseInt(price.replace(/\D/g, ''));
   if (isNaN(n)) return price;
-  return `?${n.toLocaleString('en-BD')}`;
+  return `৳${n.toLocaleString('en-BD')}`;
 }
 
 export default function PackagesPage() {

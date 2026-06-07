@@ -34,7 +34,7 @@ export default function BookingPage() {
   const { packages } = useSite();
   const activePackages = packages.filter(p => p.active);
 
-  // Auth guard � must be logged in to book
+  // Auth guard — must be logged in to book
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-6">
@@ -160,7 +160,7 @@ export default function BookingPage() {
         <meta property="og:description" content="Book your photography or cinematography session online. Wedding, events, corporate & reels. Confirmation within 24 hours." />
         <meta property="og:url" content="https://candidcanvas.pro.bd/book" />
         <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
-        <meta property="og:image:alt" content="Book a Photography Session � Candid Canvas BD" />
+        <meta property="og:image:alt" content="Book a Photography Session — Candid Canvas BD" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -257,17 +257,17 @@ export default function BookingPage() {
                       {activePackages.length > 0 ? (
                         activePackages.map(pkg => (
                           <option key={pkg.id} value={pkg.name}>
-                            {pkg.name} � {pkg.price}{pkg.popular ? ' ? Popular' : ''}
+                            {pkg.name} — ৳{pkg.price}{pkg.popular ? ' ⭐ Popular' : ''}
                           </option>
                         ))
                       ) : (
                         <>
-                          <option value="essentials">Essentials � ?15,000</option>
-                          <option value="signature">Signature � ?35,000 ? Popular</option>
-                          <option value="prestige">Prestige � ?65,000</option>
-                          <option value="reels">Reels Only � ?8,000</option>
-                          <option value="corporate">Corporate Event � ?25,000</option>
-                          <option value="birthday">Birthday Special � ?12,000</option>
+                          <option value="essentials">Essentials — ৳15,000</option>
+                          <option value="signature">Signature — ৳35,000 ⭐ Popular</option>
+                          <option value="prestige">Prestige — ৳65,000</option>
+                          <option value="reels">Reels Only — ৳8,000</option>
+                          <option value="corporate">Corporate Event — ৳25,000</option>
+                          <option value="birthday">Birthday Special — ৳12,000</option>
                           <option value="custom">Custom Package</option>
                         </>
                       )}

@@ -36,7 +36,7 @@ export default function AboutPage() {
     <>
       <Helmet>
         <title>About Candid Canvas BD | Photography Studio | Bogura, Bangladesh</title>
-        <meta name="description" content="Meet the team behind Candid Canvas BD � 500+ projects, 4+ years of premium photography &amp; cinematography in Bangladesh. Our story, philosophy and creative vision." />
+        <meta name="description" content="Meet the team behind Candid Canvas BD — 500+ projects, 4+ years of premium photography &amp; cinematography in Bangladesh. Our story, philosophy and creative vision." />
         <meta name="keywords" content="about candid canvas bd, photography studio bangladesh, wedding photographer bogura team, professional photographer bangladesh, photography studio story" />
         <link rel="canonical" href="https://candidcanvas.pro.bd/about" />
         <meta name="robots" content="index, follow" />
@@ -61,7 +61,7 @@ export default function AboutPage() {
           "@context": "https://schema.org",
           "@type": "AboutPage",
           "name": "About Candid Canvas BD",
-          "description": "Learn about Candid Canvas BD � our story, philosophy, team, and vision for premium photography in Bangladesh.",
+          "description": "Learn about Candid Canvas BD — our story, philosophy, team, and vision for premium photography in Bangladesh.",
           "url": "https://candidcanvas.pro.bd/about",
           "breadcrumb": {
             "@type": "BreadcrumbList",
@@ -97,9 +97,9 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {[
-              { icon: Target, title: 'Mission', text: 'To be Bangladesh\'s most trusted photography brand � known not for the cameras we use, but for the stories we tell and the emotions we preserve.' },
+              { icon: Target, title: 'Mission', text: 'To be Bangladesh\'s most trusted photography brand — known not for the cameras we use, but for the stories we tell and the emotions we preserve.' },
               { icon: Eye, title: 'Vision', text: 'A world where every significant human moment is captured with artistry, delivered with care, and remembered forever.' },
-              { icon: Heart, title: 'Philosophy', text: 'Photography is not about taking pictures. It\'s about seeing the world through the lens of emotion � and honoring the beauty in every ordinary moment.' },
+              { icon: Heart, title: 'Philosophy', text: 'Photography is not about taking pictures. It\'s about seeing the world through the lens of emotion — and honoring the beauty in every ordinary moment.' },
             ].map((item, i) => {
               const Icon = item.icon;
               return (
@@ -194,7 +194,7 @@ export default function AboutPage() {
                 className="text-center"
               >
                 <div className="relative w-32 h-32 mx-auto mb-5 rounded-full overflow-hidden">
-                  <img src={member.image} alt={`${member.name} � ${member.role} at Candid Canvas BD`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <img src={member.image} alt={`${member.name} — ${member.role} at Candid Canvas BD`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 </div>
                 <h3 className="font-heading text-xl text-[#111827]">{member.name}</h3>
                 <p className="text-xs text-[#6B7280] tracking-wide mt-1 mb-3">{member.role}</p>
@@ -215,7 +215,7 @@ export default function AboutPage() {
             {[
               '500+ Projects Delivered',
               '98% Client Retention',
-              'Top Photography Studio � Dhaka 2023',
+              'Top Photography Studio — Dhaka 2023',
               '4+ Years of Excellence',
               'Certified Professional Photographers',
             ].map((ach) => (
