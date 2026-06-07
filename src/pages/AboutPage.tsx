@@ -35,34 +35,33 @@ export default function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>About Candid Canvas BD | Photography Studio | Bogura, Bangladesh</title>
-        <meta name="description" content="Meet the team behind Candid Canvas BD — 500+ projects, 4+ years of premium photography &amp; cinematography in Bangladesh. Our story, philosophy and creative vision." />
-        <meta name="keywords" content="about candid canvas bd, photography studio bangladesh, wedding photographer bogura team, professional photographer bangladesh, photography studio story" />
+        <title>About Candid Canvas BD | Best Photography Studio Story | Bogura Bangladesh</title>
+        <meta name="description" content="Meet the team behind Candid Canvas BD — Bangladesh's premier photography studio. 500+ projects, 4+ years of wedding photography &amp; cinematography excellence. Our story, philosophy and creative vision in Bogura, Bangladesh." />
+        <meta name="keywords" content="about candid canvas bd, about candid canvas, candid canvas bd team, photography studio bangladesh story, best photographer bangladesh, wedding photographer bogura team, professional photographer bangladesh, photography studio bogura, candid canvas history, candid canvas founders" />
         <link rel="canonical" href="https://candidcanvas.pro.bd/about" />
         <meta name="robots" content="index, follow" />
 
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas" />
+        <meta property="og:site_name" content="Candid Canvas BD" />
         <meta property="og:title" content="About Candid Canvas BD | Our Story, Team &amp; Vision" />
-        <meta property="og:description" content="500+ projects, 4+ years of excellence in Bangladesh photography. Meet the team, learn our story and discover what makes Candid Canvas BD different." />
+        <meta property="og:description" content="500+ projects, 4+ years of excellence. Meet the team behind Bangladesh's best photography studio — Candid Canvas BD, Bogura." />
         <meta property="og:url" content="https://candidcanvas.pro.bd/about" />
         <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Candid Canvas BD Photography Team" />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="About Candid Canvas BD | Our Story &amp; Team" />
-        <meta name="twitter:description" content="500+ projects. 4+ years. Meet the team behind Bangladesh's premium photography studio." />
+        <meta name="twitter:description" content="500+ projects. 4+ years. Meet the team behind Bangladesh's best photography studio — Candid Canvas BD." />
         <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
-        {/* Breadcrumb + AboutPage Schema */}
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "AboutPage",
-          "name": "About Candid Canvas BD",
+          "name": "About Candid Canvas BD — Photography Studio Bangladesh",
           "description": "Learn about Candid Canvas BD — our story, philosophy, team, and vision for premium photography in Bangladesh.",
           "url": "https://candidcanvas.pro.bd/about",
+          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [

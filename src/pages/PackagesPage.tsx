@@ -19,34 +19,33 @@ export default function PackagesPage() {
   return (
     <>
       <Helmet>
-        <title>Candid Canvas BD | Photography Packages &amp; Pricing | Bangladesh</title>
-        <meta name="description" content="Transparent photography &amp; cinematography packages in Bangladesh. Wedding, reels, events &amp; corporate packages. Competitive pricing, no hidden fees. Book online." />
-        <meta name="keywords" content="photography packages bangladesh, wedding photography pricing dhaka, cinematography packages, event photography cost bangladesh, photography packages price" />
+        <title>Photography Packages &amp; Pricing | Candid Canvas BD Bangladesh</title>
+        <meta name="description" content="Candid Canvas BD photography packages — transparent pricing for wedding photography, cinematography, reels, corporate events &amp; birthday sessions in Bangladesh. No hidden fees. Best rates in Bogura. Book online." />
+        <meta name="keywords" content="candid canvas bd packages, candid canvas bd pricing, photography packages bangladesh, wedding photography price bangladesh, wedding photography cost bogura, cinematography packages bangladesh, reels production price, event photography packages bangladesh, photography pricing bogura, best photography packages bangladesh, affordable photographer bangladesh" />
         <link rel="canonical" href="https://candidcanvas.pro.bd/packages" />
         <meta name="robots" content="index, follow" />
 
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas" />
-        <meta property="og:title" content="Photography Packages &amp; Pricing | Candid Canvas BD" />
-        <meta property="og:description" content="Transparent photography & cinematography packages with competitive pricing in Bangladesh. Find the perfect package for your wedding, event, or corporate session." />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="Photography Packages &amp; Pricing | Candid Canvas BD Bangladesh" />
+        <meta property="og:description" content="Candid Canvas BD — Transparent photography packages for wedding, events, reels &amp; corporate in Bangladesh. Competitive pricing, no hidden fees." />
         <meta property="og:url" content="https://candidcanvas.pro.bd/packages" />
         <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
-        <meta property="og:image:alt" content="Candid Canvas BD Photography Packages" />
+        <meta property="og:image:alt" content="Candid Canvas BD Photography Packages Bangladesh" />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Photography Packages &amp; Pricing | Candid Canvas BD" />
-        <meta name="twitter:description" content="Find the perfect photography package for your wedding, event or corporate session. Transparent pricing in Bangladesh." />
+        <meta name="twitter:title" content="Candid Canvas BD Photography Packages &amp; Pricing" />
+        <meta name="twitter:description" content="Best photography packages in Bangladesh — wedding, events, reels &amp; corporate by Candid Canvas BD. Book now." />
         <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
-        {/* Breadcrumb + ItemList Schema */}
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ItemPage",
-          "name": "Photography Packages & Pricing",
-          "description": "Photography and cinematography service packages with pricing by Candid Canvas BD.",
+          "name": "Candid Canvas BD Photography Packages & Pricing",
+          "description": "Photography and cinematography service packages with transparent pricing by Candid Canvas BD, Bangladesh.",
           "url": "https://candidcanvas.pro.bd/packages",
+          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [

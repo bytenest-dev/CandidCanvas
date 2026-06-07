@@ -87,34 +87,33 @@ export default function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact Candid Canvas BD | Book a Session | Bogura, Bangladesh</title>
-        <meta name="description" content="Get in touch with Candid Canvas BD. Call, WhatsApp, or email us to book a wedding, event, corporate or reels photography session in Bangladesh." />
-        <meta name="keywords" content="contact photographer bangladesh, book photography session bogura, hire photographer bogura bangladesh, candid canvas bd contact, wedding photographer booking" />
+        <title>Contact Candid Canvas BD | Book Photography Session Bangladesh</title>
+        <meta name="description" content="Contact Candid Canvas BD — Bangladesh's best photography studio. Call, WhatsApp or email to book wedding photography, cinematography, reels &amp; events in Bogura and across Bangladesh. Fast response guaranteed." />
+        <meta name="keywords" content="contact candid canvas bd, contact candid canvas, candid canvas bd phone number, candid canvas bd whatsapp, book photography session bogura, hire candid canvas bd, photographer contact bangladesh, wedding photographer contact bogura, candid canvas bd email, photography booking bogura bangladesh" />
         <link rel="canonical" href="https://candidcanvas.pro.bd/contact" />
         <meta name="robots" content="index, follow" />
 
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas" />
-        <meta property="og:title" content="Contact Candid Canvas BD | Book a Photography Session" />
-        <meta property="og:description" content="Ready to book? Contact Candid Canvas BD via phone, WhatsApp or our online form. We cover weddings, events, corporate and reels in Bangladesh." />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="Contact Candid Canvas BD | Book Photography Bangladesh" />
+        <meta property="og:description" content="Contact Candid Canvas BD — Book wedding photography, cinematography &amp; reels in Bangladesh. WhatsApp, call or email. Fast response." />
         <meta property="og:url" content="https://candidcanvas.pro.bd/contact" />
         <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
-        <meta property="og:image:alt" content="Contact Candid Canvas BD Photography" />
+        <meta property="og:image:alt" content="Contact Candid Canvas BD Bangladesh" />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Contact Candid Canvas BD" />
-        <meta name="twitter:description" content="Book a photography or cinematography session in Bangladesh. Wedding, events, corporate & reels. Contact us today." />
+        <meta name="twitter:title" content="Contact Candid Canvas BD | Photography Bangladesh" />
+        <meta name="twitter:description" content="Book Candid Canvas BD for wedding photography, cinematography &amp; events. Call, WhatsApp or email. Serving all Bangladesh." />
         <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
-        {/* Breadcrumb + ContactPage Schema */}
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "ContactPage",
-          "name": "Contact Candid Canvas BD",
-          "description": "Contact page for Candid Canvas BD photography and cinematography services.",
+          "name": "Contact Candid Canvas BD — Photography Studio Bangladesh",
+          "description": "Contact Candid Canvas BD for photography and cinematography bookings in Bangladesh.",
           "url": "https://candidcanvas.pro.bd/contact",
+          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [

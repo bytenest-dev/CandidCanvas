@@ -26,35 +26,33 @@ export default function GalleryPage() {
   return (
     <>
       <Helmet>
-        <title>Candid Canvas BD | Photography Portfolio &amp; Gallery | Bangladesh</title>
-        <meta name="description" content="Browse our photography portfolio — weddings, birthdays, corporate events, festivals, outdoor and cinematic sessions in Bangladesh. 500+ stunning moments captured." />
-        <meta name="keywords" content="wedding photography portfolio bangladesh, photography gallery dhaka, event photography portfolio, candid photos bangladesh, cinematography portfolio" />
+        <title>Photography Portfolio | Candid Canvas BD Gallery | Bangladesh</title>
+        <meta name="description" content="Browse Candid Canvas BD's photography portfolio — stunning wedding photography, birthday sessions, corporate events, festivals, outdoor portraits and cinematic sessions across Bangladesh. 500+ moments preserved." />
+        <meta name="keywords" content="candid canvas bd gallery, candid canvas portfolio, wedding photography portfolio bangladesh, photography gallery bogura, event photography portfolio bangladesh, candid photos bangladesh, cinematography portfolio bangladesh, best photography portfolio bangladesh, candid canvas bd photos, wedding photos bangladesh" />
         <link rel="canonical" href="https://candidcanvas.pro.bd/gallery" />
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
 
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas" />
-        <meta property="og:title" content="Photography Portfolio &amp; Gallery | Candid Canvas BD" />
-        <meta property="og:description" content="Browse our stunning photography portfolio — weddings, birthdays, events, outdoor and cinematic sessions across Bangladesh." />
+        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:title" content="Photography Portfolio &amp; Gallery | Candid Canvas BD Bangladesh" />
+        <meta property="og:description" content="Browse Candid Canvas BD's stunning photography portfolio — weddings, events, outdoor & cinematic sessions across Bangladesh. 500+ beautiful moments." />
         <meta property="og:url" content="https://candidcanvas.pro.bd/gallery" />
         <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
-        <meta property="og:image:alt" content="Candid Canvas BD Photography Gallery" />
+        <meta property="og:image:alt" content="Candid Canvas BD Photography Gallery Bangladesh" />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Photography Gallery | Candid Canvas BD" />
-        <meta name="twitter:description" content="500+ stunning moments captured — weddings, events, outdoor & cinematic photography in Bangladesh." />
+        <meta name="twitter:title" content="Candid Canvas BD Photography Gallery | Bangladesh" />
+        <meta name="twitter:description" content="500+ stunning moments — wedding, events, outdoor & cinematic photography by Candid Canvas BD, Bangladesh." />
         <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
-        {/* Breadcrumb Schema */}
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Photography Portfolio & Gallery",
-          "description": "Wedding, event, and cinematic photography portfolio by Candid Canvas BD.",
+          "name": "Candid Canvas BD Photography Portfolio & Gallery",
+          "description": "Wedding, event, and cinematic photography portfolio by Candid Canvas BD, Bangladesh.",
           "url": "https://candidcanvas.pro.bd/gallery",
           "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
+          "about": { "@id": "https://candidcanvas.pro.bd/#business" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
