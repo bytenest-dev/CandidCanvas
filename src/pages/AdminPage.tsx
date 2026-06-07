@@ -44,6 +44,21 @@ const ADMIN_NAV = [
 const GALLERY_CATS = ['Wedding', 'Birthday', 'Corporate', 'Festival', 'Outdoor', 'Cinematic', 'General'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+// Message interface — defined outside component to prevent re-declaration on every render
+interface Message {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  service?: string;
+  message: string;
+  status: 'unread' | 'read';
+  createdAt: string;
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+}
+
 // â”€â”€ Sidebar extracted outside AdminPage to prevent remount on every render â”€â”€
 interface AdminSidebarProps {
   activeTab: string;
@@ -193,19 +208,6 @@ export default function AdminPage() {
   const vacationImgRef = useRef<HTMLInputElement>(null);
 
   // Messages state
-  interface Message {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-    service?: string;
-    message: string;
-    status: 'unread' | 'read';
-    createdAt: string;
-    userId?: string;
-    userName?: string;
-    userEmail?: string;
-  }
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [viewMessage, setViewMessage] = useState<Message | null>(null);
@@ -257,7 +259,7 @@ export default function AdminPage() {
     } finally {
       setOrdersLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   const loadStats = useCallback(async () => {
     try {
