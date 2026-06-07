@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { SOCIAL_LINKS } from '../../lib/utils';
 import logoImg from '../../assets/logo.png';
@@ -147,7 +147,7 @@ export default function Footer() {
               <li>
                 <div className="flex items-start gap-3 text-sm text-white/60">
                   <MapPin size={14} className="mt-0.5 flex-shrink-0" />
-                  <span>Dhaka, Bangladesh</span>
+                  <a href={SOCIAL_LINKS.maps} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Gohail Rd, Bogura, Bangladesh</a>
                 </div>
               </li>
               <li className="pt-2">

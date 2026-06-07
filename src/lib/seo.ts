@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SEO utilities for Candid Canvas BD
  * Centralised constants so every page uses the same base URL and OG image.
  */
@@ -19,7 +19,7 @@ export function canonical(path: string = '/'): string {
 export const DEFAULT_META = {
   title: `${SITE_NAME} | Premium Photography & Cinematography in Bangladesh`,
   description:
-    'Candid Canvas BD offers premium wedding photography, cinematography, reels and event coverage in Dhaka, Bangladesh. 500+ projects. 98% client satisfaction.',
+    'Candid Canvas BD offers premium wedding photography, cinematography, reels and event coverage in Bogura, Bangladesh. 500+ projects. 98% client satisfaction.',
   keywords:
     'wedding photography bangladesh, wedding photographer dhaka, cinematography bangladesh, event photography, reels production, candid photography',
 };

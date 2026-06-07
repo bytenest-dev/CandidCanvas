@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -89,7 +89,7 @@ export default function ContactPage() {
       <Helmet>
         <title>Contact Candid Canvas BD | Book a Photography Session</title>
         <meta name="description" content="Get in touch with Candid Canvas BD. Call, WhatsApp, or email us to book a wedding, event, corporate or reels photography session in Bangladesh." />
-        <meta name="keywords" content="contact photographer bangladesh, book photography session dhaka, hire photographer bangladesh, candid canvas bd contact, wedding photographer booking" />
+        <meta name="keywords" content="contact photographer bangladesh, book photography session bogura, hire photographer bogura bangladesh, candid canvas bd contact, wedding photographer booking" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/contact" />
         <meta name="robots" content="index, follow" />
 
@@ -172,8 +172,7 @@ export default function ContactPage() {
                   <div className="w-10 h-10 bg-[#F8F9FA] border border-[#E5E7EB] rounded flex items-center justify-center flex-shrink-0">
                     <MapPin size={16} />
                   </div>
-                  Dhaka, Bangladesh
-                </div>
+                  <a href={SOCIAL_LINKS.maps} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] transition-colors hover:underline">Gohail Rd, Bogura, Bangladesh</a></div>
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+﻿import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Camera, Target, Eye, Heart, Award, Users } from 'lucide-react';
 
@@ -37,7 +37,7 @@ export default function AboutPage() {
       <Helmet>
         <title>About Candid Canvas BD | Our Story, Team &amp; Vision</title>
         <meta name="description" content="Meet the team behind Candid Canvas BD — 500+ projects, 4+ years of premium photography &amp; cinematography in Bangladesh. Our story, philosophy and creative vision." />
-        <meta name="keywords" content="about candid canvas bd, photography studio bangladesh, wedding photographer dhaka team, professional photographer bangladesh, photography studio story" />
+        <meta name="keywords" content="about candid canvas bd, photography studio bangladesh, wedding photographer bogura team, professional photographer bangladesh, photography studio story" />
         <link rel="canonical" href="https://candid-canvas.netlify.app/about" />
         <meta name="robots" content="index, follow" />
 
@@ -86,7 +86,7 @@ export default function AboutPage() {
               About Candid Canvas BD
             </h1>
             <p className="text-white/60 mt-6 text-base leading-relaxed max-w-2xl mx-auto">
-              We are a team of visual storytellers based in Dhaka, Bangladesh. Our mission is simple: to preserve the moments that define you, through photography that feels like memory.
+              We are a team of visual storytellers based in Bogura, Bangladesh. Our mission is simple: to preserve the moments that define you, through photography that feels like memory.
             </p>
           </motion.div>
         </div>

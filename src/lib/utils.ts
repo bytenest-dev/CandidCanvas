@@ -59,6 +59,8 @@ export const SOCIAL_LINKS = {
   whatsapp: 'https://wa.me/8801849244610',
   phone: '+8801849244610',
   email: 'candidcanvasbd@gmail.com',
+  maps: 'https://www.google.com/maps/place/Candid+Canvas+BD,+Gohail+Rd,+Bogura',
+  location: 'Gohail Rd, Bogura, Bangladesh',
 };
 
 export const SERVICES = ['PHOTO', 'CINE', 'REELS', 'EVENTS'] as const;
