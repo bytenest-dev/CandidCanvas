@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /sign-in
+
+Sitemap: https://bytenest-dev.github.io/CandidCanvas/sitemap.xml
