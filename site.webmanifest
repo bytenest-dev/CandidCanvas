@@ -1,22 +1,26 @@
 {
   "name": "Candid Canvas BD",
   "short_name": "Candid Canvas BD",
-  "description": "Premium photography and cinematography in Bogura, Bangladesh. Preserving your special moments with cinematic storytelling.",
+  "description": "Candid Canvas BD — Best photography and cinematography studio in Bangladesh. Wedding photography, cinematography, reels and events in Bogura.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#111827",
   "orientation": "portrait-primary",
+  "id": "https://candidcanvas.pro.bd/",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon-48x48.png",
       "sizes": "48x48",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/favicon-96x96.png",
       "sizes": "96x96",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/favicon-192x192.png",
@@ -33,9 +37,11 @@
     {
       "src": "/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "categories": ["photography", "business", "lifestyle"],
-  "lang": "en-BD"
+  "lang": "en-BD",
+  "dir": "ltr"
 }
