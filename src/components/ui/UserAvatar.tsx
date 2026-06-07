@@ -1,7 +1,7 @@
 /**
  * UserAvatar — renders a Google profile photo or initial fallback.
- * Google profile photos require referrerPolicy="no-referrer" to load correctly
- * in cross-origin contexts (CORS restriction on lh3.googleusercontent.com).
+ * Google profile photos require referrerPolicy="no-referrer" to load correctly.
+ * Do NOT add crossOrigin="anonymous" — it forces a CORS preflight that Google blocks.
  */
 
 import { useState } from 'react';
@@ -16,7 +16,7 @@ interface UserAvatarProps {
 
 const SIZE_MAP = {
   xs: 'w-6 h-6 text-[10px]',
-  sm: 'w-8 h-8 text-sm',
+  sm: 'w-8 h-8 text-xs',
   md: 'w-10 h-10 text-sm',
   lg: 'w-12 h-12 text-base',
   xl: 'w-20 h-20 text-2xl',
@@ -37,23 +37,26 @@ export default function UserAvatar({
   const [imgError, setImgError] = useState(false);
   const sizeClass = SIZE_MAP[size];
   const shapeClass = SHAPE_MAP[shape];
-  const initial = displayName?.[0]?.toUpperCase() || 'U';
+  const initial = displayName?.[0]?.toUpperCase() || 'A';
 
-  const showImage = photoURL && !imgError;
+  // Attempt to load photo — if photoURL is null/undefined or errors, show initial
+  const showImage = !!(photoURL && !imgError);
 
   return (
-    <div className={`${sizeClass} ${shapeClass} flex-shrink-0 overflow-hidden ${className}`}>
+    <div className={`${sizeClass} ${shapeClass} flex-shrink-0 overflow-hidden flex-shrink-0 ${className}`}>
       {showImage ? (
         <img
-          src={photoURL}
+          src={photoURL!}
           alt={displayName || 'User'}
           className={`w-full h-full object-cover ${shapeClass}`}
           referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
           onError={() => setImgError(true)}
         />
       ) : (
-        <div className={`w-full h-full ${shapeClass} bg-gradient-to-br from-[#111827] to-[#374151] flex items-center justify-center text-white font-bold ${sizeClass.split(' ').find(c => c.startsWith('text-')) || 'text-sm'}`}>
+        <div
+          className={`w-full h-full ${shapeClass} bg-gradient-to-br from-[#111827] to-[#374151] flex items-center justify-center text-white font-bold`}
+          style={{ fontSize: size === 'xs' ? 10 : size === 'sm' ? 12 : size === 'md' ? 14 : size === 'lg' ? 16 : 24 }}
+        >
           {initial}
         </div>
       )}
