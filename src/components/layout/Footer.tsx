@@ -43,7 +43,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 mb-6">
-              <img src={logoImg} alt="Candid Canvas BD" className="h-10 w-auto object-contain brightness-0 invert" />
+              <img src={logoImg} alt="Candid Canvas BD" className="h-10 w-auto object-contain" />
             </Link>
             <p className="text-white/60 text-sm leading-relaxed mb-6">
               Preserving emotions, memories, relationships, and stories through the art of photography.
