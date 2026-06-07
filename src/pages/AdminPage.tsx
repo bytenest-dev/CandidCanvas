@@ -44,7 +44,7 @@ const ADMIN_NAV = [
 const GALLERY_CATS = ['Wedding', 'Birthday', 'Corporate', 'Festival', 'Outdoor', 'Cinematic', 'General'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Message interface — defined outside component to prevent re-declaration on every render
+// Message interface � defined outside component to prevent re-declaration on every render
 interface Message {
   id: string;
   name: string;
@@ -59,7 +59,7 @@ interface Message {
   userEmail?: string;
 }
 
-// â”€â”€ Sidebar extracted outside AdminPage to prevent remount on every render â”€â”€
+// ── Sidebar extracted outside AdminPage to prevent remount on every render ──
 interface AdminSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -159,7 +159,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Local settings state â€” only persisted on explicit "Save" click
+  // Local settings state — only persisted on explicit "Save" click
   const [localSettings, setLocalSettings] = useState(settings);
   // Sync local settings when remote settings load/change
   useEffect(() => { setLocalSettings(settings); }, [settings]);
@@ -214,7 +214,7 @@ export default function AdminPage() {
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [viewMessage, setViewMessage] = useState<Message | null>(null);
 
-  // â”€â”€ Load all data from Firebase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Load all data from Firebase ─────────────────────────────────────────
   const loadOrders = useCallback(async () => {
     try {
       setOrdersLoading(true);
@@ -257,7 +257,7 @@ export default function AdminPage() {
       if (code !== 'permission-denied') {
         console.warn('Orders load error:', code || err);
       }
-      // silent on permission â€” Firestore rules need to be configured
+      // silent on permission — Firestore rules need to be configured
     } finally {
       setOrdersLoading(false);
     }
@@ -268,7 +268,7 @@ export default function AdminPage() {
       const { collection, getDocs, doc, getDoc, query, where } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
 
-      // ── 1. Count ALL registered users ──────────────────────────
+      // -- 1. Count ALL registered users --------------------------
       try {
         const usersSnap = await getDocs(collection(db, 'users'));
         setTotalUsers(usersSnap.size);
@@ -278,16 +278,16 @@ export default function AdminPage() {
           return data.provider === 'google' || (data.photoURL && data.photoURL.includes('googleusercontent'));
         }).length;
         setGoogleUsers(googleCount);
-      } catch { /* permission denied — need firestore rules update */ }
+      } catch { /* permission denied � need firestore rules update */ }
 
-      // ── 2. Total visitor counter ────────────────────────────────
+      // -- 2. Total visitor counter --------------------------------
       try {
         const visitorRef = doc(db, 'siteData', 'visitors');
         const visitorSnap = await getDoc(visitorRef);
         setTotalVisitors(visitorSnap.exists() ? (visitorSnap.data().count || 0) : 0);
       } catch { /* silent */ }
 
-      // ── 3. Last 14 days visitor graph data ──────────────────────
+      // -- 3. Last 14 days visitor graph data ----------------------
       try {
         const last14: { date: string; visitors: number }[] = [];
         const today = new Date();
@@ -359,7 +359,7 @@ export default function AdminPage() {
       }
       setMessages(msgs);
     } catch {
-      // Silent â€” Firestore permission denied or index missing; will show empty messages
+      // Silent — Firestore permission denied or index missing; will show empty messages
     } finally {
       setMessagesLoading(false);
     }
@@ -371,7 +371,7 @@ export default function AdminPage() {
     loadMessages();
   }, [loadOrders, loadStats, loadMessages]);
 
-  // â”€â”€ Auth guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Auth guard ───────────────────────────────────────────────────────────
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
@@ -385,7 +385,7 @@ export default function AdminPage() {
     );
   }
 
-  // â”€â”€ Order helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Order helpers ────────────────────────────────────────────────────────
   const updateStatusWithEmail = async (order: Order, status: OrderStatus) => {
     try {
       const { collection, query, where, getDocs, updateDoc } = await import('firebase/firestore');
@@ -414,7 +414,7 @@ export default function AdminPage() {
     }
   };
 
-  // â”€â”€ Slider helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Slider helpers ───────────────────────────────────────────────────────
   const addSlide = () => {
     if (slider.length >= 10) {
       toast.error('Maximum 10 slides allowed');
@@ -486,7 +486,7 @@ export default function AdminPage() {
     setSlider(newSlides);
   };
 
-  // â”€â”€ Gallery helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Gallery helpers ──────────────────────────────────────────────────────
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -515,7 +515,7 @@ export default function AdminPage() {
         category: 'General',
       }));
       setGallery([...gallery, ...newItems]);
-      toast.success(`${files.length} image(s) uploaded to Cloudinary â˜ï¸`);
+      toast.success(`${files.length} image(s) uploaded to Cloudinary ☁️`);
     } catch {
       // Fallback: use blob URLs if Cloudinary is not configured yet
       const newItems: GalleryItem[] = files.map((f, i) => ({
@@ -525,7 +525,7 @@ export default function AdminPage() {
         category: 'General',
       }));
       setGallery([...gallery, ...newItems]);
-      toast.success(`${files.length} image(s) added (local preview â€” set up Cloudinary for permanent storage)`);
+      toast.success(`${files.length} image(s) added (local preview — set up Cloudinary for permanent storage)`);
     } finally {
       setIsUploading(false);
       setUploadProgress([]);
@@ -561,7 +561,7 @@ export default function AdminPage() {
     toast.success('Image deleted.');
   };
 
-  // â”€â”€ Package helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Package helpers ──────────────────────────────────────────────────────
   const openAdd = () => {
     setEditPkg(null);
     setPkgForm({ name: '', category: 'PHOTO', price: '', description: '', features: '', imageUrl: '' });
@@ -618,7 +618,7 @@ export default function AdminPage() {
     setPackages(packages.map(pkg => pkg.id === id ? { ...pkg, popular: !pkg.popular } : pkg));
   };
 
-  // â”€â”€ Review helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Review helpers ───────────────────────────────────────────────────────
   const approveReview = (id: string) => {
     setReviews(reviews.map(r => r.id === id ? { ...r, approved: true } : r));
     toast.success('Review published on home page.');
@@ -651,7 +651,7 @@ export default function AdminPage() {
     toast.success('Review added and published!');
   };
 
-  // â”€â”€ Message helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Message helpers ──────────────────────────────────────────────────────
   const markAsRead = async (id: string) => {
     try {
       const { doc, updateDoc } = await import('firebase/firestore');
@@ -690,7 +690,7 @@ export default function AdminPage() {
     toast.success('Data refreshed!');
   };
 
-  // â”€â”€ Export to Excel (CSV) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Export to Excel (CSV) ────────────────────────────────────────────────
   const exportOrdersToExcel = () => {
     const headers = ['Order ID', 'Client Name', 'Email', 'Package', 'Event Type', 'Event Date', 'Location', 'Status', 'Created At', 'Notes'];
     const rows = displayedOrders.map(o => [
@@ -712,7 +712,7 @@ export default function AdminPage() {
     toast.success('Orders exported to CSV!');
   };
 
-  // â”€â”€ Displayed orders based on filter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Displayed orders based on filter ────────────────────────────────────
   const displayedOrders = orders.filter(o => {
     const matchTab = orderTab === 'all' || o.status === orderTab;
     const q = orderSearch.toLowerCase();
@@ -720,7 +720,7 @@ export default function AdminPage() {
     return matchTab && matchSearch;
   });
 
-  // â”€â”€ Stats for overview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Stats for overview ───────────────────────────────────────────────────
   const thisMonthBookings = orders.filter(o => {
     if (!o.createdAt) return false;
     const d = new Date(o.createdAt);
@@ -762,7 +762,7 @@ export default function AdminPage() {
         e.target.value = '';
       }} />
 
-      {/* Mobile Sidebar â€” rendered at root level, outside the flex layout */}
+      {/* Mobile Sidebar — rendered at root level, outside the flex layout */}
       {sidebarOpen && (
         <>
           <div className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
@@ -825,7 +825,7 @@ export default function AdminPage() {
                 <span className={`hidden sm:inline-flex text-xs px-2.5 py-1 rounded-full font-medium ${
                   settings.maintenanceMode ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                 }`}>
-                  {settings.maintenanceMode ? 'ðŸ”§ Maintenance ON' : 'âœ¨ Special Notice ON'}
+                  {settings.maintenanceMode ? '🔧 Maintenance ON' : '✨ Special Notice ON'}
                 </span>
               )}
               <button onClick={handleRefresh} title="Refresh all data"
@@ -839,7 +839,7 @@ export default function AdminPage() {
                 )}
               </button>
               <Link to="/" className="hidden sm:block text-xs text-[#6B7280] hover:text-[#111827] px-2 py-1 rounded-lg hover:bg-[#F8F9FA] transition-colors">
-                â† View Site
+                ← View Site
               </Link>
                           {/* Admin Google profile photo in top bar */}
               <UserAvatar
@@ -853,7 +853,7 @@ export default function AdminPage() {
 
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
 
-            {/* â”€â”€ OVERVIEW â”€â”€ */}
+            {/* ── OVERVIEW ── */}
             {activeTab === 'overview' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <p className="text-[#6B7280] text-sm mb-6">
@@ -937,15 +937,15 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Visitor Graph — last 14 days */}
+                {/* Visitor Graph � last 14 days */}
                 <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2 className="font-semibold text-[#111827] text-sm">Website Visitors</h2>
                       <p className="text-xs text-[#9CA3AF]">
-                        Last 14 days · Total: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span>
-                        {' '}· Google sign-ins: <span className="font-semibold text-[#374151]">{googleUsers}</span>
-                        {' '}· All users: <span className="font-semibold text-[#374151]">{totalUsers}</span>
+                        Last 14 days � Total: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span>
+                        {' '}� Google sign-ins: <span className="font-semibold text-[#374151]">{googleUsers}</span>
+                        {' '}� All users: <span className="font-semibold text-[#374151]">{totalUsers}</span>
                       </p>
                     </div>
                     <span className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
@@ -1003,7 +1003,7 @@ export default function AdminPage() {
                 <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
                   <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
                     <h2 className="font-semibold text-[#111827] text-sm">Recent Orders</h2>
-                    <button onClick={() => setActiveTab('orders')} className="text-xs text-[#6B7280] hover:text-[#111827] transition-colors">View all â†’</button>
+                    <button onClick={() => setActiveTab('orders')} className="text-xs text-[#6B7280] hover:text-[#111827] transition-colors">View all →</button>
                   </div>
                   {orders.length === 0 ? (
                     <div className="p-8 text-center text-[#9CA3AF] text-sm">No orders yet.</div>
@@ -1039,7 +1039,7 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {/* â”€â”€ ORDERS â”€â”€ */}
+            {/* ── ORDERS ── */}
             {activeTab === 'orders' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
 
@@ -1161,7 +1161,7 @@ export default function AdminPage() {
                                     try {
                                       const { collection, query, where, getDocs, deleteDoc, doc } = await import('firebase/firestore');
                                       const { db } = await import('../lib/firebase');
-                                      // Orders are stored with a custom 'id' field — query by it
+                                      // Orders are stored with a custom 'id' field � query by it
                                       const q = query(collection(db, 'bookings'), where('id', '==', o.id));
                                       const snap = await getDocs(q);
                                       if (!snap.empty) {
@@ -1224,7 +1224,7 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {/* â”€â”€ MESSAGES â”€â”€ */}
+            {/* ── MESSAGES ── */}
             {activeTab === 'messages' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <div className="flex items-center justify-between mb-5">
@@ -1290,7 +1290,7 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {/* â”€â”€ SLIDER â”€â”€ */}
+            {/* ── SLIDER ── */}
             {activeTab === 'slider' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
 
@@ -1303,7 +1303,7 @@ export default function AdminPage() {
                     <p className="text-sm font-semibold text-blue-800">Auto-synced with Gallery</p>
                     <p className="text-xs text-blue-600 mt-0.5 leading-relaxed">
                       By default the homepage slider shows <strong>all gallery images</strong> automatically.
-                      Use the controls below to create custom slider sections with your own title &amp; subtitle â€” these will override the auto mode.
+                      Use the controls below to create custom slider sections with your own title &amp; subtitle — these will override the auto mode.
                     </p>
                   </div>
                 </div>
@@ -1313,11 +1313,11 @@ export default function AdminPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-[#6B7280]">
                       {slider.length === 0
-                        ? `Auto mode â€” showing ${gallery.length} gallery image${gallery.length !== 1 ? 's' : ''}`
+                        ? `Auto mode — showing ${gallery.length} gallery image${gallery.length !== 1 ? 's' : ''}`
                         : `${slider.length} / 10 custom slides`}
                     </span>
                     {slider.length >= 10 && (
-                      <span className="text-xs text-red-500 font-medium">âš  Max limit reached</span>
+                      <span className="text-xs text-red-500 font-medium">⚠ Max limit reached</span>
                     )}
                   </div>
                   {slider.length > 0 && (
@@ -1330,10 +1330,10 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                {/* â”€â”€ Add / Edit Form â”€â”€ */}
+                {/* ── Add / Edit Form ── */}
                 <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-6 shadow-sm">
                   <h3 className="font-semibold text-[#111827] text-sm mb-4">
-                    {editSlide ? 'âœï¸ Edit Slide' : '+ Add Custom Slide'}
+                    {editSlide ? '✏️ Edit Slide' : '+ Add Custom Slide'}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -1349,7 +1349,7 @@ export default function AdminPage() {
                           className="flex items-center gap-2 px-3.5 py-2 bg-[#111827] text-white text-xs rounded-lg hover:bg-[#374151] transition-colors disabled:opacity-60"
                         >
                           {isSliderUploading ? (
-                            <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Uploadingâ€¦</>
+                            <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Uploading…</>
                           ) : (
                             <><CloudUpload size={13} />Choose Image</>
                           )}
@@ -1424,7 +1424,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* â”€â”€ Gallery quick-add pool â”€â”€ */}
+                {/* ── Gallery quick-add pool ── */}
                 {gallery.length > 0 && slider.length < 10 && !editSlide && (
                   <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-6 shadow-sm">
                     <h3 className="font-semibold text-[#111827] text-sm mb-1">Pick from Gallery</h3>
@@ -1469,7 +1469,7 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* â”€â”€ Custom Slides List â”€â”€ */}
+                {/* ── Custom Slides List ── */}
                 {slider.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="font-semibold text-[#111827] text-sm">Custom Slides ({slider.length})</h3>
@@ -1531,14 +1531,14 @@ export default function AdminPage() {
                   <div className="bg-white rounded-xl border border-[#E5E7EB] p-10 text-center">
                     <Image size={36} className="text-[#D1D5DB] mx-auto mb-3" />
                     <p className="text-[#374151] font-medium text-sm">No gallery images yet</p>
-                    <p className="text-xs text-[#9CA3AF] mt-1">Upload images to the Gallery tab first â€” they will automatically appear in the homepage slider</p>
+                    <p className="text-xs text-[#9CA3AF] mt-1">Upload images to the Gallery tab first — they will automatically appear in the homepage slider</p>
                   </div>
                 )}
 
               </motion.div>
             )}
 
-            {/* â”€â”€ GALLERY â”€â”€ */}
+            {/* ── GALLERY ── */}
             {activeTab === 'gallery' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
@@ -1556,7 +1556,7 @@ export default function AdminPage() {
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors disabled:opacity-60"
                     >
                       {isUploading ? (
-                        <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploadingâ€¦</>
+                        <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Uploading…</>
                       ) : (
                         <><Upload size={14} /> Upload Images</>
                       )}
@@ -1599,7 +1599,7 @@ export default function AdminPage() {
                             toast.success(`"${name}" added`);
                           }
                         }}
-                        placeholder="New category nameâ€¦"
+                        placeholder="New category name…"
                         className="flex-1 border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]"
                       />
                       <button
@@ -1624,7 +1624,7 @@ export default function AdminPage() {
                   <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 mb-5">
                     <p className="text-xs font-semibold text-[#374151] mb-3 flex items-center gap-2">
                       <CloudUpload size={14} className="text-blue-500" />
-                      Uploading to Cloudinaryâ€¦
+                      Uploading to Cloudinary…
                     </p>
                     {uploadProgress.map((pct, i) => (
                       <div key={i} className="mb-2 last:mb-0">
@@ -1681,7 +1681,7 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {/* â”€â”€ PACKAGES â”€â”€ */}
+            {/* ── PACKAGES ── */}
             {activeTab === 'packages' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
@@ -1723,7 +1723,7 @@ export default function AdminPage() {
                               </td>
                               <td className="px-4 py-4">
                                 <p className="font-medium text-[#111827]">{pkg.name}</p>
-                                {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-full">â­ Popular</span>}
+                                {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-full">⭐ Popular</span>}
                               </td>
                               <td className="px-4 py-4 font-mono text-xs text-[#374151]">{pkg.category}</td>
                               <td className="px-4 py-4 font-semibold text-[#111827]">{pkg.price}</td>
@@ -1750,12 +1750,12 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {/* â”€â”€ REVIEWS â”€â”€ */}
+            {/* ── REVIEWS ── */}
             {activeTab === 'reviews' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <div className="flex items-center justify-between mb-5">
                   <p className="text-[#6B7280] text-sm">
-                    {reviews.filter(r => !r.approved).length} pending Â· {reviews.filter(r => r.approved).length} published
+                    {reviews.filter(r => !r.approved).length} pending · {reviews.filter(r => r.approved).length} published
                   </p>
                   <button onClick={addReview}
                     className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
@@ -1771,12 +1771,12 @@ export default function AdminPage() {
                             <span className="font-semibold text-sm text-[#111827]">{r.name}</span>
                             <div className="flex gap-0.5">
                               {Array.from({ length: 5 }).map((_, j) => (
-                                <span key={j} className={j < r.rating ? 'text-[#F59E0B] text-sm' : 'text-[#E5E7EB] text-sm'}>â˜…</span>
+                                <span key={j} className={j < r.rating ? 'text-[#F59E0B] text-sm' : 'text-[#E5E7EB] text-sm'}>★</span>
                               ))}
                             </div>
                             <span className="text-xs bg-[#F3F4F6] text-[#9CA3AF] px-2 py-0.5 rounded-full">{r.service}</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                              {r.approved ? 'âœ… Published' : 'â³ Pending'}
+                              {r.approved ? '✅ Published' : '⏳ Pending'}
                             </span>
                           </div>
                           <p className="text-sm text-[#374151] italic">"{r.comment}"</p>
@@ -1810,7 +1810,7 @@ export default function AdminPage() {
               </motion.div>
             )}
 
-            {/* â”€â”€ SETTINGS â”€â”€ */}
+            {/* ── SETTINGS ── */}
             {activeTab === 'settings' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-2xl space-y-5">
 
@@ -1829,7 +1829,7 @@ export default function AdminPage() {
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => { setSettings(localSettings); toast.success('Hero settings saved âœ“'); }}
+                  <button onClick={() => { setSettings(localSettings); toast.success('Hero settings saved ✓'); }}
                     className="mt-4 px-5 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
                     Save
                   </button>
@@ -1851,7 +1851,7 @@ export default function AdminPage() {
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => { setSettings(localSettings); toast.success('Contact info saved âœ“'); }}
+                  <button onClick={() => { setSettings(localSettings); toast.success('Contact info saved ✓'); }}
                     className="mt-4 px-5 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
                     Save
                   </button>
@@ -1866,14 +1866,14 @@ export default function AdminPage() {
                         <h3 className="font-semibold text-[#111827]">Maintenance Mode</h3>
                       </div>
                       <p className="text-xs text-[#9CA3AF]">Visitors see a maintenance page. Admin can still access the site.</p>
-                      {localSettings.maintenanceMode && <p className="text-xs text-red-600 font-medium mt-1">âš  Site is currently in maintenance mode</p>}
+                      {localSettings.maintenanceMode && <p className="text-xs text-red-600 font-medium mt-1">⚠ Site is currently in maintenance mode</p>}
                     </div>
                     <button onClick={() => {
                       const next = !localSettings.maintenanceMode;
                       const updated: SiteSettings = { ...localSettings, maintenanceMode: next, vacationMode: next ? false : localSettings.vacationMode };
                       setLocalSettings(updated);
                       setSettings(updated);
-                      toast.success(next ? 'ðŸ”§ Maintenance mode enabled' : 'Maintenance mode disabled');
+                      toast.success(next ? '🔧 Maintenance mode enabled' : 'Maintenance mode disabled');
                     }} className={`relative inline-flex h-6 w-11 rounded-full transition-colors flex-shrink-0 focus:outline-none ${localSettings.maintenanceMode ? 'bg-red-500' : 'bg-[#E5E7EB]'}`}>
                       <span className={`inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform mt-0.5 ${localSettings.maintenanceMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
                     </button>
@@ -1884,7 +1884,7 @@ export default function AdminPage() {
                       onChange={e => setLocalSettings(s => ({ ...s, maintenanceMessage: e.target.value }))}
                       rows={2} className="w-full border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827] resize-none" />
                   </div>
-                  <button onClick={() => { setSettings(localSettings); toast.success('Maintenance message saved âœ“'); }}
+                  <button onClick={() => { setSettings(localSettings); toast.success('Maintenance message saved ✓'); }}
                     className="mt-4 px-5 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
                     Save Message
                   </button>
@@ -1899,14 +1899,14 @@ export default function AdminPage() {
                         <h3 className="font-semibold text-[#111827]">Special Notice Mode</h3>
                       </div>
                       <p className="text-xs text-[#9CA3AF]">Show a custom notice to visitors (Eid, event, closure, etc). New bookings are paused.</p>
-                      {localSettings.vacationMode && <p className="text-xs text-amber-600 font-medium mt-1">âœ¨ Special notice is currently active</p>}
+                      {localSettings.vacationMode && <p className="text-xs text-amber-600 font-medium mt-1">✨ Special notice is currently active</p>}
                     </div>
                     <button onClick={() => {
                       const next = !localSettings.vacationMode;
                       const updated: SiteSettings = { ...localSettings, vacationMode: next, maintenanceMode: next ? false : localSettings.maintenanceMode };
                       setLocalSettings(updated);
                       setSettings(updated);
-                      toast.success(next ? 'âœ¨ Special notice enabled' : 'Special notice disabled');
+                      toast.success(next ? '✨ Special notice enabled' : 'Special notice disabled');
                     }} className={`relative inline-flex h-6 w-11 rounded-full transition-colors flex-shrink-0 focus:outline-none ${localSettings.vacationMode ? 'bg-amber-500' : 'bg-[#E5E7EB]'}`}>
                       <span className={`inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform mt-0.5 ${localSettings.vacationMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
                     </button>
@@ -1968,7 +1968,7 @@ export default function AdminPage() {
                       )}
                     </div>
                   </div>
-                  <button onClick={() => { setSettings(localSettings); toast.success('Special notice settings saved âœ“'); }}
+                  <button onClick={() => { setSettings(localSettings); toast.success('Special notice settings saved ✓'); }}
                     className="mt-4 px-5 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
                     Save Settings
                   </button>
@@ -2097,7 +2097,7 @@ export default function AdminPage() {
         )}
       </Modal>
 
-      {/* â”€â”€ Email Preview Modal â”€â”€ */}
+      {/* ── Email Preview Modal ── */}
       <EmailPreviewModal
         isOpen={!!emailModalData}
         onClose={() => setEmailModalData(null)}
@@ -2105,7 +2105,7 @@ export default function AdminPage() {
         onSend={() => toast.success('Email sent successfully!')}
       />
 
-      {/* â”€â”€ Edit Gallery Modal â”€â”€ */}
+      {/* ── Edit Gallery Modal ── */}
       <Modal isOpen={!!editGallery} onClose={() => setEditGallery(null)} title="Edit Image" size="sm">
         <div className="p-6 space-y-4">
           <div className="relative rounded-xl overflow-hidden border border-[#E5E7EB]">
@@ -2134,7 +2134,7 @@ export default function AdminPage() {
         </div>
       </Modal>
 
-      {/* â”€â”€ Package Modal â”€â”€ */}
+      {/* ── Package Modal ── */}
       <Modal isOpen={pkgModal} onClose={() => setPkgModal(false)} title={editPkg ? 'Edit Package' : 'New Package'} size="md">
         <div className="p-6 space-y-4">
           <div onClick={() => pkgImgRef.current?.click()}
@@ -2166,7 +2166,7 @@ export default function AdminPage() {
           <div>
             <label className="block text-xs font-semibold text-[#374151] mb-1 uppercase tracking-wide">Price</label>
             <input value={pkgForm.price} onChange={e => setPkgForm(p => ({ ...p, price: e.target.value }))}
-              placeholder="e.g. à§³35,000"
+              placeholder="e.g. ৳35,000"
               className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]" />
           </div>
           <div>
@@ -2203,7 +2203,7 @@ export default function AdminPage() {
               <div>
                 <h2 className="font-semibold text-[#111827]">{viewMessage.userName || viewMessage.name}</h2>
                 <p className="text-xs text-[#6B7280] mt-0.5">{viewMessage.userEmail || viewMessage.email}</p>
-                {viewMessage.phone && <p className="text-xs text-[#9CA3AF]">ðŸ“ž {viewMessage.phone}</p>}
+                {viewMessage.phone && <p className="text-xs text-[#9CA3AF]">📞 {viewMessage.phone}</p>}
               </div>
               <button onClick={() => setViewMessage(null)}
                 className="p-1.5 text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-colors flex-shrink-0">

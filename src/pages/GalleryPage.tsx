@@ -27,25 +27,25 @@ export default function GalleryPage() {
     <>
       <Helmet>
         <title>Candid Canvas BD | Photography Portfolio &amp; Gallery | Bangladesh</title>
-        <meta name="description" content="Browse our photography portfolio — weddings, birthdays, corporate events, festivals, outdoor and cinematic sessions in Bangladesh. 500+ stunning moments captured." />
+        <meta name="description" content="Browse our photography portfolio � weddings, birthdays, corporate events, festivals, outdoor and cinematic sessions in Bangladesh. 500+ stunning moments captured." />
         <meta name="keywords" content="wedding photography portfolio bangladesh, photography gallery dhaka, event photography portfolio, candid photos bangladesh, cinematography portfolio" />
-        <link rel="canonical" href="https://candid-canvas.netlify.app/gallery" />
+        <link rel="canonical" href="https://candidcanvas.pro.bd/gallery" />
         <meta name="robots" content="index, follow" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Photography Portfolio &amp; Gallery | Candid Canvas BD" />
-        <meta property="og:description" content="Browse our stunning photography portfolio — weddings, birthdays, events, outdoor and cinematic sessions across Bangladesh." />
-        <meta property="og:url" content="https://candid-canvas.netlify.app/gallery" />
-        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta property="og:description" content="Browse our stunning photography portfolio � weddings, birthdays, events, outdoor and cinematic sessions across Bangladesh." />
+        <meta property="og:url" content="https://candidcanvas.pro.bd/gallery" />
+        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Candid Canvas BD Photography Gallery" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Photography Gallery | Candid Canvas BD" />
-        <meta name="twitter:description" content="500+ stunning moments captured — weddings, events, outdoor & cinematic photography in Bangladesh." />
-        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta name="twitter:description" content="500+ stunning moments captured � weddings, events, outdoor & cinematic photography in Bangladesh." />
+        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
         {/* Breadcrumb Schema */}
         <script type="application/ld+json">{JSON.stringify({
@@ -53,13 +53,13 @@ export default function GalleryPage() {
           "@type": "CollectionPage",
           "name": "Photography Portfolio & Gallery",
           "description": "Wedding, event, and cinematic photography portfolio by Candid Canvas BD.",
-          "url": "https://candid-canvas.netlify.app/gallery",
-          "isPartOf": { "@id": "https://candid-canvas.netlify.app/#website" },
+          "url": "https://candidcanvas.pro.bd/gallery",
+          "isPartOf": { "@id": "https://candidcanvas.pro.bd/#website" },
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
-              { "@type": "ListItem", "position": 2, "name": "Gallery", "item": "https://candid-canvas.netlify.app/gallery" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Gallery", "item": "https://candidcanvas.pro.bd/gallery" }
             ]
           }
         })}</script>
@@ -112,7 +112,7 @@ export default function GalleryPage() {
               >
                 <img
                   src={img.url}
-                  alt={`${img.title} — ${img.category} photography by Candid Canvas BD`}
+                  alt={`${img.title} � ${img.category} photography by Candid Canvas BD`}
                   className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
@@ -168,7 +168,7 @@ export default function GalleryPage() {
             />
             <div className="absolute bottom-6 left-0 right-0 text-center">
               <p className="text-white text-sm">{filtered[lightbox].title}</p>
-              <p className="text-white/50 text-xs capitalize mt-1">{filtered[lightbox].category} • {lightbox + 1}/{filtered.length}</p>
+              <p className="text-white/50 text-xs capitalize mt-1">{filtered[lightbox].category} � {lightbox + 1}/{filtered.length}</p>
             </div>
           </motion.div>
         )}

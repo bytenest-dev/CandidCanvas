@@ -34,7 +34,7 @@ export default function BookingPage() {
   const { packages } = useSite();
   const activePackages = packages.filter(p => p.active);
 
-  // Auth guard — must be logged in to book
+  // Auth guard � must be logged in to book
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-6">
@@ -135,9 +135,9 @@ export default function BookingPage() {
             <p className="font-mono text-lg font-bold text-[#111827] mt-1">{bookingId}</p>
           </div>
           <div className="space-y-2 text-sm text-[#6B7280]">
-            <p>📱 We'll reach you via WhatsApp or email</p>
-            <p>📅 Session date confirmation within 24 hrs</p>
-            <p>✨ Let's create something beautiful together</p>
+            <p>?? We'll reach you via WhatsApp or email</p>
+            <p>?? Session date confirmation within 24 hrs</p>
+            <p>? Let's create something beautiful together</p>
           </div>
         </motion.div>
       </div>
@@ -150,7 +150,7 @@ export default function BookingPage() {
         <title>Candid Canvas BD | Book a Photography Session | Bangladesh</title>
         <meta name="description" content="Book your wedding, event, corporate or reels photography session with Candid Canvas BD. Easy online booking in Bangladesh. Confirm in 24 hours." />
         <meta name="keywords" content="book photographer bangladesh, book wedding photographer bogura, photography booking online bangladesh, hire photographer bogura bangladesh" />
-        <link rel="canonical" href="https://candid-canvas.netlify.app/book" />
+        <link rel="canonical" href="https://candidcanvas.pro.bd/book" />
         <meta name="robots" content="index, follow" />
 
         {/* Open Graph */}
@@ -158,15 +158,15 @@ export default function BookingPage() {
         <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Book a Photography Session | Candid Canvas BD" />
         <meta property="og:description" content="Book your photography or cinematography session online. Wedding, events, corporate & reels. Confirmation within 24 hours." />
-        <meta property="og:url" content="https://candid-canvas.netlify.app/book" />
-        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
-        <meta property="og:image:alt" content="Book a Photography Session — Candid Canvas BD" />
+        <meta property="og:url" content="https://candidcanvas.pro.bd/book" />
+        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
+        <meta property="og:image:alt" content="Book a Photography Session � Candid Canvas BD" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Book a Photography Session | Candid Canvas BD" />
         <meta name="twitter:description" content="Easy online photography booking in Bangladesh. Wedding, events, corporate & reels sessions." />
-        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
         {/* Breadcrumb Schema */}
         <script type="application/ld+json">{JSON.stringify({
@@ -174,12 +174,12 @@ export default function BookingPage() {
           "@type": "WebPage",
           "name": "Book a Photography Session",
           "description": "Online booking page for Candid Canvas BD photography and cinematography sessions.",
-          "url": "https://candid-canvas.netlify.app/book",
+          "url": "https://candidcanvas.pro.bd/book",
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
-              { "@type": "ListItem", "position": 2, "name": "Book a Session", "item": "https://candid-canvas.netlify.app/book" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Book a Session", "item": "https://candidcanvas.pro.bd/book" }
             ]
           }
         })}</script>
@@ -206,7 +206,7 @@ export default function BookingPage() {
                     : i === step ? 'border-[#111827] text-[#111827]'
                     : 'border-[#E5E7EB] text-[#9CA3AF]'
                   }`}>
-                    {i < step ? '✓' : i + 1}
+                    {i < step ? '?' : i + 1}
                   </div>
                   <span className="text-xs mt-1 hidden sm:block">{s}</span>
                 </div>
@@ -257,17 +257,17 @@ export default function BookingPage() {
                       {activePackages.length > 0 ? (
                         activePackages.map(pkg => (
                           <option key={pkg.id} value={pkg.name}>
-                            {pkg.name} — {pkg.price}{pkg.popular ? ' ⭐ Popular' : ''}
+                            {pkg.name} � {pkg.price}{pkg.popular ? ' ? Popular' : ''}
                           </option>
                         ))
                       ) : (
                         <>
-                          <option value="essentials">Essentials — ৳15,000</option>
-                          <option value="signature">Signature — ৳35,000 ⭐ Popular</option>
-                          <option value="prestige">Prestige — ৳65,000</option>
-                          <option value="reels">Reels Only — ৳8,000</option>
-                          <option value="corporate">Corporate Event — ৳25,000</option>
-                          <option value="birthday">Birthday Special — ৳12,000</option>
+                          <option value="essentials">Essentials � ?15,000</option>
+                          <option value="signature">Signature � ?35,000 ? Popular</option>
+                          <option value="prestige">Prestige � ?65,000</option>
+                          <option value="reels">Reels Only � ?8,000</option>
+                          <option value="corporate">Corporate Event � ?25,000</option>
+                          <option value="birthday">Birthday Special � ?12,000</option>
                           <option value="custom">Custom Package</option>
                         </>
                       )}
@@ -331,7 +331,7 @@ export default function BookingPage() {
 
                 {step < 2 ? (
                   <Button type="button" onClick={nextStep} size="lg">
-                    Continue →
+                    Continue ?
                   </Button>
                 ) : (
                   <Button type="submit" loading={isSubmitting} size="lg">

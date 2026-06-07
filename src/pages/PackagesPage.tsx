@@ -5,11 +5,11 @@ import { Check, Star, ArrowRight, Package } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
 
 function formatBDT(price: string) {
-  // If already formatted (e.g. "৳35,000"), return as-is
-  if (price.startsWith('৳')) return price;
+  // If already formatted (e.g. "?35,000"), return as-is
+  if (price.startsWith('?')) return price;
   const n = parseInt(price.replace(/\D/g, ''));
   if (isNaN(n)) return price;
-  return `৳${n.toLocaleString('en-BD')}`;
+  return `?${n.toLocaleString('en-BD')}`;
 }
 
 export default function PackagesPage() {
@@ -22,7 +22,7 @@ export default function PackagesPage() {
         <title>Candid Canvas BD | Photography Packages &amp; Pricing | Bangladesh</title>
         <meta name="description" content="Transparent photography &amp; cinematography packages in Bangladesh. Wedding, reels, events &amp; corporate packages. Competitive pricing, no hidden fees. Book online." />
         <meta name="keywords" content="photography packages bangladesh, wedding photography pricing dhaka, cinematography packages, event photography cost bangladesh, photography packages price" />
-        <link rel="canonical" href="https://candid-canvas.netlify.app/packages" />
+        <link rel="canonical" href="https://candidcanvas.pro.bd/packages" />
         <meta name="robots" content="index, follow" />
 
         {/* Open Graph */}
@@ -30,15 +30,15 @@ export default function PackagesPage() {
         <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Photography Packages &amp; Pricing | Candid Canvas BD" />
         <meta property="og:description" content="Transparent photography & cinematography packages with competitive pricing in Bangladesh. Find the perfect package for your wedding, event, or corporate session." />
-        <meta property="og:url" content="https://candid-canvas.netlify.app/packages" />
-        <meta property="og:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta property="og:url" content="https://candidcanvas.pro.bd/packages" />
+        <meta property="og:image" content="https://candidcanvas.pro.bd/logo.png" />
         <meta property="og:image:alt" content="Candid Canvas BD Photography Packages" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Photography Packages &amp; Pricing | Candid Canvas BD" />
         <meta name="twitter:description" content="Find the perfect photography package for your wedding, event or corporate session. Transparent pricing in Bangladesh." />
-        <meta name="twitter:image" content="https://candid-canvas.netlify.app/logo.png" />
+        <meta name="twitter:image" content="https://candidcanvas.pro.bd/logo.png" />
 
         {/* Breadcrumb + ItemList Schema */}
         <script type="application/ld+json">{JSON.stringify({
@@ -46,12 +46,12 @@ export default function PackagesPage() {
           "@type": "ItemPage",
           "name": "Photography Packages & Pricing",
           "description": "Photography and cinematography service packages with pricing by Candid Canvas BD.",
-          "url": "https://candid-canvas.netlify.app/packages",
+          "url": "https://candidcanvas.pro.bd/packages",
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candid-canvas.netlify.app/" },
-              { "@type": "ListItem", "position": 2, "name": "Packages", "item": "https://candid-canvas.netlify.app/packages" }
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://candidcanvas.pro.bd/" },
+              { "@type": "ListItem", "position": 2, "name": "Packages", "item": "https://candidcanvas.pro.bd/packages" }
             ]
           }
         })}</script>
