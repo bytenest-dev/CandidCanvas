@@ -997,7 +997,7 @@ export default function AdminPage() {
                     <div>
                       <h2 className="font-semibold text-[#111827] text-sm">Website Visitors</h2>
                       <p className="text-xs text-[#9CA3AF] mt-0.5">
-                        Last 14 days — Total all-time: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span>
+                        All-time: <span className="font-semibold text-[#374151]">{totalVisitors.toLocaleString()}</span> · Graph shows last 14 days of tracked visits
                       </p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">

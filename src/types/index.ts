@@ -6,6 +6,9 @@ export interface User {
   role: 'customer' | 'admin';
   phone?: string;
   createdAt: Date;
+  suspended?: boolean;
+  suspendReason?: string;
+  suspendUntil?: string; // ISO date string
 }
 
 export interface Package {
