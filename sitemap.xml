@@ -3,47 +3,42 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <url>
-    <loc>https://bytenest-dev.github.io/CandidCanvas/</loc>
+    <loc>https://candidcanvas.pro.bd/</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <image:image>
-      <image:loc>https://candid-canvas.netlify.app/logo.png</image:loc>
-      <image:title>Candid Canvas — Premium Photography &amp; Cinematography</image:title>
-      <image:caption>Candid Canvas official logo</image:caption>
-    </image:image>
   </url>
 
   <url>
-    <loc>https://bytenest-dev.github.io/CandidCanvas/gallery</loc>
+    <loc>https://candidcanvas.pro.bd/gallery</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bytenest-dev.github.io/CandidCanvas/packages</loc>
+    <loc>https://candidcanvas.pro.bd/packages</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bytenest-dev.github.io/CandidCanvas/about</loc>
+    <loc>https://candidcanvas.pro.bd/about</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://bytenest-dev.github.io/CandidCanvas/contact</loc>
+    <loc>https://candidcanvas.pro.bd/contact</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bytenest-dev.github.io/CandidCanvas/book</loc>
+    <loc>https://candidcanvas.pro.bd/book</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
