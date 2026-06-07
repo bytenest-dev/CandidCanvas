@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Candid Canvas</title>
+    <script>
+      // GitHub Pages SPA routing trick:
+      // Store the full URL in sessionStorage, then redirect to the base URL.
+      // The main index.html picks it up and restores the correct route.
+      var base = '/CandidCanvas';
+      var path = window.location.pathname.replace(base, '') || '/';
+      var url = base + '/?redirect=' + encodeURIComponent(path + window.location.search + window.location.hash);
+      sessionStorage.setItem('spa_redirect', window.location.href);
+      window.location.replace(url);
+    </script>
+  </head>
+  <body></body>
+</html>

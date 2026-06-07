@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /dashboard
 Disallow: /sign-in
 
-Sitemap: https://candid-canvas.netlify.app/sitemap.xml
+Sitemap: https://bytenest-dev.github.io/CandidCanvas/sitemap.xml

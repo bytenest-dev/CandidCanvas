@@ -4,6 +4,9 @@ import babel from '@rolldown/plugin-babel';
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Base path for GitHub Pages deployment at /CandidCanvas/
+  base: '/CandidCanvas/',
+
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
