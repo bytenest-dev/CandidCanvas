@@ -34,7 +34,7 @@ export default function GalleryPage() {
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Photography Portfolio &amp; Gallery | Candid Canvas BD" />
         <meta property="og:description" content="Browse our stunning photography portfolio — weddings, birthdays, events, outdoor and cinematic sessions across Bangladesh." />
         <meta property="og:url" content="https://candid-canvas.netlify.app/gallery" />

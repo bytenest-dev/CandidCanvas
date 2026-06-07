@@ -95,7 +95,7 @@ export default function ContactPage() {
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Contact Candid Canvas BD | Book a Photography Session" />
         <meta property="og:description" content="Ready to book? Contact Candid Canvas BD via phone, WhatsApp or our online form. We cover weddings, events, corporate and reels in Bangladesh." />
         <meta property="og:url" content="https://candid-canvas.netlify.app/contact" />

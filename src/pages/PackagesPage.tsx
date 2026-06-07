@@ -27,7 +27,7 @@ export default function PackagesPage() {
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Candid Canvas BD" />
+        <meta property="og:site_name" content="Candid Canvas" />
         <meta property="og:title" content="Photography Packages &amp; Pricing | Candid Canvas BD" />
         <meta property="og:description" content="Transparent photography & cinematography packages with competitive pricing in Bangladesh. Find the perfect package for your wedding, event, or corporate session." />
         <meta property="og:url" content="https://candid-canvas.netlify.app/packages" />
