@@ -31,7 +31,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-24 lg:pb-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -65,7 +65,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
                 <X size={20} />
               </button>
             )}
-            <div className="overflow-y-auto max-h-[85vh]">
+            <div className="overflow-y-auto max-h-[75vh] lg:max-h-[85vh]">
               {children}
             </div>
           </motion.div>

@@ -2075,7 +2075,7 @@ export default function AdminPage() {
                       >
                         {localSettings.vacationImage ? (
                           <div className="relative">
-                            <img src={localSettings.vacationImage} alt="Notice background" className="w-full h-32 object-cover" />
+                            <img src={localSettings.vacationImage} alt="Notice background" className="w-full h-32 object-cover" onError={() => setLocalSettings(s => ({ ...s, vacationImage: "" }))} />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                               <span className="text-white text-xs font-medium">Click to replace</span>
                             </div>
