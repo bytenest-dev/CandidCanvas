@@ -7,7 +7,7 @@ import {
   Settings, LogOut, Search, CheckCircle, XCircle,
   Eye, Camera, Trash2, Edit, TrendingUp, Bell, Menu, Plus,
   Upload, RefreshCw, Calendar, Wrench, Mail, Users, Globe, MessageSquare,
-  Download, FileSpreadsheet, ChevronDown, CloudUpload,
+  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite, type GalleryItem, type SliderItem, type PackageItem, type ReviewItem, type SiteSettings } from '../context/SiteContext';
@@ -25,7 +25,7 @@ import logoImg from '../assets/logo.png';
 type OrderStatus = 'submitted' | 'under_review' | 'contacted' | 'approved' | 'completed' | 'rejected';
 
 interface Order {
-  id: string; client: string; email: string; package: string;
+  id: string; client: string; email: string; phone?: string; package: string;
   event: string; date: string; location: string; notes?: string;
   status: OrderStatus; createdAt: string;
 }
@@ -236,6 +236,7 @@ export default function AdminPage() {
           id: d.id || doc.id,
           client: d.client || '',
           email: d.email || '',
+          phone: d.phone || d.userPhone || '',
           package: d.package || '',
           event: d.event || '',
           date: d.date || '',
@@ -2132,45 +2133,121 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <Modal isOpen={!!viewOrder} onClose={() => setViewOrder(null)} title="Order Details" size="md">
+      <Modal isOpen={!!viewOrder} onClose={() => setViewOrder(null)} title="Order Details" size="lg">
         {viewOrder && (
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-[#374151] bg-[#F3F4F6] px-2.5 py-1 rounded-lg">{viewOrder.id}</span>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(viewOrder.status)}`}>
+          <div className="flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#111827] to-[#1e293b] px-6 py-4 flex items-center justify-between flex-shrink-0 rounded-t-xl">
+              <div>
+                <span className="font-mono text-sm text-white/80 tracking-widest">{viewOrder.id}</span>
+                <p className="text-white/40 text-xs mt-0.5">
+                  {viewOrder.createdAt ? new Date(viewOrder.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date unknown'}
+                </p>
+              </div>
+              <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(viewOrder.status)}`}>
                 {getStatusLabel(viewOrder.status)}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { l: 'Client', v: viewOrder.client },
-                { l: 'Email', v: viewOrder.email },
-                { l: 'Package', v: viewOrder.package },
-                { l: 'Event', v: viewOrder.event },
-                { l: 'Date', v: formatDate(viewOrder.date) },
-                { l: 'Location', v: viewOrder.location },
-              ].map(({ l, v }) => (
-                <div key={l}>
-                  <p className="text-xs text-[#9CA3AF] uppercase tracking-wide mb-0.5">{l}</p>
-                  <p className="text-sm text-[#111827] font-medium capitalize">{v}</p>
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+              {/* Client Info */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                  <Users size={11} /> Client Information
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Full Name</p>
+                    <p className="text-sm font-semibold text-[#111827]">{viewOrder.client}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Email Address</p>
+                    <a href={`mailto:${viewOrder.email}`} className="text-sm font-medium text-blue-600 hover:underline break-all">
+                      {viewOrder.email}
+                    </a>
+                  </div>
+                  {viewOrder.phone && (
+                    <div>
+                      <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Phone / WhatsApp</p>
+                      <a href={`tel:${viewOrder.phone}`} className="text-sm font-medium text-green-600 hover:underline">
+                        {viewOrder.phone}
+                      </a>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Quick Contact</p>
+                    <div className="flex gap-2 mt-1">
+                      <a href={`mailto:${viewOrder.email}`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-[11px] font-medium rounded-lg hover:bg-blue-700 transition-colors active:scale-95">
+                        <Mail size={10} /> Email
+                      </a>
+                      {viewOrder.phone && (
+                        <a href={`https://wa.me/${viewOrder.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-[11px] font-medium rounded-lg hover:bg-green-700 transition-colors active:scale-95">
+                          <Phone size={10} /> WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-            {viewOrder.notes && (
-              <div>
-                <p className="text-xs text-[#9CA3AF] uppercase tracking-wide mb-1">Notes</p>
-                <p className="text-sm text-[#374151] bg-[#F8F9FA] rounded-lg p-3 italic">{viewOrder.notes}</p>
               </div>
-            )}
-            <div className="flex gap-3 pt-2 border-t border-[#E5E7EB]">
-              <button onClick={() => { updateStatusWithEmail(viewOrder, 'approved'); setViewOrder(null); }}
-                className="flex-1 py-2.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 transition-colors">
-                <CheckCircle size={14} /> Approve + Email
-              </button>
-              <button onClick={() => { updateStatusWithEmail(viewOrder, 'rejected'); setViewOrder(null); }}
-                className="flex-1 py-2.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 flex items-center justify-center gap-2 transition-colors">
-                <XCircle size={14} /> Reject + Email
-              </button>
+
+              {/* Booking Details */}
+              <div className="bg-[#F8F9FA] border border-[#E5E7EB] rounded-xl p-4">
+                <p className="text-xs font-bold text-[#374151] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                  <Calendar size={11} /> Booking Details
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Package</p>
+                    <p className="text-sm font-semibold text-[#111827] capitalize">{viewOrder.package}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Event Type</p>
+                    <p className="text-sm font-semibold text-[#111827] capitalize">{viewOrder.event}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Event Date</p>
+                    <p className="text-sm font-semibold text-[#111827]">{formatDate(viewOrder.date)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Location</p>
+                    <p className="text-sm font-semibold text-[#111827]">{viewOrder.location}</p>
+                  </div>
+                </div>
+                {viewOrder.notes && (
+                  <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-1.5">Special Notes</p>
+                    <p className="text-sm text-[#374151] bg-white rounded-lg p-3 border border-[#E5E7EB] italic leading-relaxed">"{viewOrder.notes}"</p>
+                  </div>
+                )}
+              </div>
+
+              {/* All Status Action Buttons */}
+              <div className="border border-[#E5E7EB] rounded-xl p-4">
+                <p className="text-xs font-bold text-[#374151] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                  <TrendingUp size={11} /> Update Status &amp; Send Email
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {([
+                    { s: 'under_review' as OrderStatus, label: 'Under Review', icon: Eye, active: 'bg-yellow-100 border-yellow-400 text-yellow-800 ring-2 ring-yellow-200', idle: 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100' },
+                    { s: 'contacted' as OrderStatus, label: 'Contacted', icon: Mail, active: 'bg-purple-100 border-purple-400 text-purple-800 ring-2 ring-purple-200', idle: 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100' },
+                    { s: 'approved' as OrderStatus, label: 'Approve + Email', icon: CheckCircle, active: 'bg-green-100 border-green-400 text-green-800 ring-2 ring-green-200', idle: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' },
+                    { s: 'completed' as OrderStatus, label: 'Mark Complete', icon: Star, active: 'bg-blue-100 border-blue-400 text-blue-800 ring-2 ring-blue-200', idle: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
+                    { s: 'rejected' as OrderStatus, label: 'Reject + Email', icon: XCircle, active: 'bg-red-100 border-red-400 text-red-800 ring-2 ring-red-200', idle: 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' },
+                  ]).map(({ s, label, icon: Icon, active, idle }) => (
+                    <button key={s}
+                      onClick={() => { updateStatusWithEmail(viewOrder, s); setViewOrder(null); }}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95 ${viewOrder.status === s ? active : idle}`}>
+                      <Icon size={13} />
+                      {label}
+                      {viewOrder.status === s && <span className="ml-auto text-[9px] opacity-60">✓ now</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
