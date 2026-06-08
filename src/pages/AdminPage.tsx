@@ -1178,93 +1178,148 @@ export default function AdminPage() {
                     <p className="text-sm text-[#9CA3AF]">Loading orders...</p>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-                          {['Order ID', 'Client', 'Package', 'Event Date', 'Status', 'Actions'].map(h => (
-                            <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider whitespace-nowrap">{h}</th>
-                          ))}
-                        </tr></thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
-                          {displayedOrders.map(o => (
-                            <tr key={o.id} className="hover:bg-[#F8F9FA]">
-                              <td className="px-4 py-4 font-mono text-xs text-[#374151] whitespace-nowrap">{o.id}</td>
-                              <td className="px-4 py-4">
-                                <p className="font-medium text-[#111827]">{o.client}</p>
-                                <p className="text-xs text-[#9CA3AF]">{o.email}</p>
-                              </td>
-                              <td className="px-4 py-4">
-                                <p className="text-[#374151] capitalize">{o.package}</p>
-                                <p className="text-xs text-[#9CA3AF] capitalize">{o.event}</p>
-                              </td>
-                              <td className="px-4 py-4 text-[#374151] text-xs whitespace-nowrap">{formatDate(o.date)}</td>
-                              <td className="px-4 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border ${getStatusColor(o.status)}`}>
-                                  {getStatusLabel(o.status)}
-                                </span>
-                              </td>
-                              <td className="px-4 py-4">
-                                <div className="flex flex-wrap gap-1 max-w-[160px]">
-                                  <button onClick={() => updateStatusWithEmail(o, 'under_review')} title="Mark Under Review"
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' : 'text-[#9CA3AF] hover:text-yellow-700 hover:bg-yellow-50'}`}>
-                                    <Eye size={11} /><span className="hidden xl:inline">Review</span>
-                                  </button>
-                                  <button onClick={() => updateStatusWithEmail(o, 'contacted')} title="Mark Contacted"
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700' : 'text-[#9CA3AF] hover:text-purple-700 hover:bg-purple-50'}`}>
-                                    <Mail size={11} /><span className="hidden xl:inline">Contact</span>
-                                  </button>
-                                  <button onClick={() => updateStatusWithEmail(o, 'approved')} title="Approve & Email"
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700' : 'text-[#9CA3AF] hover:text-green-700 hover:bg-green-50'}`}>
-                                    <CheckCircle size={11} /><span className="hidden xl:inline">Approve</span>
-                                  </button>
-                                  <button onClick={() => updateStatusWithEmail(o, 'completed')} title="Mark Complete"
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'text-[#9CA3AF] hover:text-blue-700 hover:bg-blue-50'}`}>
-                                    <Star size={11} /><span className="hidden xl:inline">Complete</span>
-                                  </button>
-                                  <button onClick={() => updateStatusWithEmail(o, 'rejected')} title="Reject & Email"
-                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600' : 'text-[#9CA3AF] hover:text-red-600 hover:bg-red-50'}`}>
-                                    <XCircle size={11} /><span className="hidden xl:inline">Reject</span>
-                                  </button>
-                                  <button onClick={() => setViewOrder(o)} title="View Full Details"
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
-                                    <ChevronDown size={11} /><span className="hidden xl:inline">Details</span>
-                                  </button>
-                                  <button onClick={async () => {
-                                    if (!window.confirm('Delete this order permanently?')) return;
-                                    try {
-                                      const { collection, query, where, getDocs, deleteDoc, doc } = await import('firebase/firestore');
-                                      const { db } = await import('../lib/firebase');
-                                      // Orders are stored with a custom 'id' field — query by it
-                                      const q = query(collection(db, 'bookings'), where('id', '==', o.id));
-                                      const snap = await getDocs(q);
-                                      if (!snap.empty) {
-                                        await deleteDoc(snap.docs[0].ref);
-                                      } else {
-                                        // Fallback: try deleting by Firestore doc ID directly
-                                        await deleteDoc(doc(db, 'bookings', o.id));
-                                      }
-                                      setOrders(prev => prev.filter(x => x.id !== o.id));
-                                      toast.success('Order deleted');
-                                    } catch { toast.error('Failed to delete order'); }
-                                  }} title="Delete Order"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  <>
+                    {/* ── MOBILE: Card layout (< md) ── */}
+                    <div className="md:hidden space-y-3">
+                      {displayedOrders.length === 0 ? (
+                        <div className="bg-white rounded-xl border border-[#E5E7EB] p-10 text-center">
+                          <ShoppingBag size={28} className="mx-auto mb-3 text-[#D1D5DB]" />
+                          <p className="text-sm text-[#9CA3AF]">No orders found.</p>
+                        </div>
+                      ) : displayedOrders.map(o => (
+                        <div key={o.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm">
+                          {/* Top row */}
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-[#111827] text-sm truncate">{o.client}</p>
+                              <p className="text-xs text-[#9CA3AF] truncate">{o.email}</p>
+                              <p className="font-mono text-[10px] text-[#9CA3AF] mt-0.5">{o.id}</p>
+                            </div>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border flex-shrink-0 ${getStatusColor(o.status)}`}>
+                              {getStatusLabel(o.status)}
+                            </span>
+                          </div>
+                          {/* Details row */}
+                          <div className="flex items-center gap-4 text-xs text-[#6B7280] mb-3 flex-wrap">
+                            <span className="capitalize">📦 {o.package}</span>
+                            <span className="capitalize">🎭 {o.event}</span>
+                            <span>📅 {formatDate(o.date)}</span>
+                          </div>
+                          {/* Action buttons — 2 per row on mobile */}
+                          <div className="grid grid-cols-3 gap-1.5">
+                            <button onClick={() => { updateStatusWithEmail(o, 'under_review'); }}
+                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-yellow-50 hover:text-yellow-700'}`}>
+                              <Eye size={11} /> Review
+                            </button>
+                            <button onClick={() => { updateStatusWithEmail(o, 'contacted'); }}
+                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-purple-50 hover:text-purple-700'}`}>
+                              <Mail size={11} /> Contact
+                            </button>
+                            <button onClick={() => { updateStatusWithEmail(o, 'approved'); }}
+                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-green-50 hover:text-green-700'}`}>
+                              <CheckCircle size={11} /> Approve
+                            </button>
+                            <button onClick={() => { updateStatusWithEmail(o, 'completed'); }}
+                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-blue-50 hover:text-blue-700'}`}>
+                              <Star size={11} /> Complete
+                            </button>
+                            <button onClick={() => { updateStatusWithEmail(o, 'rejected'); }}
+                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600 border border-red-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-red-50 hover:text-red-600'}`}>
+                              <XCircle size={11} /> Reject
+                            </button>
+                            <button onClick={() => setViewOrder(o)}
+                              className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-[#111827] text-white border border-[#111827] hover:bg-[#374151] transition-all">
+                              <ChevronDown size={11} /> Details
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    {displayedOrders.length === 0 && (
-                      <div className="text-center py-12 text-[#9CA3AF]">
-                        <ShoppingBag size={32} className="mx-auto mb-3 opacity-20" />
-                        <p className="text-sm">No orders found.</p>
+
+                    {/* ── DESKTOP: Table layout (>= md) ── */}
+                    <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                            {['Order ID', 'Client', 'Package', 'Event Date', 'Status', 'Actions'].map(h => (
+                              <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider whitespace-nowrap">{h}</th>
+                            ))}
+                          </tr></thead>
+                          <tbody className="divide-y divide-[#F3F4F6]">
+                            {displayedOrders.map(o => (
+                              <tr key={o.id} className="hover:bg-[#F8F9FA] transition-colors">
+                                <td className="px-4 py-4 font-mono text-xs text-[#374151] whitespace-nowrap">{o.id}</td>
+                                <td className="px-4 py-4">
+                                  <p className="font-medium text-[#111827]">{o.client}</p>
+                                  <p className="text-xs text-[#9CA3AF]">{o.email}</p>
+                                </td>
+                                <td className="px-4 py-4">
+                                  <p className="text-[#374151] capitalize">{o.package}</p>
+                                  <p className="text-xs text-[#9CA3AF] capitalize">{o.event}</p>
+                                </td>
+                                <td className="px-4 py-4 text-[#374151] text-xs whitespace-nowrap">{formatDate(o.date)}</td>
+                                <td className="px-4 py-4">
+                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border ${getStatusColor(o.status)}`}>
+                                    {getStatusLabel(o.status)}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-4">
+                                  <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                    <button onClick={() => updateStatusWithEmail(o, 'under_review')} title="Mark Under Review"
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' : 'text-[#9CA3AF] hover:text-yellow-700 hover:bg-yellow-50'}`}>
+                                      <Eye size={11} /><span className="hidden xl:inline">Review</span>
+                                    </button>
+                                    <button onClick={() => updateStatusWithEmail(o, 'contacted')} title="Mark Contacted"
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700' : 'text-[#9CA3AF] hover:text-purple-700 hover:bg-purple-50'}`}>
+                                      <Mail size={11} /><span className="hidden xl:inline">Contact</span>
+                                    </button>
+                                    <button onClick={() => updateStatusWithEmail(o, 'approved')} title="Approve & Email"
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700' : 'text-[#9CA3AF] hover:text-green-700 hover:bg-green-50'}`}>
+                                      <CheckCircle size={11} /><span className="hidden xl:inline">Approve</span>
+                                    </button>
+                                    <button onClick={() => updateStatusWithEmail(o, 'completed')} title="Mark Complete"
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'text-[#9CA3AF] hover:text-blue-700 hover:bg-blue-50'}`}>
+                                      <Star size={11} /><span className="hidden xl:inline">Complete</span>
+                                    </button>
+                                    <button onClick={() => updateStatusWithEmail(o, 'rejected')} title="Reject & Email"
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600' : 'text-[#9CA3AF] hover:text-red-600 hover:bg-red-50'}`}>
+                                      <XCircle size={11} /><span className="hidden xl:inline">Reject</span>
+                                    </button>
+                                    <button onClick={() => setViewOrder(o)} title="View Full Details"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
+                                      <ChevronDown size={11} /><span className="hidden xl:inline">Details</span>
+                                    </button>
+                                    <button onClick={async () => {
+                                      if (!window.confirm('Delete this order permanently?')) return;
+                                      try {
+                                        const { collection, query, where, getDocs, deleteDoc, doc } = await import('firebase/firestore');
+                                        const { db } = await import('../lib/firebase');
+                                        const q = query(collection(db, 'bookings'), where('id', '==', o.id));
+                                        const snap = await getDocs(q);
+                                        if (!snap.empty) { await deleteDoc(snap.docs[0].ref); }
+                                        else { await deleteDoc(doc(db, 'bookings', o.id)); }
+                                        setOrders(prev => prev.filter(x => x.id !== o.id));
+                                        toast.success('Order deleted');
+                                      } catch { toast.error('Failed to delete order'); }
+                                    }} title="Delete Order"
+                                      className="p-1.5 text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    )}
-                  </div>
+                      {displayedOrders.length === 0 && (
+                        <div className="text-center py-12 text-[#9CA3AF]">
+                          <ShoppingBag size={32} className="mx-auto mb-3 opacity-20" />
+                          <p className="text-sm">No orders found.</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {/* Email log */}
