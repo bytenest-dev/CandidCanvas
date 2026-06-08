@@ -967,38 +967,32 @@ export default function AdminPage() {
                     <h2 className="font-semibold text-[#111827] text-sm mb-1">Order Status</h2>
                     <p className="text-xs text-[#9CA3AF] mb-3">Distribution by status</p>
                     {orders.length === 0 ? (
-                      <div className="h-[180px] flex items-center justify-center text-[#9CA3AF] text-xs">No orders yet</div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                          <Pie
-                            data={[
-                              { name: 'Pending', value: orders.filter(o => ['submitted','under_review'].includes(o.status)).length || 0 },
-                              { name: 'Completed', value: orders.filter(o => o.status === 'completed').length || 0 },
-                              { name: 'Rejected', value: orders.filter(o => o.status === 'rejected').length || 0 },
-                              { name: 'In Progress', value: orders.filter(o => ['contacted','approved'].includes(o.status)).length || 0 },
-                            ].filter(d => d.value > 0)}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={45}
-                            outerRadius={70}
-                            paddingAngle={3}
-                            dataKey="value"
-                          >
-                            {[
-                              { name: 'Pending', value: 0 },
-                              { name: 'Completed', value: 0 },
-                              { name: 'Rejected', value: 0 },
-                              { name: 'In Progress', value: 0 },
-                            ].map((_, index) => (
-                              <Cell key={index} fill={['#F59E0B','#10B981','#EF4444','#3B82F6'][index]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB' }} />
-                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    )}
+                      <div className="h-[200px] flex items-center justify-center text-[#9CA3AF] text-xs">No orders yet</div>
+                    ) : (() => {
+                      const PIE_DATA = [
+                        { name: 'Under Review', value: orders.filter(o => ['submitted','under_review'].includes(o.status)).length, color: '#F59E0B' },
+                        { name: 'Contacted', value: orders.filter(o => o.status === 'contacted').length, color: '#8B5CF6' },
+                        { name: 'Approved', value: orders.filter(o => o.status === 'approved').length, color: '#3B82F6' },
+                        { name: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: '#10B981' },
+                        { name: 'Rejected', value: orders.filter(o => o.status === 'rejected').length, color: '#EF4444' },
+                      ].filter(d => d.value > 0);
+                      return (
+                        <ResponsiveContainer width="100%" height={210}>
+                          <PieChart>
+                            <Pie data={PIE_DATA} cx="50%" cy="45%" innerRadius={42} outerRadius={68} paddingAngle={3} dataKey="value"
+                              label={({ name, value }) => `${value}`} labelLine={false}>
+                              {PIE_DATA.map((entry, index) => (
+                                <Cell key={index} fill={entry.color} stroke="white" strokeWidth={2} />
+                              ))}
+                            </Pie>
+                            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E7EB', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                              formatter={(value, name) => [value, name]} />
+                            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 10 }}
+                              formatter={(value) => <span style={{ color: '#374151' }}>{value}</span>} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1211,7 +1205,7 @@ export default function AdminPage() {
                                 </span>
                               </td>
                               <td className="px-4 py-4">
-                                <div className="flex items-center gap-1 flex-wrap">
+                                <div className="flex flex-wrap gap-1 max-w-[160px]">
                                   <button onClick={() => updateStatusWithEmail(o, 'under_review')} title="Mark Under Review"
                                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' : 'text-[#9CA3AF] hover:text-yellow-700 hover:bg-yellow-50'}`}>
                                     <Eye size={11} /><span className="hidden xl:inline">Review</span>
@@ -2171,9 +2165,15 @@ export default function AdminPage() {
                   {viewOrder.phone && (
                     <div>
                       <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Phone / WhatsApp</p>
-                      <a href={`tel:${viewOrder.phone}`} className="text-sm font-medium text-green-600 hover:underline">
-                        {viewOrder.phone}
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-green-600">{viewOrder.phone}</span>
+                        <button
+                          onClick={() => { navigator.clipboard?.writeText(viewOrder.phone || ""); toast.success("Phone copied!"); }}
+                          className="text-[10px] text-[#9CA3AF] hover:text-[#374151] px-1.5 py-0.5 rounded border border-[#E5E7EB] hover:border-[#374151] transition-colors"
+                          title="Copy number">
+                          Copy
+                        </button>
+                      </div>
                     </div>
                   )}
                   <div>
