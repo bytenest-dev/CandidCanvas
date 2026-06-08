@@ -134,10 +134,19 @@ export default function BookingPage() {
             <p className="text-xs text-[#6B7280]">Booking Reference</p>
             <p className="font-mono text-lg font-bold text-[#111827] mt-1">{bookingId}</p>
           </div>
-          <div className="space-y-2 text-sm text-[#6B7280]">
-            <p>?? We'll reach you via WhatsApp or email</p>
-            <p>?? Session date confirmation within 24 hrs</p>
-            <p>? Let's create something beautiful together</p>
+          <div className="space-y-2 text-sm text-[#6B7280] text-left bg-[#F8F9FA] rounded-xl p-4">
+            <div className="flex items-center gap-2.5">
+              <span className="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">📱</span>
+              <p>We'll reach you via WhatsApp or email</p>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">⏰</span>
+              <p>Session date confirmation within 24 hrs</p>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-7 h-7 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">✨</span>
+              <p>Let's create something beautiful together</p>
+            </div>
           </div>
         </motion.div>
       </div>

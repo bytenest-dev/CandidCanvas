@@ -1232,9 +1232,9 @@ export default function AdminPage() {
                                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600' : 'text-[#9CA3AF] hover:text-red-600 hover:bg-red-50'}`}>
                                     <XCircle size={11} /><span className="hidden xl:inline">Reject</span>
                                   </button>
-                                  <button onClick={() => setViewOrder(o)} title="View Details"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 rounded-lg transition-colors">
-                                    <ChevronDown size={14} />
+                                  <button onClick={() => setViewOrder(o)} title="View Full Details"
+                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
+                                    <ChevronDown size={11} /><span className="hidden xl:inline">Details</span>
                                   </button>
                                   <button onClick={async () => {
                                     if (!window.confirm('Delete this order permanently?')) return;
@@ -2184,10 +2184,16 @@ export default function AdminPage() {
                         <Mail size={10} /> Email
                       </a>
                       {viewOrder.phone && (
-                        <a href={`https://wa.me/${viewOrder.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-[11px] font-medium rounded-lg hover:bg-green-700 transition-colors active:scale-95">
-                          <Phone size={10} /> WhatsApp
-                        </a>
+                        <>
+                          <a href={`tel:${viewOrder.phone}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#111827] text-white text-[11px] font-medium rounded-lg hover:bg-[#374151] transition-colors active:scale-95">
+                            <Phone size={10} /> Call
+                          </a>
+                          <a href={`https://wa.me/${viewOrder.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-[11px] font-medium rounded-lg hover:bg-green-700 transition-colors active:scale-95">
+                            <Phone size={10} /> WhatsApp
+                          </a>
+                        </>
                       )}
                     </div>
                   </div>

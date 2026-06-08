@@ -474,7 +474,7 @@ export default function DashboardPage() {
                       <span className="text-white/60 text-xs font-medium uppercase tracking-widest">Welcome back</span>
                     </div>
                     <h1 className="font-heading text-3xl sm:text-4xl text-white mb-1">
-                      {user.displayName?.split(' ')[0]} 👋
+                      {user.displayName} 👋
                     </h1>
                     <p className="text-white/50 text-sm">
                       {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
