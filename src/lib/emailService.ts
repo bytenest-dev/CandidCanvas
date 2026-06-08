@@ -104,11 +104,24 @@ const EMAIL_TEMPLATES = {
     <div class="footer-contact">
       📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610<br>
-      🌐 Premium Photography & Cinematography, Dhaka, Bangladesh
+      🌐 <a href="https://www.candidcanvas.pro.bd" style="color:#6B7280;text-decoration:none;">www.candidcanvas.pro.bd</a><br>
+      📍 Gohail Rd, Bogura, Bangladesh
     </div>
     <div class="footer-note">This email was sent regarding booking ${data.orderId}. Please keep this for your records.</div>
   </div>
-</div></div></body></html>`,
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;">
+  <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p>
+  <div style="display:flex;justify-content:center;gap:16px;">
+    <a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a>
+  </div>
+  <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
   }),
 
   rejected: (data: OrderEmailData) => ({
@@ -172,11 +185,24 @@ const EMAIL_TEMPLATES = {
     <div class="footer-contact">
       📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610<br>
-      🌐 Premium Photography & Cinematography, Dhaka, Bangladesh
+      🌐 <a href="https://www.candidcanvas.pro.bd" style="color:#6B7280;text-decoration:none;">www.candidcanvas.pro.bd</a><br>
+      📍 Gohail Rd, Bogura, Bangladesh
     </div>
     <div class="footer-note">This email was sent regarding booking request ${data.orderId}.</div>
   </div>
-</div></div></body></html>`,
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;">
+  <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p>
+  <div style="display:flex;justify-content:center;gap:16px;">
+    <a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a>
+  </div>
+  <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
   }),
 
   contacted: (data: OrderEmailData) => ({
@@ -234,11 +260,25 @@ const EMAIL_TEMPLATES = {
     <div class="footer-brand">📷 Candid Canvas BD</div>
     <div class="footer-contact">
       📧 team.candidcanvas.bd@gmail.com<br>
-      📱 WhatsApp: +8801849244610
+      📱 WhatsApp: +8801849244610<br>
+      🌐 <a href="https://www.candidcanvas.pro.bd" style="color:#6B7280;text-decoration:none;">www.candidcanvas.pro.bd</a><br>
+      📍 Gohail Rd, Bogura, Bangladesh
     </div>
     <div class="footer-note">Booking reference: ${data.orderId}</div>
   </div>
-</div></div></body></html>`,
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;">
+  <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p>
+  <div style="display:flex;justify-content:center;gap:16px;">
+    <a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a>
+  </div>
+  <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
   }),
 
   completed: (data: OrderEmailData) => ({
@@ -300,11 +340,24 @@ const EMAIL_TEMPLATES = {
     <div class="footer-contact">
       📧 team.candidcanvas.bd@gmail.com<br>
       📱 WhatsApp: +8801849244610<br>
-      🌐 Premium Photography & Cinematography, Dhaka, Bangladesh
+      🌐 <a href="https://www.candidcanvas.pro.bd" style="color:#6B7280;text-decoration:none;">www.candidcanvas.pro.bd</a><br>
+      📍 Gohail Rd, Bogura, Bangladesh
     </div>
     <div class="footer-note">Session reference: ${data.orderId}. Thank you for your trust.</div>
   </div>
-</div></div></body></html>`,
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;">
+  <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p>
+  <div style="display:flex;justify-content:center;gap:16px;">
+    <a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a>
+    <span style="color:rgba(255,255,255,0.2);">•</span>
+    <a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a>
+  </div>
+  <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
+</div>
+<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
   }),
 };
 

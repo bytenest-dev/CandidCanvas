@@ -10,8 +10,8 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>Candid Canvas BD | Best Wedding Photography &amp; Cinematography in Bangladesh</title>
-        <meta name="description" content="Candid Canvas BD — Bangladesh's #1 photography and cinematography studio. Premium wedding photography, cinematic films, reels, corporate events in Bogura &amp; across Bangladesh. 500+ projects, 98% client satisfaction. Book today!" />
+        <title>Candid Canvas | Candid Canvas BD | Best Wedding Photography &amp; Cinematography Bangladesh</title>
+        <meta name="description" content="Candid Canvas (Candid Canvas BD) — Bangladesh's #1 photography and cinematography studio. Premium wedding photography, cinematic films, reels, corporate events in Bogura &amp; across Bangladesh. 500+ projects, 98% client satisfaction. Book today!" />
         <meta name="keywords" content="Candid Canvas, Candid Canvas BD, candid canvas photography bangladesh, best wedding photographer bangladesh, best photographer bogura, wedding photography bangladesh, cinematography bangladesh, wedding cinematography, reels production bangladesh, corporate photography, event photography bangladesh, birthday photography bogura, pre-wedding photography bangladesh, candid photography, portrait photography bangladesh, photography studio bogura, বিয়ের ফটোগ্রাফি বাংলাদেশ, ক্যান্ডিড ক্যানভাস বিডি" />
         <link rel="canonical" href={`${BASE}/`} />
         <meta name="robots" content="index, follow, max-image-preview:large" />

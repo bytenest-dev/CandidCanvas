@@ -76,13 +76,13 @@ function AdminSidebar({
   orders, messages, reviews, user, onLogout,
 }: AdminSidebarProps) {
   return (
-    <aside className="flex flex-col w-64 bg-[#111827] h-full overflow-hidden">
+    <aside className="flex flex-col w-64 bg-gradient-to-b from-[#0f172a] to-[#1e293b] h-full overflow-hidden">
       <div className="p-5 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <img src={logoImg} alt="Candid Canvas BD" className="h-8 w-auto object-contain brightness-0 invert flex-shrink-0" />
             <div>
-              <p className="font-heading font-bold text-sm tracking-wider text-white uppercase">Admin Panel</p>
+              <p className="font-heading font-bold text-sm tracking-wider text-white uppercase">Admin Panel</p><div className="flex items-center gap-1 mt-0.5"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span><p className="text-[#10b981] text-[9px] font-medium tracking-wider uppercase">Live</p></div>
               <p className="text-white/40 text-[10px]">Candid Canvas BD</p>
             </div>
           </div>
@@ -891,10 +891,17 @@ export default function AdminPage() {
             {/* ── OVERVIEW ── */}
             {activeTab === 'overview' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <p className="text-[#6B7280] text-sm mb-6">
-                  Welcome back, <span className="font-semibold text-[#111827]">{user?.displayName || 'Admin'}</span>
-                  <span className="text-[#9CA3AF] ml-2 text-xs">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                </p>
+                <div className="bg-gradient-to-r from-[#111827] to-[#1e293b] rounded-2xl p-5 mb-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-white/60 text-xs font-medium tracking-wider uppercase mb-1">Welcome back</p>
+                    <h2 className="font-heading text-white text-xl">{user?.displayName || 'Admin'}</h2>
+                    <p className="text-white/40 text-xs mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
+                  <div className="hidden sm:flex flex-col items-end gap-1">
+                    <span className="text-xs text-white/40">Candid Canvas BD</span>
+                    <span className="text-xs text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>All Systems Live</span>
+                  </div>
+                </div>
 
                 {/* Stats Grid - 6 cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
@@ -1198,31 +1205,31 @@ export default function AdminPage() {
                               </td>
                               <td className="px-4 py-4 text-[#374151] text-xs whitespace-nowrap">{formatDate(o.date)}</td>
                               <td className="px-4 py-4">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(o.status)}`}>
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border ${getStatusColor(o.status)}`}>
                                   {getStatusLabel(o.status)}
                                 </span>
                               </td>
                               <td className="px-4 py-4">
                                 <div className="flex items-center gap-1 flex-wrap">
                                   <button onClick={() => updateStatusWithEmail(o, 'under_review')} title="Mark Under Review"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors">
-                                    <Eye size={14} />
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' : 'text-[#9CA3AF] hover:text-yellow-700 hover:bg-yellow-50'}`}>
+                                    <Eye size={11} /><span className="hidden xl:inline">Review</span>
                                   </button>
                                   <button onClick={() => updateStatusWithEmail(o, 'contacted')} title="Mark Contacted"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                                    <Mail size={14} />
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700' : 'text-[#9CA3AF] hover:text-purple-700 hover:bg-purple-50'}`}>
+                                    <Mail size={11} /><span className="hidden xl:inline">Contact</span>
                                   </button>
                                   <button onClick={() => updateStatusWithEmail(o, 'approved')} title="Approve & Email"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                                    <CheckCircle size={14} />
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700' : 'text-[#9CA3AF] hover:text-green-700 hover:bg-green-50'}`}>
+                                    <CheckCircle size={11} /><span className="hidden xl:inline">Approve</span>
                                   </button>
                                   <button onClick={() => updateStatusWithEmail(o, 'completed')} title="Mark Complete"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <Star size={14} />
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'text-[#9CA3AF] hover:text-blue-700 hover:bg-blue-50'}`}>
+                                    <Star size={11} /><span className="hidden xl:inline">Complete</span>
                                   </button>
                                   <button onClick={() => updateStatusWithEmail(o, 'rejected')} title="Reject & Email"
-                                    className="p-1.5 text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                    <XCircle size={14} />
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600' : 'text-[#9CA3AF] hover:text-red-600 hover:bg-red-50'}`}>
+                                    <XCircle size={11} /><span className="hidden xl:inline">Reject</span>
                                   </button>
                                   <button onClick={() => setViewOrder(o)} title="View Details"
                                     className="p-1.5 text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 rounded-lg transition-colors">
