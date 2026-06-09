@@ -39,6 +39,12 @@ export default function BookingPage() {
   const activePackages = packages.filter(p => p.active);
 
   // Auth guard
+  const { register, handleSubmit, trigger, getValues, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: user?.displayName || '', email: user?.email || '' },
+  });
+
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-[#F0F2F5] flex items-center justify-center p-6">
@@ -62,11 +68,6 @@ export default function BookingPage() {
       </div>
     );
   }
-
-  const { register, handleSubmit, trigger, getValues, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { name: user?.displayName || '', email: user?.email || '' },
-  });
 
   const nextStep = async () => {
     const fieldsMap: (keyof FormData)[][] = [
