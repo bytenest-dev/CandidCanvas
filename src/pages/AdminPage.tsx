@@ -1830,51 +1830,102 @@ export default function AdminPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-                          {['Image', 'Name', 'Category', 'Price', 'Status', 'Actions'].map(h => (
-                            <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">{h}</th>
-                          ))}
-                        </tr></thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
-                          {packages.map(pkg => (
-                            <tr key={pkg.id} className="hover:bg-[#F8F9FA]">
-                              <td className="px-4 py-4">
-                                {pkg.imageUrl ? (
-                                  <img src={pkg.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-[#E5E7EB]" />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-lg bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB]">
-                                    <Image size={16} className="text-[#9CA3AF]" />
-                                  </div>
-                                )}
-                              </td>
-                              <td className="px-4 py-4">
-                                <p className="font-medium text-[#111827]">{pkg.name}</p>
-                                {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-full">⭐ Popular</span>}
-                              </td>
-                              <td className="px-4 py-4 font-mono text-xs text-[#374151]">{pkg.category}</td>
-                              <td className="px-4 py-4 font-semibold text-[#111827]">{pkg.price}</td>
-                              <td className="px-4 py-4">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pkg.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <>
+                    {/* Mobile: Card layout */}
+                    <div className="md:hidden space-y-3">
+                      {packages.map(pkg => (
+                        <div key={pkg.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm">
+                          <div className="flex items-start gap-3">
+                            {pkg.imageUrl ? (
+                              <img src={pkg.imageUrl} alt="" className="w-14 h-14 rounded-xl object-cover border border-[#E5E7EB] flex-shrink-0" />
+                            ) : (
+                              <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB] flex-shrink-0">
+                                <Image size={20} className="text-[#9CA3AF]" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <p className="font-semibold text-[#111827] text-sm">{pkg.name}</p>
+                                {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-2 py-0.5 rounded-full">⭐ Popular</span>}
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${pkg.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                   {pkg.active ? 'Active' : 'Archived'}
                                 </span>
-                              </td>
-                              <td className="px-4 py-4">
-                                <div className="flex items-center gap-1">
-                                  <button onClick={() => openEditPkg(pkg)} title="Edit" className="p-1.5 text-[#9CA3AF] hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={14} /></button>
-                                  <button onClick={() => togglePkgActive(pkg.id)} title="Toggle Active" className="p-1.5 text-[#9CA3AF] hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"><RefreshCw size={14} /></button>
-                                  <button onClick={() => togglePkgPopular(pkg.id)} title="Toggle Popular" className="p-1.5 text-[#9CA3AF] hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"><Star size={14} /></button>
-                                  <button onClick={() => deletePkg(pkg.id)} title="Delete" className="p-1.5 text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} /></button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-[#6B7280] mb-3">
+                                <span className="font-mono bg-[#F3F4F6] px-1.5 py-0.5 rounded">{pkg.category}</span>
+                                <span className="font-bold text-[#111827]">{pkg.price}</span>
+                              </div>
+                              <div className="grid grid-cols-4 gap-1.5">
+                                <button onClick={() => openEditPkg(pkg)}
+                                  className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all active:scale-95">
+                                  <Edit size={11} /> Edit
+                                </button>
+                                <button onClick={() => togglePkgActive(pkg.id)}
+                                  className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold border transition-all active:scale-95 ${pkg.active ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
+                                  <RefreshCw size={11} /> {pkg.active ? 'Archive' : 'Activate'}
+                                </button>
+                                <button onClick={() => togglePkgPopular(pkg.id)}
+                                  className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold border transition-all active:scale-95 ${pkg.popular ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-[#F8F9FA] text-[#6B7280] border-[#E5E7EB]'}`}>
+                                  <Star size={11} /> {pkg.popular ? 'Unpin' : 'Star'}
+                                </button>
+                                <button onClick={() => deletePkg(pkg.id)}
+                                  className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all active:scale-95">
+                                  <Trash2 size={11} /> Del
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+
+                    {/* Desktop: Table layout */}
+                    <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                            {['Image', 'Name', 'Category', 'Price', 'Status', 'Actions'].map(h => (
+                              <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">{h}</th>
+                            ))}
+                          </tr></thead>
+                          <tbody className="divide-y divide-[#F3F4F6]">
+                            {packages.map(pkg => (
+                              <tr key={pkg.id} className="hover:bg-[#F8F9FA] transition-colors">
+                                <td className="px-4 py-4">
+                                  {pkg.imageUrl ? (
+                                    <img src={pkg.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-[#E5E7EB]" />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-[#F3F4F6] flex items-center justify-center border border-[#E5E7EB]">
+                                      <Image size={16} className="text-[#9CA3AF]" />
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-4 py-4">
+                                  <p className="font-medium text-[#111827]">{pkg.name}</p>
+                                  {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-full">⭐ Popular</span>}
+                                </td>
+                                <td className="px-4 py-4 font-mono text-xs text-[#374151]">{pkg.category}</td>
+                                <td className="px-4 py-4 font-semibold text-[#111827]">{pkg.price}</td>
+                                <td className="px-4 py-4">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pkg.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    {pkg.active ? 'Active' : 'Archived'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-4">
+                                  <div className="flex items-center gap-1">
+                                    <button onClick={() => openEditPkg(pkg)} title="Edit" className="p-1.5 text-[#9CA3AF] hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={14} /></button>
+                                    <button onClick={() => togglePkgActive(pkg.id)} title="Toggle Active" className="p-1.5 text-[#9CA3AF] hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"><RefreshCw size={14} /></button>
+                                    <button onClick={() => togglePkgPopular(pkg.id)} title="Toggle Popular" className="p-1.5 text-[#9CA3AF] hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"><Star size={14} /></button>
+                                    <button onClick={() => deletePkg(pkg.id)} title="Delete" className="p-1.5 text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
                 )}
               </motion.div>
             )}
