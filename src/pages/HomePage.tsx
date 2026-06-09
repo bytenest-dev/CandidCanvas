@@ -72,7 +72,7 @@ export default function HomePage() {
               <strong>pre-wedding shoots</strong>, <strong>outdoor portrait photography</strong> and
               <strong>festival coverage</strong>. With <strong>500+ completed projects</strong> and{' '}
               <strong>98% client satisfaction</strong>, Candid Canvas BD is the most trusted photography studio
-              across Bangladesh — from Bogura, Dhaka, Chittagong, Rajshahi to Sylhet.
+              across Bangladesh — based in <strong>Bogura</strong>, serving clients nationwide.
             </p>
           </div>
 
