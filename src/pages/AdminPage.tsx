@@ -2108,7 +2108,7 @@ export default function AdminPage() {
                         rows={2} className="w-full border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827] resize-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#6B7280] mb-1.5 uppercase tracking-wide flex items-center gap-1">
+                      <label className="flex items-center gap-1 text-xs font-medium text-[#6B7280] mb-1.5 uppercase tracking-wide">
                         <Calendar size={11} /> Return Date (optional)
                       </label>
                       <input type="date" value={localSettings.vacationEndDate}
@@ -2116,7 +2116,7 @@ export default function AdminPage() {
                         className="w-full border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827]" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#6B7280] mb-1.5 uppercase tracking-wide flex items-center gap-1">
+                      <label className="flex items-center gap-1 text-xs font-medium text-[#6B7280] mb-1.5 uppercase tracking-wide">
                         <Image size={11} /> Background Image (optional)
                       </label>
                       <p className="text-[10px] text-[#9CA3AF] mb-2">Upload an Eid card, event banner, or any image as the background of the notice page.</p>
