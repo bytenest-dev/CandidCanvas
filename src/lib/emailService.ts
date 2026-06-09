@@ -121,7 +121,7 @@ const EMAIL_TEMPLATES = {
   </div>
   <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
 </div>
-<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
+</div></div></body></html>`,
   }),
 
   rejected: (data: OrderEmailData) => ({
@@ -202,7 +202,7 @@ const EMAIL_TEMPLATES = {
   </div>
   <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
 </div>
-<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
+</div></div></body></html>`,
   }),
 
   contacted: (data: OrderEmailData) => ({
@@ -278,7 +278,7 @@ const EMAIL_TEMPLATES = {
   </div>
   <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
 </div>
-<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
+</div></div></body></html>`,
   }),
 
   completed: (data: OrderEmailData) => ({
@@ -357,9 +357,31 @@ const EMAIL_TEMPLATES = {
   </div>
   <p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p>
 </div>
-<div style="background:#111827;padding:16px 40px;text-align:center;"><p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Follow us on social media</p><div style="display:flex;justify-content:center;gap:16px;"><a href="https://www.facebook.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Facebook</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.instagram.com/candidcanvasbd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">Instagram</a><span style="color:rgba(255,255,255,0.2);">•</span><a href="https://www.youtube.com/@Candid.Canvas_bd" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:11px;">YouTube</a></div><p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;">© 2026 Candid Canvas BD. All rights reserved.</p></div></div></div></body></html>`,
+</div></div></body></html>`,
   }),
 };
+
+/** Increment email quota counter in Firestore */
+async function incrementEmailQuota(): Promise<void> {
+  try {
+    const { doc, getDoc, setDoc, updateDoc, increment } = await import('firebase/firestore');
+    const { db } = await import('./firebase');
+    const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const ref = doc(db, 'siteData', 'emailQuota');
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      // Reset if new month
+      if (data.month !== month) {
+        await setDoc(ref, { count: 1, month, resetAt: new Date().toISOString() });
+      } else {
+        await updateDoc(ref, { count: increment(1) });
+      }
+    } else {
+      await setDoc(ref, { count: 1, month, resetAt: new Date().toISOString() });
+    }
+  } catch { /* silent */ }
+}
 
 export async function sendOrderEmail(data: OrderEmailData): Promise<void> {
   const template = EMAIL_TEMPLATES[data.status](data);
@@ -387,6 +409,8 @@ export async function sendOrderEmail(data: OrderEmailData): Promise<void> {
         { publicKey }
       );
       console.log('✅ Email sent!', result.status);
+      // Track quota in Firestore on successful send
+      await incrementEmailQuota();
     } catch (error: unknown) {
       const err = error as { text?: string; status?: number; message?: string };
       console.error('❌ Email error:', err?.text || err?.message || error);

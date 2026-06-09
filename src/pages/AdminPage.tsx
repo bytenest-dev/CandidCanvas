@@ -277,6 +277,10 @@ export default function AdminPage() {
   const [prevMonthVisitors, setPrevMonthVisitors] = useState(0);
   const [thisMonthVisitors, setThisMonthVisitors] = useState(0);
 
+  // Email quota state
+  const [emailsSent, setEmailsSent] = useState(0);
+  const EMAIL_QUOTA = 200;
+
   const loadStats = useCallback(async () => {
     try {
       const { collection, doc, onSnapshot } = await import('firebase/firestore');
@@ -329,6 +333,21 @@ export default function AdminPage() {
           return data.provider === 'google' || (data.photoURL && data.photoURL.includes('googleusercontent'));
         }).length;
         setGoogleUsers(googleCount);
+      });
+
+      // 5. Real-time email quota — auto-reset if new month
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      onSnapshot(doc(db, 'siteData', 'emailQuota'), snap => {
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.month === currentMonth) {
+            setEmailsSent(d.count || 0);
+          } else {
+            setEmailsSent(0); // new month, not reset yet
+          }
+        } else {
+          setEmailsSent(0);
+        }
       });
 
     } catch { /* silent */ }
@@ -1050,6 +1069,67 @@ export default function AdminPage() {
                       </AreaChart>
                     </ResponsiveContainer>
                   )}
+                </div>
+
+                {/* Email Quota Widget */}
+                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h2 className="font-semibold text-[#111827] text-sm flex items-center gap-2">
+                        <Mail size={14} className="text-[#6B7280]" /> EmailJS Monthly Quota
+                      </h2>
+                      <p className="text-xs text-[#9CA3AF] mt-0.5">Free plan: 200 emails/month — resets on the 1st</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-[#111827]">{EMAIL_QUOTA - emailsSent}</p>
+                        <p className="text-[10px] text-[#9CA3AF]">remaining</p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm('Reset email quota counter to 0? Only do this at the start of a new billing month.')) return;
+                          try {
+                            const { doc: fsDoc, setDoc } = await import('firebase/firestore');
+                            const { db } = await import('../lib/firebase');
+                            const month = new Date().toISOString().slice(0, 7);
+                            await setDoc(fsDoc(db, 'siteData', 'emailQuota'), { count: 0, month, resetAt: new Date().toISOString() });
+                            setEmailsSent(0);
+                            toast.success('Email quota reset to 200 remaining');
+                          } catch { toast.error('Failed to reset quota'); }
+                        }}
+                        className="px-3 py-1.5 text-xs font-semibold bg-[#F3F4F6] text-[#374151] hover:bg-[#E5E7EB] rounded-lg transition-colors border border-[#E5E7EB]"
+                        title="Reset quota counter (do this each month)"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="relative">
+                    <div className="w-full h-3 bg-[#F3F4F6] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          emailsSent >= 180 ? 'bg-red-500' :
+                          emailsSent >= 140 ? 'bg-amber-500' :
+                          'bg-green-500'
+                        }`}
+                        style={{ width: `${Math.min((emailsSent / EMAIL_QUOTA) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1.5">
+                      <span className="text-[10px] text-[#9CA3AF]">{emailsSent} sent</span>
+                      <span className={`text-[10px] font-semibold ${
+                        emailsSent >= 180 ? 'text-red-600' :
+                        emailsSent >= 140 ? 'text-amber-600' :
+                        'text-green-600'
+                      }`}>
+                        {emailsSent >= 180 ? '⚠️ Almost full!' :
+                         emailsSent >= 140 ? '⚡ Getting close' :
+                         '✅ Plenty left'}
+                      </span>
+                      <span className="text-[10px] text-[#9CA3AF]">{EMAIL_QUOTA} limit</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Order status breakdown bar chart */}
