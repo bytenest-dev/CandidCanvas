@@ -335,20 +335,7 @@ export default function AdminPage() {
         setGoogleUsers(googleCount);
       });
 
-      // 5. Real-time email quota — auto-reset if new month
-      const currentMonth = new Date().toISOString().slice(0, 7);
-      onSnapshot(doc(db, 'siteData', 'emailQuota'), snap => {
-        if (snap.exists()) {
-          const d = snap.data();
-          if (d.month === currentMonth) {
-            setEmailsSent(d.count || 0);
-          } else {
-            setEmailsSent(0); // new month, not reset yet
-          }
-        } else {
-          setEmailsSent(0);
-        }
-      });
+      // 5. Real-time email quota — in separate effect below for stability
 
     } catch { /* silent */ }
   }, []);
@@ -414,6 +401,36 @@ export default function AdminPage() {
     loadStats();
     loadMessages();
   }, [loadOrders, loadStats, loadMessages]);
+
+  // Dedicated email quota listener — runs once, stays live
+  // EmailJS free plan resets on the 5th of each month
+  useEffect(() => {
+    let unsubscribe: (() => void) | null = null;
+    const setupQuotaListener = async () => {
+      try {
+        const { doc, onSnapshot } = await import('firebase/firestore');
+        const { db } = await import('../lib/firebase');
+        // Billing period: 5th of current month to 4th of next month
+        const now = new Date();
+        const billingMonth = now.getDate() >= 5
+          ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-05`
+          : (() => {
+              const prev = new Date(now.getFullYear(), now.getMonth() - 1, 5);
+              return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-05`;
+            })();
+        unsubscribe = onSnapshot(doc(db, 'siteData', 'emailQuota'), snap => {
+          if (snap.exists()) {
+            const d = snap.data();
+            setEmailsSent(d.billingPeriod === billingMonth ? (d.count || 0) : 0);
+          } else {
+            setEmailsSent(0);
+          }
+        });
+      } catch { /* silent */ }
+    };
+    setupQuotaListener();
+    return () => { if (unsubscribe) unsubscribe(); };
+  }, []);
 
   const loadUsers = useCallback(async () => {
     setUsersLoading(true);
@@ -1149,7 +1166,7 @@ export default function AdminPage() {
                           <div className={`h-full rounded-full transition-all duration-700 ${emailsSent >= 180 ? "bg-red-500" : emailsSent >= 140 ? "bg-amber-500" : "bg-green-500"}`}
                             style={{ width: `${Math.min((emailsSent / EMAIL_QUOTA) * 100, 100)}%` }} />
                         </div>
-                        <span className="text-[10px] text-[#9CA3AF]">{emailsSent}/{EMAIL_QUOTA} sent · resets 1st of month</span>
+                        <span className="text-[10px] text-[#9CA3AF]">{emailsSent}/{EMAIL_QUOTA} sent · resets 5th of month</span>
                       </div>
                     </div>
                   </div>

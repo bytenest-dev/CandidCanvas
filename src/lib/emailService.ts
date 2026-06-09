@@ -366,19 +366,26 @@ async function incrementEmailQuota(): Promise<void> {
   try {
     const { doc, getDoc, setDoc, updateDoc, increment } = await import('firebase/firestore');
     const { db } = await import('./firebase');
-    const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+    // EmailJS billing period: 5th of current month to 4th of next month
+    const now = new Date();
+    const billingMonth = now.getDate() >= 5
+      ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-05`
+      : (() => {
+          const prev = new Date(now.getFullYear(), now.getMonth() - 1, 5);
+          return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-05`;
+        })();
     const ref = doc(db, 'siteData', 'emailQuota');
     const snap = await getDoc(ref);
     if (snap.exists()) {
       const data = snap.data();
-      // Reset if new month
-      if (data.month !== month) {
-        await setDoc(ref, { count: 1, month, resetAt: new Date().toISOString() });
+      if (data.billingPeriod !== billingMonth) {
+        // New billing period — reset counter
+        await setDoc(ref, { count: 1, billingPeriod: billingMonth, month: billingMonth, resetAt: now.toISOString() });
       } else {
         await updateDoc(ref, { count: increment(1) });
       }
     } else {
-      await setDoc(ref, { count: 1, month, resetAt: new Date().toISOString() });
+      await setDoc(ref, { count: 1, billingPeriod: billingMonth, month: billingMonth, resetAt: now.toISOString() });
     }
   } catch { /* silent */ }
 }
