@@ -26,6 +26,8 @@ export interface PackageItem {
   active: boolean;
   popular: boolean;
   imageUrl?: string;
+  originalPrice?: string; // Strikethrough "market" price for psychological pricing
+  discountLabel?: string; // e.g. "30% OFF", "SAVE ৳5,000"
 }
 
 export interface SiteSettings {

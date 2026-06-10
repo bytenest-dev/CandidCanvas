@@ -213,6 +213,7 @@ export default function AdminPage() {
   const [editPkg, setEditPkg] = useState<PackageItem | null>(null);
   const [pkgForm, setPkgForm] = useState<Omit<PackageItem, 'id' | 'active' | 'popular'>>({
     name: '', category: 'PHOTO', price: '', description: '', features: '', imageUrl: '',
+    originalPrice: '', discountLabel: '',
   });
   const [pkgPreview, setPkgPreview] = useState('');
   const pkgImgRef = useRef<HTMLInputElement>(null);
@@ -655,14 +656,14 @@ export default function AdminPage() {
   // ── Package helpers ──────────────────────────────────────────────────────
   const openAdd = () => {
     setEditPkg(null);
-    setPkgForm({ name: '', category: 'PHOTO', price: '', description: '', features: '', imageUrl: '' });
+    setPkgForm({ name: '', category: 'PHOTO', price: '', description: '', features: '', imageUrl: '', originalPrice: '', discountLabel: '' });
     setPkgPreview('');
     setPkgModal(true);
   };
 
   const openEditPkg = (p: PackageItem) => {
     setEditPkg(p);
-    setPkgForm({ name: p.name, category: p.category, price: p.price, description: p.description, features: p.features, imageUrl: p.imageUrl || '' });
+    setPkgForm({ name: p.name, category: p.category, price: p.price, description: p.description, features: p.features, imageUrl: p.imageUrl || '', originalPrice: p.originalPrice || '', discountLabel: p.discountLabel || '' });
     setPkgPreview(p.imageUrl || '');
     setPkgModal(true);
   };
@@ -2694,10 +2695,57 @@ export default function AdminPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[#374151] mb-1 uppercase tracking-wide">Price</label>
+            <label className="block text-xs font-semibold text-[#374151] mb-1 uppercase tracking-wide">Price <span className="text-[#9CA3AF] normal-case font-normal">(actual / discounted)</span></label>
             <input value={pkgForm.price} onChange={e => setPkgForm(p => ({ ...p, price: e.target.value }))}
               placeholder="e.g. ৳35,000"
               className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]" />
+          </div>
+          {/* Psychological pricing — strikethrough + discount badge */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Tag size={14} className="text-amber-600" />
+              <span className="text-xs font-bold text-amber-700 uppercase tracking-wide">Psychological Pricing (Optional)</span>
+            </div>
+            <p className="text-[11px] text-amber-600 leading-relaxed">Set a higher "market" price to show as strikethrough, making the actual price look like a great deal.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[#374151] mb-1">Original / Market Price</label>
+                <input
+                  value={pkgForm.originalPrice || ''}
+                  onChange={e => {
+                    const op = e.target.value;
+                    setPkgForm(p => {
+                      // Auto-calc discount % if both prices are numbers
+                      const orig = parseInt(op.replace(/\D/g, ''));
+                      const actual = parseInt(p.price.replace(/\D/g, ''));
+                      let autoLabel = p.discountLabel;
+                      if (!isNaN(orig) && !isNaN(actual) && orig > actual) {
+                        const pct = Math.round(((orig - actual) / orig) * 100);
+                        autoLabel = `${pct}% OFF`;
+                      }
+                      return { ...p, originalPrice: op, discountLabel: autoLabel };
+                    });
+                  }}
+                  placeholder="e.g. ৳50,000"
+                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#374151] mb-1">Discount Label <span className="text-[#9CA3AF]">(auto)</span></label>
+                <input
+                  value={pkgForm.discountLabel || ''}
+                  onChange={e => setPkgForm(p => ({ ...p, discountLabel: e.target.value }))}
+                  placeholder="e.g. 30% OFF"
+                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white" />
+              </div>
+            </div>
+            {pkgForm.originalPrice && pkgForm.price && (
+              <div className="flex items-center gap-3 pt-1">
+                <span className="text-[11px] text-[#9CA3AF] font-mono">Preview:</span>
+                <span className="font-bold text-[#111827] text-sm">{pkgForm.price.startsWith('৳') ? pkgForm.price : `৳${pkgForm.price}`}</span>
+                <span className="text-[#9CA3AF] text-xs line-through">{pkgForm.originalPrice.startsWith('৳') ? pkgForm.originalPrice : `৳${pkgForm.originalPrice}`}</span>
+                {pkgForm.discountLabel && <span className="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">{pkgForm.discountLabel}</span>}
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs font-semibold text-[#374151] mb-1 uppercase tracking-wide">Short Description</label>

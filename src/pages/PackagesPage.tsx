@@ -1,20 +1,72 @@
-﻿import { Helmet } from 'react-helmet-async';
+﻿import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, Star, ArrowRight, Package } from 'lucide-react';
+import { Check, Star, ArrowRight, Package, Tag, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
 
 function formatBDT(price: string) {
-  // If already formatted (e.g. "৳35,000"), return as-is
+  if (!price) return '';
   if (price.startsWith('৳')) return price;
   const n = parseInt(price.replace(/\D/g, ''));
   if (isNaN(n)) return price;
   return `৳${n.toLocaleString('en-BD')}`;
 }
 
+function calcDiscountPct(original: string, actual: string) {
+  const orig = parseInt(original.replace(/\D/g, ''));
+  const act = parseInt(actual.replace(/\D/g, ''));
+  if (isNaN(orig) || isNaN(act) || orig <= act) return null;
+  return Math.round(((orig - act) / orig) * 100);
+}
+
 export default function PackagesPage() {
   const { packages, siteLoading } = useSite();
   const activePackages = packages.filter(p => p.active);
+
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('');
+  const [promoState, setPromoState] = useState<{
+    loading: boolean; valid: boolean | null; error: string; discount: number; type: string; promoData: any | null;
+  }>({ loading: false, valid: null, error: '', discount: 0, type: 'percentage', promoData: null });
+
+  const applyPromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) return;
+    setPromoState(s => ({ ...s, loading: true, valid: null, error: '' }));
+    try {
+      const { validatePromoCode } = await import('../lib/promoCodes');
+      const result = await validatePromoCode(code);
+      if (result.valid && result.promo) {
+        setPromoState({
+          loading: false, valid: true, error: '',
+          discount: result.promo.discountValue,
+          type: result.promo.discountType || 'percentage',
+          promoData: result.promo,
+        });
+      } else {
+        setPromoState({ loading: false, valid: false, error: result.error || 'Invalid or expired code', discount: 0, type: 'percentage', promoData: null });
+      }
+    } catch {
+      setPromoState({ loading: false, valid: false, error: 'Failed to validate. Try again.', discount: 0, type: 'percentage', promoData: null });
+    }
+  };
+
+  const clearPromo = () => {
+    setPromoCode('');
+    setPromoState({ loading: false, valid: null, error: '', discount: 0, type: 'percentage', promoData: null });
+  };
+
+  // Get discounted price for display
+  const getDiscountedPrice = (price: string) => {
+    if (!promoState.valid || !promoState.discount) return null;
+    const raw = parseInt(price.replace(/\D/g, ''));
+    if (isNaN(raw)) return null;
+    if (promoState.type === 'percentage') {
+      return Math.round(raw * (1 - promoState.discount / 100));
+    }
+    return Math.max(0, raw - promoState.discount);
+  };
 
   return (
     <>
@@ -75,6 +127,77 @@ export default function PackagesPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
 
+        {/* ── Promo Code Banner ── */}
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 max-w-xl mx-auto"
+        >
+          <div className="relative bg-gradient-to-r from-[#111827] to-[#1f2937] rounded-2xl p-5 sm:p-6 shadow-lg overflow-hidden">
+            {/* Decorative sparkle dots */}
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-10" style={{
+              backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)',
+              backgroundSize: '14px 14px',
+            }} />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center">
+                  <Tag size={14} className="text-white" />
+                </div>
+                <span className="text-white font-semibold text-sm">Have a promo code?</span>
+                <span className="text-white/40 text-xs">Get an exclusive discount instantly</span>
+              </div>
+              {promoState.valid ? (
+                /* Applied state */
+                <div className="flex items-center justify-between bg-green-500/20 border border-green-500/30 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-white text-sm font-semibold">
+                        {promoState.type === 'percentage'
+                          ? `${promoState.discount}% off applied!`
+                          : `৳${promoState.discount.toLocaleString()} off applied!`}
+                      </p>
+                      <p className="text-green-300 text-xs">Code: <span className="font-mono font-bold">{promoCode.toUpperCase()}</span></p>
+                    </div>
+                  </div>
+                  <button onClick={clearPromo} className="text-white/50 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={promoCode}
+                    onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                    onKeyDown={e => e.key === 'Enter' && applyPromo()}
+                    placeholder="Enter promo code"
+                    className={`flex-1 bg-white/10 border rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 transition-colors font-mono tracking-wider ${
+                      promoState.valid === false
+                        ? 'border-red-400/50 focus:ring-red-400/50'
+                        : 'border-white/20 focus:ring-white/30'
+                    }`}
+                  />
+                  <button
+                    onClick={applyPromo}
+                    disabled={promoState.loading || !promoCode.trim()}
+                    className="px-5 py-2.5 bg-white text-[#111827] text-sm font-semibold rounded-xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 flex-shrink-0"
+                  >
+                    {promoState.loading ? <Loader2 size={14} className="animate-spin" /> : null}
+                    Apply
+                  </button>
+                </div>
+              )}
+              {promoState.valid === false && promoState.error && (
+                <p className="mt-2 text-red-400 text-xs flex items-center gap-1.5">
+                  <XCircle size={12} /> {promoState.error}
+                </p>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
         {/* Loading state */}
         {siteLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -102,67 +225,123 @@ export default function PackagesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {activePackages.map((pkg, i) => (
-              <motion.div
-                key={pkg.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                className={`relative bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 ${
-                  pkg.popular
-                    ? 'border-2 border-[#111827] shadow-2xl shadow-gray-200/80 scale-[1.02]'
-                    : 'border border-[#E5E7EB] hover:border-[#9CA3AF] hover:shadow-xl hover:shadow-gray-100'
-                }`}
-              >
-                {/* Package image */}
-                {pkg.imageUrl && (
-                  <div className="aspect-video overflow-hidden">
-                    <img src={pkg.imageUrl} alt={pkg.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+            {activePackages.map((pkg, i) => {
+              const hasOriginal = !!pkg.originalPrice;
+              const discountPct = hasOriginal ? calcDiscountPct(pkg.originalPrice!, pkg.price) : null;
+              const discountedByPromo = getDiscountedPrice(pkg.price);
+
+              return (
+                <motion.div
+                  key={pkg.id}
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1, duration: 0.6 }}
+                  className={`relative bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 ${
+                    pkg.popular
+                      ? 'border-2 border-[#111827] shadow-2xl shadow-gray-200/80 scale-[1.02]'
+                      : 'border border-[#E5E7EB] hover:border-[#9CA3AF] hover:shadow-xl hover:shadow-gray-100'
+                  }`}
+                >
+                  {/* Package image */}
+                  {pkg.imageUrl && (
+                    <div className="aspect-video overflow-hidden relative">
+                      <img src={pkg.imageUrl} alt={pkg.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                      {/* Discount badge on image */}
+                      {(pkg.discountLabel || discountPct) && (
+                        <div className="absolute top-3 right-3">
+                          <span className="bg-red-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+                            {pkg.discountLabel || `${discountPct}% OFF`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {pkg.popular && (
+                    <div className="bg-[#111827] py-2 text-center">
+                      <span className="text-white text-xs tracking-widest uppercase font-mono flex items-center justify-center gap-1.5">
+                        <Star size={10} fill="currentColor" /> Most Popular
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="p-6 sm:p-7 flex flex-col flex-1">
+                    <div className="mb-5">
+                      <span className="text-xs tracking-widest uppercase text-[#9CA3AF] font-mono">{pkg.category}</span>
+                      <h3 className="font-heading text-2xl text-[#111827] mt-1">{pkg.name}</h3>
+                      <p className="text-[#6B7280] text-sm mt-2 leading-relaxed">{pkg.description}</p>
+                    </div>
+
+                    {/* ── Psychological Pricing Block ── */}
+                    <div className="mb-6 pb-6 border-b border-[#F3F4F6]">
+                      {/* Promo-discounted price */}
+                      {discountedByPromo !== null ? (
+                        <div className="space-y-1">
+                          <div className="flex items-baseline gap-3 flex-wrap">
+                            <span className="font-heading text-4xl text-[#111827]">
+                              ৳{discountedByPromo.toLocaleString('en-BD')}
+                            </span>
+                            <span className="text-[#9CA3AF] text-sm line-through">
+                              {formatBDT(pkg.price)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                              <Tag size={10} /> Promo applied
+                            </span>
+                            {hasOriginal && (
+                              <span className="text-[#9CA3AF] text-xs line-through">{formatBDT(pkg.originalPrice!)}</span>
+                            )}
+                          </div>
+                        </div>
+                      ) : hasOriginal ? (
+                        /* Psychological pricing — no promo active */
+                        <div className="space-y-2">
+                          <div className="flex items-baseline gap-3 flex-wrap">
+                            <span className="font-heading text-4xl text-[#111827]">{formatBDT(pkg.price)}</span>
+                            <span className="text-[#B0B5BE] text-xl line-through font-light tracking-tight">{formatBDT(pkg.originalPrice!)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {(pkg.discountLabel || discountPct) && (
+                              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold px-3 py-1 rounded-full">
+                                {pkg.discountLabel || `${discountPct}% OFF`}
+                              </span>
+                            )}
+                            <span className="text-[#9CA3AF] text-xs">/ session</span>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Plain price */
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-heading text-4xl text-[#111827]">{formatBDT(pkg.price)}</span>
+                          <span className="text-[#9CA3AF] text-sm">/ session</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <ul className="space-y-3 mb-7 flex-1">
+                      {pkg.features.split('\n').filter(Boolean).map((f, j) => (
+                        <li key={j} className="flex items-start gap-2.5 text-sm text-[#374151]">
+                          <Check size={14} className="text-[#10B981] mt-0.5 flex-shrink-0" />
+                          {f.trim()}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Link
+                      to="/book"
+                      className={`block w-full py-3 text-center text-sm font-medium rounded-xl transition-all duration-300 ${
+                        pkg.popular
+                          ? 'bg-[#111827] text-white hover:bg-[#374151]'
+                          : 'border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white'
+                      }`}
+                    >
+                      Book This Package
+                    </Link>
                   </div>
-                )}
-
-                {pkg.popular && (
-                  <div className="bg-[#111827] py-2 text-center">
-                    <span className="text-white text-xs tracking-widest uppercase font-mono flex items-center justify-center gap-1.5">
-                      <Star size={10} fill="currentColor" /> Most Popular
-                    </span>
-                  </div>
-                )}
-
-                <div className="p-6 sm:p-7 flex flex-col flex-1">
-                  <div className="mb-5">
-                    <span className="text-xs tracking-widest uppercase text-[#9CA3AF] font-mono">{pkg.category}</span>
-                    <h3 className="font-heading text-2xl text-[#111827] mt-1">{pkg.name}</h3>
-                    <p className="text-[#6B7280] text-sm mt-2 leading-relaxed">{pkg.description}</p>
-                  </div>
-
-                  <div className="mb-6 pb-6 border-b border-[#F3F4F6]">
-                    <span className="font-heading text-4xl text-[#111827]">{formatBDT(pkg.price)}</span>
-                    <span className="text-[#9CA3AF] text-sm ml-1">/ session</span>
-                  </div>
-
-                  <ul className="space-y-3 mb-7 flex-1">
-                    {pkg.features.split('\n').filter(Boolean).map((f, j) => (
-                      <li key={j} className="flex items-start gap-2.5 text-sm text-[#374151]">
-                        <Check size={14} className="text-[#10B981] mt-0.5 flex-shrink-0" />
-                        {f.trim()}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    to="/book"
-                    className={`block w-full py-3 text-center text-sm font-medium rounded-xl transition-all duration-300 ${
-                      pkg.popular
-                        ? 'bg-[#111827] text-white hover:bg-[#374151]'
-                        : 'border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white'
-                    }`}
-                  >
-                    Book This Package
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         )}
 
