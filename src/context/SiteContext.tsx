@@ -211,32 +211,6 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Increment visitor count on initial mount (homepage tracking)
-  useEffect(() => {
-    const incrementVisitor = async () => {
-      try {
-        const { doc, getDoc, setDoc, updateDoc, increment } = await import('firebase/firestore');
-        const { db } = await import('../lib/firebase');
-        const visitorRef = doc(db, 'siteData', 'visitors');
-        const visitorSnap = await getDoc(visitorRef);
-        
-        if (visitorSnap.exists()) {
-          await updateDoc(visitorRef, { count: increment(1) });
-        } else {
-          await setDoc(visitorRef, { count: 1 });
-        }
-      } catch {
-        // Silent - visitor tracking is non-critical
-      }
-    };
-
-    // Only increment once per session
-    const hasTracked = sessionStorage.getItem('visitor_tracked');
-    if (!hasTracked) {
-      incrementVisitor();
-      sessionStorage.setItem('visitor_tracked', 'true');
-    }
-  }, []);
 
   useEffect(() => {
     loadData();
