@@ -7,7 +7,7 @@ import {
   Settings, LogOut, Search, CheckCircle, XCircle,
   Eye, Camera, Trash2, Edit, TrendingUp, Bell, Menu, Plus,
   Upload, RefreshCw, Calendar, Wrench, Mail, Users, Globe, MessageSquare,
-  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone,
+  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite, type GalleryItem, type SliderItem, type PackageItem, type ReviewItem, type SiteSettings } from '../context/SiteContext';
@@ -38,6 +38,7 @@ const ADMIN_NAV = [
   { id: 'gallery', label: 'Gallery', icon: Camera },
   { id: 'packages', label: 'Packages', icon: Package },
   { id: 'reviews', label: 'Reviews', icon: Star },
+  { id: 'promos', label: 'Promo Codes', icon: Tag },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -222,6 +223,13 @@ export default function AdminPage() {
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [viewMessage, setViewMessage] = useState<Message | null>(null);
 
+  // Promo codes state
+  const [promos, setPromos] = useState<any[]>([]);
+  const [promosLoading, setPromosLoading] = useState(false);
+  const [promoForm, setPromoForm] = useState({ code: '', discountType: 'percentage', discountValue: 10, startDate: '', expiryDate: '', usageLimit: 0, active: true });
+  const [showPromoForm, setShowPromoForm] = useState(false);
+  const [editPromo, setEditPromo] = useState<any | null>(null);
+
   // ── Load all data from Firebase ─────────────────────────────────────────
   const loadOrders = useCallback(async () => {
     try {
@@ -396,11 +404,22 @@ export default function AdminPage() {
     }
   }, []);
 
+  const loadPromos = useCallback(async () => {
+    setPromosLoading(true);
+    try {
+      const { collection, getDocs, orderBy, query } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const snap = await getDocs(query(collection(db, 'promoCodes'), orderBy('createdAt', 'desc')));
+      setPromos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch { } finally { setPromosLoading(false); }
+  }, []);
+
   useEffect(() => {
     loadOrders();
     loadStats();
     loadMessages();
-  }, [loadOrders, loadStats, loadMessages]);
+    loadPromos();
+  }, [loadOrders, loadStats, loadMessages, loadPromos]);
 
   // Dedicated email quota listener — runs once, stays live
   // EmailJS free plan resets on the 5th of each month
@@ -791,6 +810,16 @@ export default function AdminPage() {
     const matchSearch = !q || o.client.toLowerCase().includes(q) || o.id.toLowerCase().includes(q) || o.package.toLowerCase().includes(q);
     return matchTab && matchSearch;
   });
+
+  // ── Booking count by package (for popular badge) ─────────────────────────
+  const bookingCountByPackage = orders.reduce((acc, o) => {
+    const pkg = o.package?.toLowerCase();
+    if (pkg) acc[pkg] = (acc[pkg] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const mostBookedPackage = Object.entries(bookingCountByPackage)
+    .sort(([, a], [, b]) => b - a)[0]?.[0];
 
   // ── Stats for overview ───────────────────────────────────────────────────
   const thisMonthBookings = orders.filter(o => {
@@ -1908,7 +1937,15 @@ export default function AdminPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap mb-1">
                                 <p className="font-semibold text-[#111827] text-sm">{pkg.name}</p>
-                                {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-2 py-0.5 rounded-full">⭐ Popular</span>}
+                                <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                                  {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-2 py-0.5 rounded-full">⭐ Popular</span>}
+                                  {mostBookedPackage && pkg.name.toLowerCase() === mostBookedPackage && (
+                                    <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full">🔥 Most Booked</span>
+                                  )}
+                                  {bookingCountByPackage[pkg.name.toLowerCase()] > 0 && (
+                                    <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full border border-blue-200">{bookingCountByPackage[pkg.name.toLowerCase()]} bookings</span>
+                                  )}
+                                </div>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${pkg.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                   {pkg.active ? 'Active' : 'Archived'}
                                 </span>
@@ -1964,7 +2001,16 @@ export default function AdminPage() {
                                 </td>
                                 <td className="px-4 py-4">
                                   <p className="font-medium text-[#111827]">{pkg.name}</p>
-                                  {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-full">⭐ Popular</span>}
+                                  <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                                    {pkg.popular && <span className="text-[10px] bg-[#111827] text-white px-1.5 py-0.5 rounded-full">⭐ Popular</span>}
+                                  {mostBookedPackage && pkg.name.toLowerCase().trim() === mostBookedPackage && (<span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full">🔥 Most Booked</span>)}
+                                    {mostBookedPackage && pkg.name.toLowerCase() === mostBookedPackage && (
+                                      <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full">🔥 Most Booked</span>
+                                    )}
+                                    {bookingCountByPackage[pkg.name.toLowerCase()] > 0 && (
+                                      <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full border border-blue-200">{bookingCountByPackage[pkg.name.toLowerCase()]} bookings</span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="px-4 py-4 font-mono text-xs text-[#374151]">{pkg.category}</td>
                                 <td className="px-4 py-4 font-semibold text-[#111827]">{pkg.price}</td>
@@ -2049,6 +2095,160 @@ export default function AdminPage() {
                     </div>
                   )}
                 </div>
+              </motion.div>
+            )}
+
+            {/* ── PROMO CODES ── */}
+            {activeTab === 'promos' && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                <div className="flex items-center justify-between mb-5">
+                  <p className="text-[#6B7280] text-sm">{promos.length} promo code{promos.length !== 1 ? 's' : ''}</p>
+                  <button onClick={() => { setShowPromoForm(true); }}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
+                    <Plus size={14} /> Add Promo Code
+                  </button>
+                </div>
+
+                {showPromoForm && (
+                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5 shadow-sm">
+                    <h3 className="font-semibold text-[#111827] text-sm mb-4">Create Promo Code</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7280] mb-1">Code *</label>
+                        <input value={promoForm.code} onChange={e => setPromoForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                          placeholder="e.g. EID25"
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-[#111827]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7280] mb-1">Discount Type</label>
+                        <select value={promoForm.discountType} onChange={e => setPromoForm(p => ({ ...p, discountType: e.target.value }))}
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#111827]">
+                          <option value="percentage">Percentage (%)</option>
+                          <option value="fixed">Fixed Amount (৳)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7280] mb-1">Discount Value *</label>
+                        <input type="number" value={promoForm.discountValue} onChange={e => setPromoForm(p => ({ ...p, discountValue: Number(e.target.value) }))}
+                          placeholder={promoForm.discountType === 'percentage' ? '10 = 10% off' : '500 = ৳500 off'}
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7280] mb-1">Usage Limit (0 = unlimited)</label>
+                        <input type="number" value={promoForm.usageLimit} onChange={e => setPromoForm(p => ({ ...p, usageLimit: Number(e.target.value) }))}
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7280] mb-1">Start Date</label>
+                        <input type="date" value={promoForm.startDate} onChange={e => setPromoForm(p => ({ ...p, startDate: e.target.value }))}
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7280] mb-1">Expiry Date</label>
+                        <input type="date" value={promoForm.expiryDate} onChange={e => setPromoForm(p => ({ ...p, expiryDate: e.target.value }))}
+                          className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                      <button onClick={async () => {
+                        if (!promoForm.code.trim()) { toast.error('Code is required'); return; }
+                        try {
+                          const { collection, addDoc } = await import('firebase/firestore');
+                          const { db } = await import('../lib/firebase');
+                          const data = { ...promoForm, code: promoForm.code.toUpperCase(), usageCount: 0, createdAt: new Date().toISOString() };
+                          const ref = await addDoc(collection(db, 'promoCodes'), data);
+                          setPromos(prev => [{ id: ref.id, ...data }, ...prev]);
+                          setPromoForm({ code: '', discountType: 'percentage', discountValue: 10, startDate: '', expiryDate: '', usageLimit: 0, active: true });
+                          setShowPromoForm(false);
+                          toast.success(`Promo code "${data.code}" created!`);
+                        } catch { toast.error('Failed to save promo code'); }
+                      }} className="px-5 py-2 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
+                        Create Code
+                      </button>
+                      <button onClick={() => setShowPromoForm(false)}
+                        className="px-5 py-2 border border-[#E5E7EB] text-[#374151] text-sm rounded-lg hover:border-[#374151] transition-colors">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {promosLoading ? (
+                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-12 text-center">
+                    <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-[#9CA3AF]">Loading promo codes...</p>
+                  </div>
+                ) : promos.length === 0 ? (
+                  <div className="text-center py-16 bg-white rounded-xl border border-[#E5E7EB]">
+                    <Tag size={36} className="text-[#D1D5DB] mx-auto mb-3" />
+                    <p className="text-[#374151] font-medium mb-1">No promo codes yet</p>
+                    <p className="text-xs text-[#9CA3AF] mb-4">Create promo codes like EID25, SUMMER10, WELCOME500</p>
+                    <button onClick={() => setShowPromoForm(true)}
+                      className="px-5 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors">
+                      Create First Code
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {promos.map((p: any) => {
+                      const isExpired = p.expiryDate && new Date(p.expiryDate) < new Date();
+                      const isNotStarted = p.startDate && new Date(p.startDate) > new Date();
+                      return (
+                        <div key={p.id} className={`bg-white rounded-xl border p-4 flex items-center justify-between gap-4 ${
+                          isExpired ? 'border-red-100 bg-red-50/20' : p.active ? 'border-[#E5E7EB]' : 'border-[#E5E7EB] opacity-60'
+                        }`}>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`px-3 py-1.5 rounded-xl font-mono font-bold text-sm flex-shrink-0 ${
+                              p.active && !isExpired ? 'bg-[#111827] text-white' : 'bg-[#F3F4F6] text-[#9CA3AF]'
+                            }`}>
+                              {p.code}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                <span className="text-sm font-semibold text-[#111827]">
+                                  {p.discountType === 'percentage' ? `${p.discountValue}% off` : `৳${p.discountValue} off`}
+                                </span>
+                                {isExpired && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Expired</span>}
+                                {isNotStarted && <span className="text-[10px] bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">Not started</span>}
+                                {!isExpired && !isNotStarted && p.active && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ Active</span>}
+                                {!p.active && <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Disabled</span>}
+                              </div>
+                              <p className="text-xs text-[#9CA3AF]">
+                                Used {p.usageCount || 0}/{p.usageLimit === 0 ? '∞' : p.usageLimit} times
+                                {p.expiryDate && ` · Expires ${new Date(p.expiryDate).toLocaleDateString()}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button onClick={async () => {
+                              try {
+                                const { doc, updateDoc } = await import('firebase/firestore');
+                                const { db } = await import('../lib/firebase');
+                                await updateDoc(doc(db, 'promoCodes', p.id), { active: !p.active });
+                                setPromos(prev => prev.map((x: any) => x.id === p.id ? { ...x, active: !x.active } : x));
+                                toast.success(p.active ? 'Promo deactivated' : 'Promo activated');
+                              } catch { toast.error('Failed'); }
+                            }} className="p-1.5 text-[#9CA3AF] hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title={p.active ? 'Deactivate' : 'Activate'}>
+                              <RefreshCw size={14} />
+                            </button>
+                            <button onClick={async () => {
+                              if (!window.confirm(`Delete promo code "${p.code}"?`)) return;
+                              try {
+                                const { doc, deleteDoc } = await import('firebase/firestore');
+                                const { db } = await import('../lib/firebase');
+                                await deleteDoc(doc(db, 'promoCodes', p.id));
+                                setPromos(prev => prev.filter((x: any) => x.id !== p.id));
+                                toast.success('Promo deleted');
+                              } catch { toast.error('Failed to delete'); }
+                            }} className="p-1.5 text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </motion.div>
             )}
 
