@@ -417,7 +417,7 @@ export default function BookingPage() {
                     <Input label="Phone / WhatsApp *" placeholder="+880 1xxx-xxxxxx" error={errors.phone?.message} {...register('phone')} />
                     {/* Promo Code */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">
                         <Tag size={11} /> Promo Code (Optional)
                       </label>
                       <div className="flex gap-2">
