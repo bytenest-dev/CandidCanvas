@@ -281,8 +281,32 @@ export default function BookingPage() {
   const onSubmit = async (data: FormData) => {
     setConfirming(true);
     try {
-      const { addDoc, collection } = await import('firebase/firestore');
+      const { addDoc, collection, getDocs, query, where } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
+
+      // ── SERVER-SIDE date conflict check ────────────────────────────────
+      const chosenDate = calendarDate || data.eventDate;
+      if (chosenDate) {
+        const conflictQ = query(
+          collection(db, 'bookings'),
+          where('date', '==', chosenDate)
+        );
+        const conflictSnap = await getDocs(conflictQ);
+        const hasConflict = conflictSnap.docs.some(d => {
+          const s = d.data().status;
+          return s !== 'rejected'; // any active booking blocks the date
+        });
+        if (hasConflict) {
+          alert(`Sorry, ${new Date(chosenDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} is no longer available. Please go back and choose a different date.`);
+          setStep(2); // send them back to calendar
+          setCalendarDate('');
+          setValue('eventDate', '');
+          setConfirming(false);
+          return;
+        }
+      }
+      // ───────────────────────────────────────────────────────────────────
+
       const id = await generateBookingId();
 
       // Validate referral code if provided
@@ -587,6 +611,7 @@ export default function BookingPage() {
                   </div>
 
                   <AvailabilityCalendar
+                    key={`cal-step2-${step}`}
                     selectedDate={calendarDate}
                     onSelectDate={(date) => {
                       setCalendarDate(date);
@@ -688,7 +713,14 @@ export default function BookingPage() {
               {/* Navigation */}
               <div className={`px-7 sm:px-10 pb-8 flex items-center ${step > 0 ? 'justify-between' : 'justify-end'} gap-4`}>
                 {step > 0 && (
-                  <button type="button" onClick={() => setStep(s => s - 1)}
+                  <button type="button" onClick={() => {
+                    setStep(s => s - 1);
+                    // Clear selected date when going back to calendar so it re-validates
+                    if (step === 3) {
+                      setCalendarDate('');
+                      setValue('eventDate', '');
+                    }
+                  }}
                     className="inline-flex items-center gap-2 px-5 py-2.5 text-sm text-[#6B7280] border border-[#E5E7EB] rounded-2xl hover:border-[#374151] hover:text-[#111827] transition-all">
                     <ArrowLeft size={14} /> Back
                   </button>
