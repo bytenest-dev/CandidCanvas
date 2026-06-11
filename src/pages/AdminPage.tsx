@@ -1530,16 +1530,6 @@ export default function AdminPage() {
                                       className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
                                       <ChevronDown size={11} /><span className="hidden xl:inline">Details</span>
                                     </button>
-                                    <button onClick={() => { setPaymentModal(o); setPaymentForm({ status: o.paymentStatus || 'not_paid', amount: String(o.paymentAmount || ''), note: o.paymentNote || '' }); }} title="Update Payment"
-                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                                        o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                                        o.paymentStatus === 'partial' ? 'bg-amber-100 text-amber-700' :
-                                        'text-[#9CA3AF] hover:text-emerald-700 hover:bg-emerald-50'
-                                      }`}>
-                                      <DollarSign size={11} /><span className="hidden xl:inline">
-                                        {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Payment'}
-                                      </span>
-                                    </button>
                                     <button onClick={async () => {
                                       if (!window.confirm('Delete this order permanently?')) return;
                                       try {
@@ -2945,15 +2935,22 @@ export default function AdminPage() {
               <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">Payment Status</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { value: 'not_paid', label: '❌ Not Paid', cls: 'border-gray-200 text-gray-600 data-[active=true]:bg-gray-100 data-[active=true]:border-gray-400' },
-                    { value: 'partial', label: '⏳ Partial', cls: 'border-amber-200 text-amber-700 data-[active=true]:bg-amber-100 data-[active=true]:border-amber-400' },
-                    { value: 'paid', label: '✅ Paid', cls: 'border-emerald-200 text-emerald-700 data-[active=true]:bg-emerald-100 data-[active=true]:border-emerald-400' },
-                  ].map(opt => (
+                  {([
+                    { value: 'not_paid', label: '❌ Not Paid' },
+                    { value: 'partial',  label: '⏳ Partial'  },
+                    { value: 'paid',     label: '✅ Paid'     },
+                  ] as const).map(opt => (
                     <button key={opt.value}
-                      data-active={paymentForm.status === opt.value}
-                      onClick={() => setPaymentForm(p => ({ ...p, status: opt.value as typeof p.status }))}
-                      className={`py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${opt.cls} ${paymentForm.status === opt.value ? 'shadow-sm scale-[1.02]' : 'hover:opacity-80'}`}>
+                      onClick={() => setPaymentForm(p => ({ ...p, status: opt.value }))}
+                      className={`py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
+                        paymentForm.status === opt.value
+                          ? opt.value === 'paid'    ? 'bg-emerald-100 border-emerald-500 text-emerald-800 shadow-sm scale-[1.02]'
+                          : opt.value === 'partial' ? 'bg-amber-100 border-amber-500 text-amber-800 shadow-sm scale-[1.02]'
+                          :                           'bg-gray-100 border-gray-500 text-gray-700 shadow-sm scale-[1.02]'
+                          : opt.value === 'paid'    ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                          : opt.value === 'partial' ? 'border-amber-200 text-amber-700 hover:bg-amber-50'
+                          :                           'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}>
                       {opt.label}
                     </button>
                   ))}
