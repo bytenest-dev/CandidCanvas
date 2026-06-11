@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import {
   Camera, CalendarCheck, Star, Bell, User, LogOut, Clock, CheckCircle,
   Menu, X, Send, MessageSquare, Package, ChevronRight, RefreshCw,
-  MapPin, Calendar, FileText, AlertCircle, Sparkles, Gift, Copy, Share2,
+  MapPin, Calendar, FileText, AlertCircle, Sparkles, Gift, Copy, Share2, XCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
@@ -215,6 +215,11 @@ export default function DashboardPage() {
   const [referralLoading, setReferralLoading] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Cancellation state
+  const [cancelModal, setCancelModal] = useState<Booking | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelSubmitting, setCancelSubmitting] = useState(false);
+
   // ── Load bookings ────────────────────────────────────────────────────────
   const loadBookings = useCallback(async () => {
     if (!user) return;
@@ -355,6 +360,38 @@ export default function DashboardPage() {
       unread.forEach(n => batch.update(doc(db, 'notifications', n.id), { read: true }));
       await batch.commit();
     } catch { /* silent */ }
+  };
+
+  const cancelBooking = async () => {
+    if (!cancelModal || !user) return;
+    setCancelSubmitting(true);
+    try {
+      const { collection, query, where, getDocs, updateDoc, addDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const q = query(collection(db, 'bookings'), where('id', '==', cancelModal.id));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        await updateDoc(snap.docs[0].ref, {
+          status: 'rejected',
+          cancelledByClient: true,
+          cancelReason: cancelReason.trim() || 'Cancelled by client',
+          cancelledAt: new Date().toISOString(),
+        });
+      }
+      setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: 'rejected' } : b));
+      // Add a notification
+      await addDoc(collection(db, 'notifications'), {
+        userId: user.uid,
+        type: 'booking_cancelled',
+        title: 'Booking Cancelled',
+        message: `Your booking ${cancelModal.id} has been cancelled. If this was a mistake, please contact us.`,
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+      setCancelModal(null);
+      setCancelReason('');
+    } catch { /* silent */ }
+    finally { setCancelSubmitting(false); }
   };
 
   const handleRefresh = async () => {
@@ -756,6 +793,18 @@ export default function DashboardPage() {
                                 Leave a Review
                               </button>
                             )}
+                          </div>
+                        )}
+
+                        {/* Cancel button — only for cancellable statuses */}
+                        {['submitted', 'under_review'].includes(order.status) && (
+                          <div className="mt-4 pt-4 border-t border-[#F3F4F6]">
+                            <button
+                              onClick={() => { setCancelModal(order); setCancelReason(''); }}
+                              className="flex items-center gap-2 text-sm text-red-500 font-medium hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl border border-red-200"
+                            >
+                              <XCircle size={14} /> Cancel Booking
+                            </button>
                           </div>
                         )}
                       </motion.div>
@@ -1371,6 +1420,88 @@ export default function DashboardPage() {
                 <button onClick={() => setViewMessage(null)} className="w-full py-3 border border-[#E5E7EB] text-[#374151] text-sm font-medium rounded-xl hover:bg-[#F8F9FA] transition-colors">
                   Close
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Cancel Booking Modal ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {cancelModal && (
+          <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0"
+              onClick={() => setCancelModal(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              className="relative bg-white rounded-2xl shadow-2xl border border-[#E5E7EB] w-full max-w-md overflow-hidden z-10"
+            >
+              <div className="px-6 py-5 border-b border-[#E5E7EB] flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-[#111827]">Cancel Booking</h2>
+                  <p className="text-xs text-[#9CA3AF] mt-0.5 font-mono">{cancelModal.id}</p>
+                </div>
+                <button onClick={() => setCancelModal(null)} className="p-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
+                  <XCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-800">This action cannot be undone</p>
+                    <p className="text-xs text-red-600 mt-0.5 leading-relaxed">
+                      Cancelling will mark your booking as rejected. Contact us if you'd like to rebook.
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-[#F8F9FA] rounded-xl p-3 border border-[#E5E7EB]">
+                  <p className="font-semibold text-[#111827] text-sm capitalize">{cancelModal.packageName} — {cancelModal.eventType}</p>
+                  <p className="text-xs text-[#6B7280] mt-0.5 flex items-center gap-1.5">
+                    <Calendar size={10} /> {formatDate(cancelModal.eventDate)}
+                    <span className="text-[#D1D5DB]">·</span>
+                    <MapPin size={10} /> {cancelModal.eventLocation}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">
+                    Reason for cancellation <span className="text-[#9CA3AF] normal-case font-normal">(optional)</span>
+                  </label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={e => setCancelReason(e.target.value)}
+                    rows={3}
+                    placeholder="Let us know why you're cancelling..."
+                    className="w-full border border-[#E5E7EB] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+                  />
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={() => setCancelModal(null)}
+                    className="flex-1 py-3 border border-[#E5E7EB] text-[#374151] text-sm font-medium rounded-xl hover:border-[#374151] transition-colors"
+                  >
+                    Keep Booking
+                  </button>
+                  <button
+                    onClick={cancelBooking}
+                    disabled={cancelSubmitting}
+                    className="flex-1 py-3 bg-red-500 text-white text-sm font-semibold rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {cancelSubmitting ? (
+                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Cancelling...</>
+                    ) : (
+                      <><XCircle size={14} /> Yes, Cancel</>
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

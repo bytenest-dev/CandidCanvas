@@ -16,6 +16,8 @@ import BookingPage from './pages/BookingPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
 import SignInPage from './pages/SignInPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 
 // Scroll to top on every route change
 function ScrollToTop() {
@@ -233,6 +235,8 @@ function Layout() {
               <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
               <Route path="/book" element={<PageTransition><BookingPage /></PageTransition>} />
               <Route path="/dashboard" element={<PageTransition><DashboardPage /></PageTransition>} />
+              <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+              <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
               <Route path="/admin" element={
                 <ProtectedAdmin>
                   <PageTransition><AdminPage /></PageTransition>

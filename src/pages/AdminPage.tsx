@@ -7,7 +7,7 @@ import {
   Settings, LogOut, Search, CheckCircle, XCircle,
   Eye, Camera, Trash2, Edit, TrendingUp, Bell, Menu, Plus,
   Upload, RefreshCw, Calendar, Wrench, Mail, Users, Globe, MessageSquare,
-  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag,
+  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag, DollarSign,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite, type GalleryItem, type SliderItem, type PackageItem, type ReviewItem, type SiteSettings } from '../context/SiteContext';
@@ -28,6 +28,9 @@ interface Order {
   id: string; client: string; email: string; phone?: string; package: string;
   event: string; date: string; location: string; notes?: string;
   status: OrderStatus; createdAt: string;
+  paymentStatus?: 'not_paid' | 'partial' | 'paid';
+  paymentAmount?: number;
+  paymentNote?: string;
 }
 
 const ADMIN_NAV = [
@@ -175,6 +178,10 @@ export default function AdminPage() {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [emailModalData, setEmailModalData] = useState<OrderEmailData | null>(null);
 
+  // Payment modal state
+  const [paymentModal, setPaymentModal] = useState<Order | null>(null);
+  const [paymentForm, setPaymentForm] = useState({ status: 'not_paid' as 'not_paid' | 'partial' | 'paid', amount: '', note: '' });
+
   // Stats
   const [totalUsers, setTotalUsers] = useState(0);
   const [googleUsers, setGoogleUsers] = useState(0);
@@ -255,11 +262,14 @@ export default function AdminPage() {
           notes: d.notes || '',
           status: (d.status || 'submitted') as OrderStatus,
           createdAt: d.createdAt || '',
+          paymentStatus: (d.paymentStatus || 'not_paid') as Order['paymentStatus'],
+          paymentAmount: d.paymentAmount || 0,
+          paymentNote: d.paymentNote || '',
         };
       });
       setOrders(bookings);
 
-      // Build chart data from real orders grouped by month
+      // Build chart data — use REAL payment amounts, not fake estimates
       const monthMap: Record<string, { bookings: number; revenue: number }> = {};
       MONTHS.forEach(m => { monthMap[m] = { bookings: 0, revenue: 0 }; });
       bookings.forEach(o => {
@@ -269,9 +279,10 @@ export default function AdminPage() {
         const monthKey = MONTHS[d.getMonth()];
         if (monthMap[monthKey]) {
           monthMap[monthKey].bookings += 1;
+          monthMap[monthKey].revenue += (o.paymentAmount || 0);
         }
       });
-      setChartData(MONTHS.map(m => ({ month: m, bookings: monthMap[m].bookings, revenue: monthMap[m].bookings * 25000 })));
+      setChartData(MONTHS.map(m => ({ month: m, bookings: monthMap[m].bookings, revenue: monthMap[m].revenue })));
     } catch (err) {
       const code = (err as { code?: string })?.code;
       if (code !== 'permission-denied') {
@@ -712,6 +723,37 @@ export default function AdminPage() {
     setPackages(packages.map(pkg => pkg.id === id ? { ...pkg, popular: !pkg.popular } : pkg));
   };
 
+  // ── Payment helpers ──────────────────────────────────────────────────────
+  const savePayment = async () => {
+    if (!paymentModal) return;
+    try {
+      const { collection, query, where, getDocs, updateDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const q = query(collection(db, 'bookings'), where('id', '==', paymentModal.id));
+      const snap = await getDocs(q);
+      const update = {
+        paymentStatus: paymentForm.status,
+        paymentAmount: Number(paymentForm.amount) || 0,
+        paymentNote: paymentForm.note,
+      };
+      if (!snap.empty) await updateDoc(snap.docs[0].ref, update);
+      setOrders(prev => prev.map(o => o.id === paymentModal.id ? { ...o, ...update } : o));
+      // Update chart revenue in real time
+      setChartData(prev => prev.map(row => {
+        const orderDate = new Date(paymentModal.createdAt);
+        if (isNaN(orderDate.getTime())) return row;
+        const monthKey = MONTHS[orderDate.getMonth()];
+        if (row.month !== monthKey) return row;
+        const oldAmount = paymentModal.paymentAmount || 0;
+        return { ...row, revenue: row.revenue - oldAmount + (Number(paymentForm.amount) || 0) };
+      }));
+      toast.success('Payment updated.');
+      setPaymentModal(null);
+    } catch {
+      toast.error('Failed to save payment.');
+    }
+  };
+
   // ── Review helpers ───────────────────────────────────────────────────────
   const approveReview = (id: string) => {
     setReviews(reviews.map(r => r.id === id ? { ...r, approved: true } : r));
@@ -975,12 +1017,12 @@ export default function AdminPage() {
                 {/* Stats Grid - 6 cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
                   {[
-                    { label: 'Total Orders', value: orders.length, color: 'bg-blue-50 text-blue-600', icon: ShoppingBag, onClick: undefined },
-                    { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, color: 'bg-yellow-50 text-yellow-600', icon: Eye, onClick: undefined },
-                    { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: 'bg-green-50 text-green-600', icon: CheckCircle, onClick: undefined },
-                    { label: 'This Month', value: thisMonthBookings, color: 'bg-indigo-50 text-indigo-600', icon: TrendingUp, onClick: undefined },
-                    { label: 'Registered Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users, onClick: () => { setShowUsersModal(true); loadUsers(); } },
-                    { label: 'Total Visitors', value: totalVisitors, color: 'bg-orange-50 text-orange-600', icon: Globe, onClick: undefined },
+                    { label: 'Total Orders', value: orders.length, color: 'bg-blue-50 text-blue-600', icon: ShoppingBag, onClick: undefined, isCurrency: false },
+                    { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, color: 'bg-yellow-50 text-yellow-600', icon: Eye, onClick: undefined, isCurrency: false },
+                    { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: 'bg-green-50 text-green-600', icon: CheckCircle, onClick: undefined, isCurrency: false },
+                    { label: 'Revenue Collected', value: orders.reduce((sum, o) => sum + (o.paymentAmount || 0), 0), color: 'bg-emerald-50 text-emerald-600', icon: DollarSign, onClick: undefined, isCurrency: true },
+                    { label: 'Registered Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users, onClick: () => { setShowUsersModal(true); loadUsers(); }, isCurrency: false },
+                    { label: 'Total Visitors', value: totalVisitors, color: 'bg-orange-50 text-orange-600', icon: Globe, onClick: undefined, isCurrency: false },
                   ].map(s => {
                     const Icon = s.icon;
                     return (
@@ -992,7 +1034,9 @@ export default function AdminPage() {
                         <div className={`w-9 h-9 rounded-lg ${s.color} flex items-center justify-center mb-3`}>
                           <Icon size={16} />
                         </div>
-                        <div className="font-heading text-2xl sm:text-3xl text-[#111827] leading-none">{s.value.toLocaleString()}</div>
+                        <div className="font-heading text-2xl sm:text-3xl text-[#111827] leading-none">
+                          {s.isCurrency ? `৳${s.value.toLocaleString('en-BD')}` : s.value.toLocaleString()}
+                        </div>
                         <div className="text-xs text-[#6B7280] mt-1.5 leading-tight">{s.label}</div>
                       </div>
                     );
@@ -1407,6 +1451,14 @@ export default function AdminPage() {
                               className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-[#111827] text-white border border-[#111827] hover:bg-[#374151] transition-all">
                               <ChevronDown size={11} /> Details
                             </button>
+                            <button onClick={() => { setPaymentModal(o); setPaymentForm({ status: o.paymentStatus || 'not_paid', amount: String(o.paymentAmount || ''), note: o.paymentNote || '' }); }}
+                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold border transition-all ${
+                                o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' :
+                                o.paymentStatus === 'partial' ? 'bg-amber-100 text-amber-700 border-amber-300' :
+                                'bg-[#F8F9FA] text-[#6B7280] border-[#E5E7EB] hover:bg-emerald-50 hover:text-emerald-700'
+                              }`}>
+                              <DollarSign size={11} /> {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Pay'}
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -1417,7 +1469,7 @@ export default function AdminPage() {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-                            {['Order ID', 'Client', 'Package', 'Event Date', 'Status', 'Actions'].map(h => (
+                            {['Order ID', 'Client', 'Package', 'Event Date', 'Payment', 'Status', 'Actions'].map(h => (
                               <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider whitespace-nowrap">{h}</th>
                             ))}
                           </tr></thead>
@@ -1434,6 +1486,19 @@ export default function AdminPage() {
                                   <p className="text-xs text-[#9CA3AF] capitalize">{o.event}</p>
                                 </td>
                                 <td className="px-4 py-4 text-[#374151] text-xs whitespace-nowrap">{formatDate(o.date)}</td>
+                                <td className="px-4 py-4">
+                                  <button onClick={() => { setPaymentModal(o); setPaymentForm({ status: o.paymentStatus || 'not_paid', amount: String(o.paymentAmount || ''), note: o.paymentNote || '' }); }}
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                                      o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200' :
+                                      o.paymentStatus === 'partial' ? 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200' :
+                                      'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
+                                    }`}>
+                                    <DollarSign size={10} />
+                                    {o.paymentStatus === 'paid' ? `৳${(o.paymentAmount || 0).toLocaleString('en-BD')}` :
+                                     o.paymentStatus === 'partial' ? `Partial ৳${(o.paymentAmount || 0).toLocaleString('en-BD')}` :
+                                     'Not paid'}
+                                  </button>
+                                </td>
                                 <td className="px-4 py-4">
                                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border ${getStatusColor(o.status)}`}>
                                     {getStatusLabel(o.status)}
@@ -1464,6 +1529,16 @@ export default function AdminPage() {
                                     <button onClick={() => setViewOrder(o)} title="View Full Details"
                                       className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
                                       <ChevronDown size={11} /><span className="hidden xl:inline">Details</span>
+                                    </button>
+                                    <button onClick={() => { setPaymentModal(o); setPaymentForm({ status: o.paymentStatus || 'not_paid', amount: String(o.paymentAmount || ''), note: o.paymentNote || '' }); }} title="Update Payment"
+                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                                        o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' :
+                                        o.paymentStatus === 'partial' ? 'bg-amber-100 text-amber-700' :
+                                        'text-[#9CA3AF] hover:text-emerald-700 hover:bg-emerald-50'
+                                      }`}>
+                                      <DollarSign size={11} /><span className="hidden xl:inline">
+                                        {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Payment'}
+                                      </span>
                                     </button>
                                     <button onClick={async () => {
                                       if (!window.confirm('Delete this order permanently?')) return;
@@ -2854,6 +2929,67 @@ export default function AdminPage() {
               {editPkg ? 'Save Changes' : 'Add Package'}
             </button>
           </div>
+        </div>
+      </Modal>
+
+      {/* ── Payment Modal ── */}
+      <Modal isOpen={!!paymentModal} onClose={() => setPaymentModal(null)} title="Update Payment" size="sm">
+        <div className="p-6 space-y-4">
+          {paymentModal && (
+            <>
+              <div className="bg-[#F8F9FA] rounded-xl p-3 border border-[#E5E7EB]">
+                <p className="font-semibold text-[#111827] text-sm">{paymentModal.client}</p>
+                <p className="text-xs text-[#6B7280]">{paymentModal.package} · {formatDate(paymentModal.date)}</p>
+                <p className="font-mono text-[11px] text-[#9CA3AF] mt-0.5">{paymentModal.id}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">Payment Status</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 'not_paid', label: '❌ Not Paid', cls: 'border-gray-200 text-gray-600 data-[active=true]:bg-gray-100 data-[active=true]:border-gray-400' },
+                    { value: 'partial', label: '⏳ Partial', cls: 'border-amber-200 text-amber-700 data-[active=true]:bg-amber-100 data-[active=true]:border-amber-400' },
+                    { value: 'paid', label: '✅ Paid', cls: 'border-emerald-200 text-emerald-700 data-[active=true]:bg-emerald-100 data-[active=true]:border-emerald-400' },
+                  ].map(opt => (
+                    <button key={opt.value}
+                      data-active={paymentForm.status === opt.value}
+                      onClick={() => setPaymentForm(p => ({ ...p, status: opt.value as typeof p.status }))}
+                      className={`py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${opt.cls} ${paymentForm.status === opt.value ? 'shadow-sm scale-[1.02]' : 'hover:opacity-80'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">Amount Received (৳)</label>
+                <input
+                  type="number"
+                  value={paymentForm.amount}
+                  onChange={e => setPaymentForm(p => ({ ...p, amount: e.target.value }))}
+                  placeholder="e.g. 15000"
+                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">Note (optional)</label>
+                <input
+                  value={paymentForm.note}
+                  onChange={e => setPaymentForm(p => ({ ...p, note: e.target.value }))}
+                  placeholder="e.g. bKash advance received"
+                  className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                />
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button onClick={() => setPaymentModal(null)}
+                  className="flex-1 py-2.5 border border-[#E5E7EB] text-[#374151] text-sm rounded-lg hover:border-[#374151] transition-colors">
+                  Cancel
+                </button>
+                <button onClick={savePayment}
+                  className="flex-1 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors flex items-center justify-center gap-2">
+                  <DollarSign size={14} /> Save Payment
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
 
