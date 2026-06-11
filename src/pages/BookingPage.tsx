@@ -208,8 +208,11 @@ export default function BookingPage() {
 
   // Promo code state — auto-fill from ?ref= URL param
   const refFromUrl = searchParams.get('ref') || '';
+  const pkgFromUrl = searchParams.get('pkg') || '';   // e.g. /book?pkg=Birthday
+  const eventFromUrl = searchParams.get('event') || ''; // e.g. /book?event=birthday
+
   const [promoCode, setPromoCode] = useState(refFromUrl);
-  const [referralCode, setReferralCode] = useState(refFromUrl); // track separately
+  const [referralCode, setReferralCode] = useState(refFromUrl);
   const [promoState, setPromoState] = useState<{
     loading: boolean; valid: boolean | null; error: string; discount: number; promoData: any | null;
   }>({ loading: false, valid: null, error: '', discount: 0, promoData: null });
@@ -220,6 +223,17 @@ export default function BookingPage() {
       setReferralCode(refFromUrl);
     }
   }, [refFromUrl]);
+
+  // Auto-select package and event from URL params
+  useEffect(() => {
+    if (pkgFromUrl) setValue('package', pkgFromUrl);
+    if (eventFromUrl) setValue('eventType', eventFromUrl);
+    // If package is pre-selected, skip to step 1 (event details)
+    if (pkgFromUrl && step === 0) {
+      // Don't skip — just pre-fill so the user still goes through step 0 for their details
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkgFromUrl, eventFromUrl]);
 
   // Selected date from calendar
   const [calendarDate, setCalendarDate] = useState('');
@@ -564,6 +578,14 @@ export default function BookingPage() {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">Package *</label>
+                      {pkgFromUrl && (
+                        <div className="mb-2 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+                          <CheckCircle size={13} className="text-blue-500 flex-shrink-0" />
+                          <p className="text-xs text-blue-700 font-medium">
+                            Pre-selected: <span className="font-bold">{pkgFromUrl}</span> — you can change it below
+                          </p>
+                        </div>
+                      )}
                       <select {...register('package')} className="w-full border border-[#E5E7EB] rounded-xl bg-[#F8F9FA] focus:bg-white px-4 py-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent transition-all">
                         <option value="">Select a package</option>
                         {activePackages.length > 0 ? (

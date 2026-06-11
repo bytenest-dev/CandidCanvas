@@ -314,7 +314,7 @@ export default function PackagesPage() {
                   {activePackages.map(pkg => (
                     <td key={pkg.id} className={`px-5 py-4 text-center ${pkg.popular ? 'bg-[#F8F9FA]' : ''}`}>
                       <Link
-                        to="/book"
+                        to={`/book?pkg=${encodeURIComponent(pkg.name)}`}
                         className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
                           pkg.popular
                             ? 'bg-[#111827] text-white hover:bg-[#374151]'
@@ -435,7 +435,7 @@ export default function PackagesPage() {
                     </ul>
 
                     <Link
-                      to="/book"
+                      to={`/book?pkg=${encodeURIComponent(pkg.name)}`}
                       className={`block w-full py-3 text-center text-sm font-medium rounded-xl transition-all duration-300 ${
                         pkg.popular
                           ? 'bg-[#111827] text-white hover:bg-[#374151]'

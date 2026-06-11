@@ -76,6 +76,11 @@ function StatusTimeline({ status }: { status: string }) {
           <X size={10} /> Rejected
         </span>
       )}
+      {status === 'cancel_requested' && (
+        <span className="ml-2 inline-flex items-center gap-1 text-xs text-orange-600 font-semibold bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+          ⏳ Cancellation Pending Admin Review
+        </span>
+      )}
     </div>
   );
 }
@@ -372,19 +377,19 @@ export default function DashboardPage() {
       const snap = await getDocs(q);
       if (!snap.empty) {
         await updateDoc(snap.docs[0].ref, {
-          status: 'rejected',
+          status: 'cancel_requested',
           cancelledByClient: true,
           cancelReason: cancelReason.trim() || 'Cancelled by client',
           cancelledAt: new Date().toISOString(),
         });
       }
-      setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: 'rejected' } : b));
-      // Add a notification
+      setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: 'cancel_requested' } : b));
+      // Notify client
       await addDoc(collection(db, 'notifications'), {
         userId: user.uid,
-        type: 'booking_cancelled',
-        title: 'Booking Cancelled',
-        message: `Your booking ${cancelModal.id} has been cancelled. If this was a mistake, please contact us.`,
+        type: 'cancel_requested',
+        title: '⏳ Cancellation Request Sent',
+        message: `Your cancellation request for booking ${cancelModal.id} has been sent to our team. We will contact you to confirm. Do not worry — your booking is still active until we respond.`,
         read: false,
         createdAt: new Date().toISOString(),
       });

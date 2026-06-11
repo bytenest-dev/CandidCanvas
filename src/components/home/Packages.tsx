@@ -140,7 +140,7 @@ export default function PackagesSection() {
                       ))}
                     </ul>
                     <Link
-                      to="/book"
+                      to={`/book?pkg=${encodeURIComponent(pkg.name)}`}
                       className={`block w-full py-3 text-center text-sm tracking-wide font-medium rounded transition-all duration-300 ${
                         pkg.popular
                           ? 'bg-[#111827] text-white hover:bg-[#374151]'

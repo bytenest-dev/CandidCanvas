@@ -30,6 +30,7 @@ export function getStatusColor(status: string): string {
     approved: 'bg-green-100 text-green-800',
     completed: 'bg-gray-100 text-gray-800',
     rejected: 'bg-red-100 text-red-800',
+    cancel_requested: 'bg-orange-100 text-orange-800',
   };
   return colors[status] || 'bg-gray-100 text-gray-800';
 }
@@ -42,6 +43,7 @@ export function getStatusLabel(status: string): string {
     approved: 'Approved',
     completed: 'Completed',
     rejected: 'Rejected',
+    cancel_requested: 'Cancel Requested',
   };
   return labels[status] || status;
 }

@@ -22,7 +22,7 @@ import Modal from '../components/ui/Modal';
 import { useToast } from '../hooks/useToast';
 import logoImg from '../assets/logo.png';
 
-type OrderStatus = 'submitted' | 'under_review' | 'contacted' | 'approved' | 'completed' | 'rejected';
+type OrderStatus = 'submitted' | 'under_review' | 'contacted' | 'approved' | 'completed' | 'rejected' | 'cancel_requested';
 
 interface Order {
   id: string; client: string; email: string; phone?: string; package: string;
@@ -31,6 +31,11 @@ interface Order {
   paymentStatus?: 'not_paid' | 'partial' | 'paid';
   paymentAmount?: number;
   paymentNote?: string;
+  promoCode?: string;
+  promoApplied?: string;
+  discount?: number;
+  cancelReason?: string;
+  cancelledByClient?: boolean;
 }
 
 const ADMIN_NAV = [
@@ -265,6 +270,11 @@ export default function AdminPage() {
           paymentStatus: (d.paymentStatus || 'not_paid') as Order['paymentStatus'],
           paymentAmount: d.paymentAmount || 0,
           paymentNote: d.paymentNote || '',
+          promoCode: d.promoCode || '',
+          promoApplied: d.promoApplied || '',
+          discount: d.discount || 0,
+          cancelReason: d.cancelReason || '',
+          cancelledByClient: d.cancelledByClient || false,
         };
       });
       setOrders(bookings);
@@ -1185,43 +1195,7 @@ export default function AdminPage() {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Recent orders table */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
-                    <h2 className="font-semibold text-[#111827] text-sm">Recent Orders</h2>
-                    <button onClick={() => setActiveTab('orders')} className="text-xs text-[#6B7280] hover:text-[#111827] transition-colors">View all →</button>
-                  </div>
-                  {orders.length === 0 ? (
-                    <div className="p-8 text-center text-[#9CA3AF] text-sm">No orders yet.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-                          {['Client', 'Package', 'Date', 'Status'].map(h => (
-                            <th key={h} className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">{h}</th>
-                          ))}
-                        </tr></thead>
-                        <tbody className="divide-y divide-[#F3F4F6]">
-                          {orders.slice(0, 5).map(o => (
-                            <tr key={o.id} className="hover:bg-[#F8F9FA] transition-colors cursor-pointer" onClick={() => setViewOrder(o)}>
-                              <td className="px-5 py-3.5">
-                                <p className="font-medium text-[#111827]">{o.client}</p>
-                                <p className="text-xs text-[#9CA3AF] font-mono">{o.id}</p>
-                              </td>
-                              <td className="px-5 py-3.5 text-[#374151] capitalize">{o.package}</td>
-                              <td className="px-5 py-3.5 text-[#6B7280] text-xs">{formatDate(o.date)}</td>
-                              <td className="px-5 py-3.5">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(o.status)}`}>
-                                  {getStatusLabel(o.status)}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
+                {/* Recent orders table - REMOVED: use Orders tab instead */}
               </motion.div>
             )}
 
@@ -1260,6 +1234,7 @@ export default function AdminPage() {
                     { key: 'all', label: 'All', count: orders.length },
                     { key: 'submitted', label: 'Submitted', count: orders.filter(o => o.status === 'submitted').length },
                     { key: 'under_review', label: 'Under Review', count: orders.filter(o => o.status === 'under_review').length },
+                    { key: 'cancel_requested', label: '⚠ Cancel Req.', count: orders.filter(o => o.status === 'cancel_requested').length },
                     { key: 'contacted', label: 'Contacted', count: orders.filter(o => o.status === 'contacted').length },
                     { key: 'approved', label: 'Approved', count: orders.filter(o => o.status === 'approved').length },
                     { key: 'completed', label: 'Completed', count: orders.filter(o => o.status === 'completed').length },
@@ -2746,6 +2721,99 @@ export default function AdminPage() {
                   <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
                     <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-1.5">Special Notes</p>
                     <p className="text-sm text-[#374151] bg-white rounded-lg p-3 border border-[#E5E7EB] italic leading-relaxed">"{viewOrder.notes}"</p>
+                  </div>
+                )}
+                {/* Promo / Discount info */}
+                {(viewOrder.promoApplied || viewOrder.promoCode) && (
+                  <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-2">Promo & Pricing</p>
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-1.5">
+                      {(viewOrder.promoApplied || viewOrder.promoCode) && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-emerald-700 font-medium flex items-center gap-1.5">
+                            <Tag size={12} /> Promo Code
+                          </span>
+                          <span className="font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                            {viewOrder.promoApplied || viewOrder.promoCode}
+                          </span>
+                        </div>
+                      )}
+                      {(viewOrder.discount ?? 0) > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-emerald-700 font-medium">Discount Applied</span>
+                          <span className="font-bold text-emerald-800">
+                            {viewOrder.discount}% off
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* Payment info */}
+                {viewOrder.paymentStatus && viewOrder.paymentStatus !== 'not_paid' && (
+                  <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-2">Payment</p>
+                    <div className={`rounded-xl p-3 border ${viewOrder.paymentStatus === 'paid' ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className={viewOrder.paymentStatus === 'paid' ? 'text-emerald-700 font-medium' : 'text-amber-700 font-medium'}>
+                          {viewOrder.paymentStatus === 'paid' ? '✅ Paid in Full' : '⏳ Partial Payment'}
+                        </span>
+                        <span className="font-bold text-[#111827]">৳{(viewOrder.paymentAmount || 0).toLocaleString('en-BD')}</span>
+                      </div>
+                      {viewOrder.paymentNote && (
+                        <p className="text-xs text-[#6B7280] mt-1 italic">{viewOrder.paymentNote}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* Cancellation info */}
+                {viewOrder.cancelledByClient && (
+                  <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+                    <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-2">Cancellation Request</p>
+                    <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                      <p className="text-sm font-semibold text-orange-800">Client requested cancellation</p>
+                      {viewOrder.cancelReason && (
+                        <p className="text-xs text-orange-700 mt-1 italic">"{viewOrder.cancelReason}"</p>
+                      )}
+                      {viewOrder.status === 'cancel_requested' && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={async () => {
+                              try {
+                                const { collection, query, where, getDocs, updateDoc } = await import('firebase/firestore');
+                                const { db } = await import('../lib/firebase');
+                                const q = query(collection(db, 'bookings'), where('id', '==', viewOrder.id));
+                                const snap = await getDocs(q);
+                                if (!snap.empty) await updateDoc(snap.docs[0].ref, { status: 'rejected' });
+                                setOrders(prev => prev.map(o => o.id === viewOrder.id ? { ...o, status: 'rejected' } : o));
+                                setViewOrder(null);
+                                toast.success('Cancellation approved — date is now available again.');
+                              } catch { toast.error('Failed to approve cancellation'); }
+                            }}
+                            className="flex-1 py-2 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-colors"
+                          >
+                            Approve Cancellation
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const { collection, query, where, getDocs, updateDoc } = await import('firebase/firestore');
+                                const { db } = await import('../lib/firebase');
+                                const q = query(collection(db, 'bookings'), where('id', '==', viewOrder.id));
+                                const snap = await getDocs(q);
+                                if (!snap.empty) await updateDoc(snap.docs[0].ref, { status: 'approved', cancelledByClient: false });
+                                setOrders(prev => prev.map(o => o.id === viewOrder.id ? { ...o, status: 'approved', cancelledByClient: false } : o));
+                                setViewOrder(null);
+                                toast.success('Cancellation declined — booking restored to Approved.');
+                              } catch { toast.error('Failed to decline cancellation'); }
+                            }}
+                            className="flex-1 py-2 bg-[#111827] text-white text-xs font-semibold rounded-lg hover:bg-[#374151] transition-colors"
+                          >
+                            Decline — Keep Booking
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
