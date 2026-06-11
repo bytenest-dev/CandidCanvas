@@ -2,7 +2,7 @@
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, Star, ArrowRight, Package, Tag, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Check, Star, ArrowRight, Package, Tag, Loader2, CheckCircle2, XCircle, X, LayoutList, Table2 } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
 
 function formatBDT(price: string) {
@@ -23,6 +23,7 @@ function calcDiscountPct(original: string, actual: string) {
 export default function PackagesPage() {
   const { packages, siteLoading } = useSite();
   const activePackages = packages.filter(p => p.active);
+  const [viewMode, setViewMode] = useState<'cards' | 'compare'>('cards');
 
   // Promo code state
   const [promoCode, setPromoCode] = useState('');
@@ -67,6 +68,11 @@ export default function PackagesPage() {
     }
     return Math.max(0, raw - promoState.discount);
   };
+
+  // Pre-compute discounted prices map for comparison table
+  const discountedByPromoMap = Object.fromEntries(
+    activePackages.map(pkg => [pkg.id, getDiscountedPrice(pkg.price)])
+  );
 
   return (
     <>
@@ -198,6 +204,24 @@ export default function PackagesPage() {
           </div>
         </motion.div>
 
+        {/* ── View mode toggle (only when packages exist) ── */}
+        {!siteLoading && activePackages.length > 1 && (
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${viewMode === 'cards' ? 'bg-[#111827] text-white border-[#111827]' : 'bg-white text-[#374151] border-[#E5E7EB] hover:border-[#374151]'}`}
+            >
+              <LayoutList size={14} /> Card View
+            </button>
+            <button
+              onClick={() => setViewMode('compare')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${viewMode === 'compare' ? 'bg-[#111827] text-white border-[#111827]' : 'bg-white text-[#374151] border-[#E5E7EB] hover:border-[#374151]'}`}
+            >
+              <Table2 size={14} /> Compare
+            </button>
+          </div>
+        )}
+
         {/* Loading state */}
         {siteLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -222,6 +246,88 @@ export default function PackagesPage() {
             <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 bg-[#111827] text-white text-sm rounded-xl hover:bg-[#374151] transition-colors">
               Contact Us <ArrowRight size={14} />
             </Link>
+          </div>
+        ) : viewMode === 'compare' ? (
+          /* ── COMPARISON TABLE ── */
+          <div className="overflow-x-auto rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
+            <table className="w-full text-sm min-w-[600px]">
+              <thead>
+                <tr className="border-b border-[#E5E7EB]">
+                  <th className="text-left px-5 py-4 text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider w-40">Feature</th>
+                  {activePackages.map(pkg => (
+                    <th key={pkg.id} className={`px-5 py-4 text-center ${pkg.popular ? 'bg-[#111827] text-white' : 'text-[#111827]'}`}>
+                      <div className="flex flex-col items-center gap-1">
+                        {pkg.popular && (
+                          <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-mono uppercase tracking-wider flex items-center gap-1">
+                            <Star size={8} fill="currentColor" /> Popular
+                          </span>
+                        )}
+                        <span className="font-heading text-lg">{pkg.name}</span>
+                        <span className={`text-xs font-mono ${pkg.popular ? 'text-white/60' : 'text-[#9CA3AF]'}`}>{pkg.category}</span>
+                        {/* Price */}
+                        <div className="mt-1">
+                          {pkg.originalPrice ? (
+                            <div className="flex items-center gap-1.5 flex-col">
+                              <span className={`font-heading text-xl ${pkg.popular ? 'text-white' : 'text-[#111827]'}`}>{formatBDT(pkg.price)}</span>
+                              <span className={`text-xs line-through ${pkg.popular ? 'text-white/40' : 'text-[#9CA3AF]'}`}>{formatBDT(pkg.originalPrice)}</span>
+                            </div>
+                          ) : (
+                            <span className={`font-heading text-xl ${pkg.popular ? 'text-white' : 'text-[#111827]'}`}>{formatBDT(pkg.price)}</span>
+                          )}
+                        </div>
+                        {/* Promo-discounted price */}
+                        {discountedByPromoMap[pkg.id] !== null && (
+                          <span className="text-xs text-emerald-400 font-semibold">→ ৳{discountedByPromoMap[pkg.id]?.toLocaleString('en-BD')}</span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {/* Collect all unique features across all packages */}
+                {(() => {
+                  const allFeatures = Array.from(new Set(
+                    activePackages.flatMap(p => p.features.split('\n').map(f => f.trim()).filter(Boolean))
+                  ));
+                  return allFeatures.map((feature, idx) => (
+                    <tr key={idx} className={`border-b border-[#F3F4F6] last:border-0 ${idx % 2 === 0 ? '' : 'bg-[#F8F9FA]/50'}`}>
+                      <td className="px-5 py-3.5 text-[#374151] font-medium text-xs">{feature}</td>
+                      {activePackages.map(pkg => {
+                        const pkgFeatures = pkg.features.split('\n').map(f => f.trim().toLowerCase());
+                        const hasIt = pkgFeatures.some(f => f.includes(feature.toLowerCase()) || feature.toLowerCase().includes(f));
+                        return (
+                          <td key={pkg.id} className={`px-5 py-3.5 text-center ${pkg.popular ? 'bg-[#F8F9FA]' : ''}`}>
+                            {hasIt
+                              ? <Check size={16} className="text-[#10B981] mx-auto" />
+                              : <X size={14} className="text-[#D1D5DB] mx-auto" />
+                            }
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ));
+                })()}
+                {/* Book row */}
+                <tr className="border-t-2 border-[#E5E7EB]">
+                  <td className="px-5 py-4 text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider"></td>
+                  {activePackages.map(pkg => (
+                    <td key={pkg.id} className={`px-5 py-4 text-center ${pkg.popular ? 'bg-[#F8F9FA]' : ''}`}>
+                      <Link
+                        to="/book"
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+                          pkg.popular
+                            ? 'bg-[#111827] text-white hover:bg-[#374151]'
+                            : 'border-2 border-[#111827] text-[#111827] hover:bg-[#111827] hover:text-white'
+                        }`}
+                      >
+                        Book <ArrowRight size={11} />
+                      </Link>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">

@@ -171,6 +171,8 @@ export default function AdminPage() {
   const [orderSearch, setOrderSearch] = useState('');
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
   const [orderTab, setOrderTab] = useState<'all' | OrderStatus>('all');
+  const [calendarView, setCalendarView] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [emailModalData, setEmailModalData] = useState<OrderEmailData | null>(null);
 
   // Stats
@@ -1244,6 +1246,15 @@ export default function AdminPage() {
                       value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
                       className="w-full pl-9 pr-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#111827] bg-white" />
                   </div>
+                  {/* Calendar / List toggle */}
+                  <button
+                    onClick={() => setCalendarView(v => !v)}
+                    title={calendarView ? 'Switch to list view' : 'Switch to calendar view'}
+                    className={`flex items-center gap-1.5 px-3 py-2.5 border rounded-lg text-sm transition-colors ${calendarView ? 'bg-[#111827] text-white border-[#111827]' : 'border-[#E5E7EB] text-[#374151] hover:border-[#374151] hover:bg-[#F8F9FA] bg-white'}`}
+                  >
+                    <Calendar size={14} />
+                    <span className="hidden sm:inline">{calendarView ? 'List' : 'Calendar'}</span>
+                  </button>
                   <button
                     onClick={() => { loadOrders(); loadStats(); toast.success('Orders refreshed!'); }}
                     title="Refresh orders"
@@ -1261,6 +1272,80 @@ export default function AdminPage() {
                     <span className="hidden sm:inline">Export</span>
                   </button>
                 </div>
+
+                {/* ── CALENDAR VIEW ── */}
+                {calendarView && (() => {
+                  const year = calendarMonth.getFullYear();
+                  const month = calendarMonth.getMonth();
+                  const firstDay = new Date(year, month, 1).getDay();
+                  const daysInMonth = new Date(year, month + 1, 0).getDate();
+                  const days: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+                  const monthName = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                  return (
+                    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mb-5">
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-5 py-4 bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                        <button onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                          className="w-8 h-8 rounded-lg hover:bg-[#E5E7EB] flex items-center justify-center transition-colors text-[#374151] font-bold text-lg">‹</button>
+                        <span className="font-semibold text-[#111827] text-sm">{monthName}</span>
+                        <button onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                          className="w-8 h-8 rounded-lg hover:bg-[#E5E7EB] flex items-center justify-center transition-colors text-[#374151] font-bold text-lg">›</button>
+                      </div>
+                      {/* Day headers */}
+                      <div className="grid grid-cols-7 border-b border-[#E5E7EB]">
+                        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+                          <div key={d} className="text-center text-[10px] font-semibold text-[#9CA3AF] py-2 uppercase tracking-wide">{d}</div>
+                        ))}
+                      </div>
+                      {/* Days grid */}
+                      <div className="grid grid-cols-7 gap-px bg-[#F3F4F6] p-0">
+                        {days.map((day, idx) => {
+                          if (!day) return <div key={`e-${idx}`} className="bg-white min-h-[80px]" />;
+                          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const dayOrders = orders.filter(o => o.date === dateStr && o.status !== 'rejected');
+                          const isToday = dateStr === new Date().toISOString().slice(0, 10);
+                          return (
+                            <div key={dateStr} className={`bg-white min-h-[80px] p-1.5 ${isToday ? 'ring-2 ring-inset ring-[#111827]' : ''}`}>
+                              <div className={`text-xs font-semibold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-[#111827] text-white' : 'text-[#374151]'}`}>{day}</div>
+                              <div className="space-y-0.5">
+                                {dayOrders.slice(0, 3).map(o => (
+                                  <button key={o.id} onClick={() => setViewOrder(o)}
+                                    className={`w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate transition-opacity hover:opacity-75 ${
+                                      o.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                      o.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                      o.status === 'contacted' ? 'bg-purple-100 text-purple-800' :
+                                      o.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-gray-100 text-gray-700'
+                                    }`}>
+                                    {o.client}
+                                  </button>
+                                ))}
+                                {dayOrders.length > 3 && (
+                                  <p className="text-[9px] text-[#9CA3AF] pl-1">+{dayOrders.length - 3} more</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {/* Legend */}
+                      <div className="flex items-center gap-4 px-4 py-3 border-t border-[#E5E7EB] bg-[#F8F9FA] flex-wrap">
+                        {[
+                          { color: 'bg-gray-100 text-gray-700', label: 'Submitted' },
+                          { color: 'bg-yellow-100 text-yellow-800', label: 'Under Review' },
+                          { color: 'bg-purple-100 text-purple-800', label: 'Contacted' },
+                          { color: 'bg-green-100 text-green-800', label: 'Approved' },
+                          { color: 'bg-blue-100 text-blue-800', label: 'Completed' },
+                        ].map(({ color, label }) => (
+                          <div key={label} className="flex items-center gap-1.5">
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${color}`}>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Table */}
                 {ordersLoading ? (

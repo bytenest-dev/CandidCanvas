@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import {
   Camera, CalendarCheck, Star, Bell, User, LogOut, Clock, CheckCircle,
   Menu, X, Send, MessageSquare, Package, ChevronRight, RefreshCw,
-  MapPin, Calendar, FileText, AlertCircle, Sparkles,
+  MapPin, Calendar, FileText, AlertCircle, Sparkles, Gift, Copy, Share2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
@@ -84,8 +84,9 @@ const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: Camera },
   { id: 'bookings', label: 'My Bookings', icon: CalendarCheck },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'referral', label: 'Referral', icon: Gift },
   { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'profile', label: 'Profile', icon: User },
 ];
 
 // ── Sidebar extracted outside to avoid remount ──────────────────────────────
@@ -96,9 +97,10 @@ interface SidebarProps {
   setMobileNavOpen: (v: boolean) => void;
   onLogout: () => void;
   unreadMessages: number;
+  unreadNotifications: number;
 }
 
-function DashSidebar({ user, activeTab, setActiveTab, setMobileNavOpen, onLogout, unreadMessages }: SidebarProps) {
+function DashSidebar({ user, activeTab, setActiveTab, setMobileNavOpen, onLogout, unreadMessages, unreadNotifications }: SidebarProps) {
   return (
     <>
       <div className="p-5 border-b border-[#F0F0F0]">
@@ -131,6 +133,11 @@ function DashSidebar({ user, activeTab, setActiveTab, setMobileNavOpen, onLogout
             {id === 'messages' && unreadMessages > 0 && (
               <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none min-w-[18px] text-center">
                 {unreadMessages}
+              </span>
+            )}
+            {id === 'notifications' && unreadNotifications > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none min-w-[18px] text-center">
+                {unreadNotifications}
               </span>
             )}
           </button>
@@ -190,6 +197,23 @@ export default function DashboardPage() {
   const [contactSending, setContactSending] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
   const [viewMessage, setViewMessage] = useState<UserMessage | null>(null);
+
+  // Notifications state
+  interface Notification {
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
+  }
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notiLoading, setNotiLoading] = useState(true);
+
+  // Referral state
+  const [referral, setReferral] = useState<{ code: string; referredCount: number; earnedDiscounts: number } | null>(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // ── Load bookings ────────────────────────────────────────────────────────
   const loadBookings = useCallback(async () => {
@@ -283,6 +307,56 @@ export default function DashboardPage() {
     loadMessages();
   }, [loadBookings, loadMessages]);
 
+  // ── Real-time notifications ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    let unsub: (() => void) | null = null;
+    const setup = async () => {
+      setNotiLoading(true);
+      try {
+        const { collection, query, where, orderBy, onSnapshot } = await import('firebase/firestore');
+        const { db } = await import('../lib/firebase');
+        const q = query(
+          collection(db, 'notifications'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
+        unsub = onSnapshot(q, snap => {
+          setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as Notification)));
+          setNotiLoading(false);
+        }, () => setNotiLoading(false));
+      } catch { setNotiLoading(false); }
+    };
+    setup();
+    return () => { if (unsub) unsub(); };
+  }, [user]);
+
+  // ── Load referral code ───────────────────────────────────────────────────
+  const loadReferral = useCallback(async () => {
+    if (!user) return;
+    setReferralLoading(true);
+    try {
+      const { getOrCreateReferral } = await import('../lib/referrals');
+      const data = await getOrCreateReferral(user.uid, user.displayName || 'User');
+      setReferral({ code: data.code, referredCount: data.referredCount, earnedDiscounts: data.earnedDiscounts });
+    } catch { /* silent */ }
+    finally { setReferralLoading(false); }
+  }, [user]);
+
+  useEffect(() => { loadReferral(); }, [loadReferral]);
+
+  const markNotificationsRead = async () => {
+    const unread = notifications.filter(n => !n.read);
+    if (!unread.length) return;
+    try {
+      const { doc, writeBatch } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const batch = writeBatch(db);
+      unread.forEach(n => batch.update(doc(db, 'notifications', n.id), { read: true }));
+      await batch.commit();
+    } catch { /* silent */ }
+  };
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.all([loadBookings(), loadMessages()]);
@@ -373,6 +447,7 @@ export default function DashboardPage() {
   }
 
   const unreadMessages = userMessages.filter(m => m.status === 'unread').length;
+  const unreadNotifications = notifications.filter(n => !n.read).length;
 
   return (
     <>
@@ -393,6 +468,7 @@ export default function DashboardPage() {
             setMobileNavOpen={setMobileNavOpen}
             onLogout={logout}
             unreadMessages={unreadMessages}
+            unreadNotifications={unreadNotifications}
           />
         </aside>
 
@@ -427,6 +503,7 @@ export default function DashboardPage() {
                   setMobileNavOpen={setMobileNavOpen}
                   onLogout={logout}
                   unreadMessages={unreadMessages}
+                  unreadNotifications={unreadNotifications}
                 />
               </motion.div>
             </div>
@@ -894,23 +971,62 @@ export default function DashboardPage() {
             {activeTab === 'notifications' && (
               <motion.div key="notifications" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <div className="flex items-center justify-between mb-6">
-                  <h1 className="font-heading text-3xl text-[#111827]">Notifications</h1>
-                  {bookings.length > 0 && (
-                    <span className="text-xs text-[#6B7280]">{bookings.length} updates</span>
+                  <div>
+                    <h1 className="font-heading text-3xl text-[#111827]">Notifications</h1>
+                    <p className="text-sm text-[#6B7280] mt-0.5">Your booking updates and rewards</p>
+                  </div>
+                  {unreadNotifications > 0 && (
+                    <button
+                      onClick={markNotificationsRead}
+                      className="text-xs text-[#6B7280] hover:text-[#111827] border border-[#E5E7EB] px-3 py-1.5 rounded-lg hover:border-[#374151] transition-colors"
+                    >
+                      Mark all read
+                    </button>
                   )}
                 </div>
 
-                {bookings.length === 0 ? (
+                {notiLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-2xl border border-[#E5E7EB] h-20 shimmer" />)}
+                  </div>
+                ) : notifications.length === 0 && bookings.length === 0 ? (
                   <div className="bg-white rounded-2xl border-2 border-dashed border-[#E5E7EB] p-12 text-center">
                     <Bell size={36} className="text-[#D1D5DB] mx-auto mb-3" />
                     <p className="text-sm text-[#9CA3AF]">No notifications yet</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {bookings.map((order) => {
-                      const isNew = order.status === 'submitted';
+                    {/* Real Firestore notifications */}
+                    {notifications.map(n => (
+                      <div key={n.id} className={`bg-white rounded-2xl border p-4 sm:p-5 transition-all ${
+                        !n.read ? 'border-blue-200 bg-blue-50/20' : 'border-[#E5E7EB]'
+                      }`}>
+                        <div className="flex items-start gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg ${
+                            n.type === 'referral_reward' ? 'bg-emerald-100' :
+                            n.type === 'referral_welcome' ? 'bg-purple-100' :
+                            'bg-blue-100'
+                          }`}>
+                            {n.type === 'referral_reward' ? '🎉' : n.type === 'referral_welcome' ? '🎁' : '📋'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-semibold text-sm text-[#111827]">{n.title}</p>
+                              {!n.read && <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />}
+                            </div>
+                            <p className="text-sm text-[#6B7280] mt-0.5 leading-relaxed">{n.message}</p>
+                            <p className="text-xs text-[#9CA3AF] mt-1.5">
+                              {n.createdAt ? new Date(n.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {/* Booking status notifications (always shown) */}
+                    {bookings.map(order => {
                       const isGood = ['approved', 'completed'].includes(order.status);
                       const isBad = order.status === 'rejected';
+                      const isNew = order.status === 'submitted';
                       return (
                         <div key={order.id} className={`bg-white rounded-2xl border p-5 transition-all hover:shadow-sm ${
                           isGood ? 'border-emerald-200 bg-emerald-50/20' :
@@ -919,11 +1035,11 @@ export default function DashboardPage() {
                           'border-[#E5E7EB]'
                         }`}>
                           <div className="flex items-start gap-3">
-                            <div className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${
-                              isGood ? 'bg-emerald-500' :
-                              isBad ? 'bg-red-500' :
-                              isNew ? 'bg-[#111827]' : 'bg-[#9CA3AF]'
-                            }`} />
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${
+                              isGood ? 'bg-emerald-100' : isBad ? 'bg-red-100' : 'bg-gray-100'
+                            }`}>
+                              {isGood ? '✅' : isBad ? '❌' : '📸'}
+                            </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-sm text-[#111827]">
                                 Booking {getStatusLabel(order.status)}
@@ -931,24 +1047,138 @@ export default function DashboardPage() {
                               <p className="text-sm text-[#6B7280] mt-0.5 capitalize">
                                 {order.packageName} · {order.eventType}
                               </p>
-                              <div className="flex items-center gap-3 mt-1.5">
+                              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                                 <span className="text-xs text-[#9CA3AF] flex items-center gap-1">
                                   <Calendar size={10} /> {formatDate(order.eventDate)}
                                 </span>
-                                <span className="text-xs text-[#9CA3AF]">
-                                  {order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(order.status)}`}>
+                                  {getStatusLabel(order.status)}
                                 </span>
                               </div>
                             </div>
-                            <span className={`status-pill flex-shrink-0 ${getStatusColor(order.status)}`}>
-                              {getStatusLabel(order.status)}
-                            </span>
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {/* ── REFERRAL ──────────────────────────────────────────────── */}
+            {activeTab === 'referral' && (
+              <motion.div key="referral" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                <div className="mb-6">
+                  <h1 className="font-heading text-3xl text-[#111827]">Referral Program</h1>
+                  <p className="text-sm text-[#6B7280] mt-0.5">Share your code — earn discounts when friends book</p>
+                </div>
+
+                {/* Hero card */}
+                <div className="relative bg-gradient-to-br from-[#111827] to-[#1f2937] rounded-2xl p-6 sm:p-8 mb-6 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 opacity-5"
+                    style={{ backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center">
+                        <Gift size={18} className="text-white" />
+                      </div>
+                      <span className="text-white/60 text-sm font-medium">Your Referral Code</span>
+                    </div>
+
+                    {referralLoading ? (
+                      <div className="h-12 bg-white/10 rounded-xl animate-pulse w-48 mb-4" />
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3 mb-4 flex-wrap">
+                          <span className="font-mono text-3xl sm:text-4xl font-bold text-white tracking-widest">
+                            {referral?.code || '—'}
+                          </span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(referral?.code || '');
+                              setCopySuccess(true);
+                              setTimeout(() => setCopySuccess(false), 2000);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-colors"
+                          >
+                            {copySuccess ? <CheckCircle size={13} /> : <Copy size={13} />}
+                            {copySuccess ? 'Copied!' : 'Copy'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const url = `${window.location.origin}/book?ref=${referral?.code}`;
+                              if (navigator.share) {
+                                navigator.share({ title: 'Book Candid Canvas BD', text: `Use my referral code ${referral?.code} for a discount!`, url });
+                              } else {
+                                navigator.clipboard.writeText(url);
+                                setCopySuccess(true);
+                                setTimeout(() => setCopySuccess(false), 2000);
+                              }
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-colors"
+                          >
+                            <Share2 size={13} /> Share Link
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-white/10 rounded-xl p-4">
+                            <p className="text-2xl font-bold text-white">{referral?.referredCount ?? 0}</p>
+                            <p className="text-white/50 text-xs mt-0.5">Friends Referred</p>
+                          </div>
+                          <div className="bg-white/10 rounded-xl p-4">
+                            <p className="text-2xl font-bold text-emerald-400">{referral?.earnedDiscounts ?? 0}</p>
+                            <p className="text-white/50 text-xs mt-0.5">Rewards Earned</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* How it works */}
+                <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6 mb-6 shadow-sm">
+                  <h3 className="font-semibold text-[#111827] mb-5 flex items-center gap-2">
+                    <Sparkles size={16} className="text-amber-500" /> How it works
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { step: '1', icon: '📤', title: 'Share your code', desc: 'Send your unique referral code to friends and family planning events.' },
+                      { step: '2', icon: '📝', title: 'They book using it', desc: 'When they book a session and apply your code, both of you get a discount.' },
+                      { step: '3', icon: '🎁', title: 'You both win', desc: 'You get 10% off your next booking. They get 5% off theirs. Codes are auto-created.' },
+                    ].map(({ step, icon, title, desc }) => (
+                      <div key={step} className="flex items-start gap-4">
+                        <div className="w-10 h-10 bg-[#F8F9FA] rounded-xl flex items-center justify-center text-xl flex-shrink-0 border border-[#E5E7EB]">
+                          {icon}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm text-[#111827]">{title}</p>
+                          <p className="text-xs text-[#6B7280] mt-0.5 leading-relaxed">{desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Referral link for easy sharing */}
+                <div className="bg-[#F8F9FA] rounded-2xl border border-[#E5E7EB] p-5">
+                  <p className="text-xs font-semibold text-[#374151] uppercase tracking-wide mb-2">Your referral link</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs text-[#6B7280] bg-white border border-[#E5E7EB] rounded-lg px-3 py-2.5 truncate font-mono">
+                      {window.location.origin}/book?ref={referral?.code || '...'}
+                    </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/book?ref=${referral?.code}`);
+                        setCopySuccess(true);
+                        setTimeout(() => setCopySuccess(false), 2000);
+                      }}
+                      className="px-4 py-2.5 bg-[#111827] text-white text-xs font-semibold rounded-lg hover:bg-[#374151] transition-colors flex-shrink-0"
+                    >
+                      {copySuccess ? '✓ Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
               </motion.div>
             )}
 
@@ -975,6 +1205,11 @@ export default function DashboardPage() {
                 {id === 'messages' && unreadMessages > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
                     {unreadMessages > 9 ? '9+' : unreadMessages}
+                  </span>
+                )}
+                {id === 'notifications' && unreadNotifications > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
                   </span>
                 )}
               </div>
