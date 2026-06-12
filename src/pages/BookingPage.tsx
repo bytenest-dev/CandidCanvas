@@ -224,24 +224,23 @@ export default function BookingPage() {
     }
   }, [refFromUrl]);
 
-  // Auto-select package and event from URL params
-  useEffect(() => {
-    if (pkgFromUrl) setValue('package', pkgFromUrl);
-    if (eventFromUrl) setValue('eventType', eventFromUrl);
-    // If package is pre-selected, skip to step 1 (event details)
-    if (pkgFromUrl && step === 0) {
-      // Don't skip — just pre-fill so the user still goes through step 0 for their details
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pkgFromUrl, eventFromUrl]);
-
-  // Selected date from calendar
   const [calendarDate, setCalendarDate] = useState('');
 
   const { register, handleSubmit, trigger, getValues, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: user?.displayName || '', email: user?.email || '' },
+    defaultValues: {
+      name: user?.displayName || '',
+      email: user?.email || '',
+      package: pkgFromUrl || '',
+      eventType: eventFromUrl || '',
+    },
   });
+
+  // Auto-select package and event from URL params — runs after form is initialized
+  useEffect(() => {
+    if (pkgFromUrl) setValue('package', pkgFromUrl.trim());
+    if (eventFromUrl) setValue('eventType', eventFromUrl.trim().toLowerCase());
+  }, [pkgFromUrl, eventFromUrl, setValue]);
 
   const applyPromo = async () => {
     if (!promoCode.trim()) return;

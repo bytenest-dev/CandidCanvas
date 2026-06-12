@@ -51,6 +51,7 @@ export default function Navbar() {
       try {
         const { collection, query, where, orderBy, onSnapshot } = await import('firebase/firestore');
         const { db } = await import('../../lib/firebase');
+        // Try with orderBy first (requires composite index)
         const q = query(
           collection(db, 'notifications'),
           where('userId', '==', user.uid),
@@ -58,6 +59,16 @@ export default function Navbar() {
         );
         unsub = onSnapshot(q, snap => {
           setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)));
+        }, async () => {
+          // Fallback without orderBy if index not ready
+          try {
+            const q2 = query(collection(db, 'notifications'), where('userId', '==', user.uid));
+            unsub = onSnapshot(q2, snap => {
+              const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+              items.sort((a: any, b: any) => (b.createdAt > a.createdAt ? 1 : -1));
+              setNotifications(items);
+            });
+          } catch { /* silent */ }
         });
       } catch { /* silent */ }
     };

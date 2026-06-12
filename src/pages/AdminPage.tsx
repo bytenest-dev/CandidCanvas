@@ -598,12 +598,37 @@ export default function AdminPage() {
   // ── Order helpers ────────────────────────────────────────────────────────
   const updateStatusWithEmail = async (order: Order, status: OrderStatus) => {
     try {
-      const { collection, query, where, getDocs, updateDoc } = await import('firebase/firestore');
+      const { collection, query, where, getDocs, updateDoc, addDoc } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
       const q = query(collection(db, 'bookings'), where('id', '==', order.id));
       const snap = await getDocs(q);
       if (!snap.empty) await updateDoc(snap.docs[0].ref, { status });
       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status } : o));
+
+      // Push a real-time notification to the client
+      if (order.userId || snap.docs[0]?.data()?.userId) {
+        const userId = snap.docs[0]?.data()?.userId || order.id;
+        const msgMap: Record<string, string> = {
+          approved: `🎉 Your booking ${order.id} has been approved! We'll contact you shortly to confirm details.`,
+          rejected: `Your booking ${order.id} was not approved. Please contact us if you have questions.`,
+          contacted: `📞 We've reached out about your booking ${order.id}. Please check your phone/email.`,
+          completed: `✅ Your booking ${order.id} is marked complete. Thank you for choosing Candid Canvas BD!`,
+          under_review: `Your booking ${order.id} is now under review. We'll get back to you soon.`,
+        };
+        if (msgMap[status]) {
+          try {
+            await addDoc(collection(db, 'notifications'), {
+              userId,
+              type: `booking_${status}`,
+              title: `Booking ${getStatusLabel(status)}`,
+              message: msgMap[status],
+              read: false,
+              createdAt: new Date().toISOString(),
+            });
+          } catch { /* silent — notification is best-effort */ }
+        }
+      }
+
       if (['approved', 'rejected', 'contacted', 'completed'].includes(status)) {
         setEmailModalData({
           clientName: order.client,

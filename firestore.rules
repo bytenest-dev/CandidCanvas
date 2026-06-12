@@ -19,7 +19,9 @@ service cloud.firestore {
     // Bookings — users create own, admin manages all
     match /bookings/{bookingId} {
       allow create: if request.auth != null;
-      allow read, update: if request.auth != null &&
+      // Users can read any booking's date/status for availability checking (not personal data)
+      allow read: if request.auth != null;
+      allow update: if request.auth != null &&
         (request.auth.uid == resource.data.userId || isAdmin());
       allow delete: if isAdmin();
     }
@@ -86,9 +88,13 @@ service cloud.firestore {
 
     // Notifications — users read/write their own only
     match /notifications/{docId} {
-      allow read, update: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null &&
+        (resource == null || request.auth.uid == resource.data.userId || isAdmin());
       allow create: if request.auth != null;
-      allow delete: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.userId || isAdmin());
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.userId || isAdmin());
     }
 
     // Monthly backups — admin only

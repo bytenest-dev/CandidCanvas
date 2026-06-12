@@ -967,7 +967,7 @@ export default function DashboardPage() {
                   <div className="divide-y divide-[#F3F4F6]">
                     {[
                       { label: 'Display Name', value: user.displayName },
-                      { label: 'Email Address', value: user.email },
+                      { label: 'Email Address', value: (user.email || '').toLowerCase() },
                       { label: 'Account Type', value: user.role },
                       { label: 'Total Bookings', value: String(bookings.length) },
                     ].map(({ label, value }) => (
