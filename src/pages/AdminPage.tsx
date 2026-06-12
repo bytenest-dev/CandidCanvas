@@ -7,7 +7,7 @@ import {
   Settings, LogOut, Search, CheckCircle, XCircle,
   Eye, Camera, Trash2, Edit, TrendingUp, Bell, Menu, Plus,
   Upload, RefreshCw, Calendar, Wrench, Mail, Users, Globe, MessageSquare,
-  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag, DollarSign,
+  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag, DollarSign, Archive,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite, type GalleryItem, type SliderItem, type PackageItem, type ReviewItem, type SiteSettings } from '../context/SiteContext';
@@ -47,6 +47,7 @@ const ADMIN_NAV = [
   { id: 'packages', label: 'Packages', icon: Package },
   { id: 'reviews', label: 'Reviews', icon: Star },
   { id: 'promos', label: 'Promo Codes', icon: Tag },
+  { id: 'backup', label: 'Backup', icon: Archive },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -245,6 +246,10 @@ export default function AdminPage() {
   const [showPromoForm, setShowPromoForm] = useState(false);
   const [editPromo, setEditPromo] = useState<any | null>(null);
 
+  // Monthly backup state
+  const [backups, setBackups] = useState<{ month: string; totalOrders: number; totalRevenue: number; createdAt: string }[]>([]);
+  const [backupsLoading, setBackupsLoading] = useState(false);
+
   // ── Load all data from Firebase ─────────────────────────────────────────
   const loadOrders = useCallback(async () => {
     try {
@@ -438,12 +443,102 @@ export default function AdminPage() {
     } catch { } finally { setPromosLoading(false); }
   }, []);
 
+  const loadBackups = useCallback(async () => {
+    setBackupsLoading(true);
+    try {
+      const { collection, getDocs, orderBy, query } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const snap = await getDocs(query(collection(db, 'monthlyBackups'), orderBy('month', 'desc')));
+      setBackups(snap.docs.map(d => ({ ...(d.data() as any) })));
+    } catch { } finally { setBackupsLoading(false); }
+  }, []);
+
+  /** Creates or overwrites the backup doc for the given YYYY-MM */
+  const generateMonthlyBackup = async (monthStr?: string) => {
+    try {
+      const { doc, setDoc, collection, getDocs, query, where } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const targetMonth = monthStr || new Date().toISOString().slice(0, 7);
+
+      // Get all orders for that month
+      const allOrdersSnap = await getDocs(collection(db, 'bookings'));
+      const monthOrders = allOrdersSnap.docs
+        .map(d => ({ id: d.id, ...d.data() } as any))
+        .filter(o => (o.createdAt || '').startsWith(targetMonth));
+
+      const totalRevenue = monthOrders.reduce((s: number, o: any) => s + (o.paymentAmount || 0), 0);
+      const summary = {
+        month: targetMonth,
+        totalOrders: monthOrders.length,
+        totalRevenue,
+        completedOrders: monthOrders.filter((o: any) => o.status === 'completed').length,
+        approvedOrders: monthOrders.filter((o: any) => o.status === 'approved').length,
+        cancelledOrders: monthOrders.filter((o: any) => o.status === 'rejected').length,
+        orders: monthOrders.map((o: any) => ({
+          id: o.id,
+          client: o.client || '',
+          email: o.email || '',
+          phone: o.phone || o.userPhone || '',
+          package: o.package || '',
+          event: o.event || '',
+          date: o.date || '',
+          location: o.location || '',
+          status: o.status || '',
+          paymentStatus: o.paymentStatus || 'not_paid',
+          paymentAmount: o.paymentAmount || 0,
+          paymentNote: o.paymentNote || '',
+          promoCode: o.promoApplied || o.promoCode || '',
+          discount: o.discount || 0,
+          createdAt: o.createdAt || '',
+          notes: o.notes || '',
+        })),
+        createdAt: new Date().toISOString(),
+      };
+      await setDoc(doc(db, 'monthlyBackups', targetMonth), summary);
+      await loadBackups();
+      toast.success(`Backup for ${targetMonth} saved!`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate backup');
+    }
+  };
+
+  /** Download a specific month's backup as CSV */
+  const downloadBackupCSV = (backup: any) => {
+    const headers = [
+      'Order ID', 'Client', 'Email', 'Phone', 'Package', 'Event Type',
+      'Event Date', 'Location', 'Status', 'Payment Status',
+      'Amount Received (৳)', 'Payment Note', 'Promo Code', 'Discount (%)', 'Created At', 'Notes',
+    ];
+    const rows = (backup.orders || []).map((o: any) => [
+      o.id, o.client, o.email, o.phone, o.package, o.event,
+      o.date, o.location, o.status,
+      o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Not Paid',
+      o.paymentAmount || 0, o.paymentNote || '',
+      o.promoCode || '', o.discount ? `${o.discount}%` : '',
+      o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
+      o.notes || '',
+    ]);
+    const csvContent = [headers, ...rows]
+      .map(row => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-${backup.month}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded backup for ${backup.month}`);
+  };
+
   useEffect(() => {
     loadOrders();
     loadStats();
     loadMessages();
     loadPromos();
-  }, [loadOrders, loadStats, loadMessages, loadPromos]);
+    loadBackups();
+  }, [loadOrders, loadStats, loadMessages, loadPromos, loadBackups]);
 
   // Dedicated email quota listener — runs once, stays live
   // EmailJS free plan resets on the 5th of each month
@@ -838,24 +933,54 @@ export default function AdminPage() {
 
   // ── Export to Excel (CSV) ────────────────────────────────────────────────
   const exportOrdersToExcel = () => {
-    const headers = ['Order ID', 'Client Name', 'Email', 'Package', 'Event Type', 'Event Date', 'Location', 'Status', 'Created At', 'Notes'];
-    const rows = displayedOrders.map(o => [
-      o.id, o.client, o.email, o.package, o.event,
-      formatDate(o.date), o.location, getStatusLabel(o.status),
-      o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
-      o.notes || '',
-    ]);
+    const headers = [
+      'Order ID', 'Client Name', 'Email', 'Phone', 'Package', 'Event Type',
+      'Event Date', 'Location', 'Status', 'Package Price (৳)',
+      'Promo Code', 'Discount (%)', 'Final Price (৳)',
+      'Payment Status', 'Amount Received (৳)', 'Payment Note',
+      'Created At', 'Notes',
+    ];
+
+    const rows = displayedOrders.map(o => {
+      // Find package price from loaded packages
+      const pkgData = packages.find(p => p.name.toLowerCase() === o.package?.toLowerCase());
+      const rawPrice = pkgData ? parseInt(pkgData.price.replace(/\D/g, '')) || 0 : 0;
+      const discountPct = o.discount || 0;
+      const finalPrice = discountPct > 0 ? Math.round(rawPrice * (1 - discountPct / 100)) : rawPrice;
+
+      return [
+        o.id,
+        o.client,
+        o.email,
+        o.phone || '',
+        o.package,
+        o.event,
+        formatDate(o.date),
+        o.location,
+        getStatusLabel(o.status),
+        rawPrice > 0 ? rawPrice : '',
+        o.promoApplied || o.promoCode || '',
+        discountPct > 0 ? `${discountPct}%` : '',
+        finalPrice > 0 ? finalPrice : '',
+        o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Not Paid',
+        o.paymentAmount || 0,
+        o.paymentNote || '',
+        o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
+        o.notes || '',
+      ];
+    });
+
     const csvContent = [headers, ...rows]
       .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
       .join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `candid-canvas-orders-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `candid-canvas-orders-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Orders exported to CSV!');
+    toast.success('Orders exported with payment details!');
   };
 
   // ── Displayed orders based on filter ────────────────────────────────────
@@ -2378,6 +2503,127 @@ export default function AdminPage() {
               </motion.div>
             )}
 
+            {/* ── BACKUP ── */}
+            {activeTab === 'backup' && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="font-semibold text-[#111827] text-lg">Monthly Backups</h2>
+                    <p className="text-xs text-[#9CA3AF] mt-1">Each backup stores all orders, revenue and details for that month as a downloadable CSV.</p>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => generateMonthlyBackup()}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] text-white text-sm rounded-lg hover:bg-[#374151] transition-colors"
+                    >
+                      <Archive size={14} /> Backup This Month
+                    </button>
+                    <button
+                      onClick={loadBackups}
+                      className="flex items-center gap-2 px-4 py-2.5 border border-[#E5E7EB] text-[#374151] text-sm rounded-lg hover:border-[#374151] transition-colors"
+                    >
+                      <RefreshCw size={14} /> Refresh
+                    </button>
+                  </div>
+                </div>
+
+                {/* Auto-backup info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Archive size={14} className="text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-800">How backups work</p>
+                    <p className="text-xs text-blue-600 mt-0.5 leading-relaxed">
+                      Click "Backup This Month" at any time to save the current month's data to Firestore.
+                      Each backup contains all orders, payment details, promo codes used, and revenue totals.
+                      You can download any saved backup as a CSV file for Excel/Sheets.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Backup this specific month */}
+                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-[#111827] mb-3">Generate Backup for Specific Month</h3>
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1">
+                      <label className="block text-xs text-[#6B7280] mb-1.5">Select Month</label>
+                      <input
+                        type="month"
+                        id="backupMonthInput"
+                        defaultValue={new Date().toISOString().slice(0, 7)}
+                        className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827]"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        const input = document.getElementById('backupMonthInput') as HTMLInputElement;
+                        if (input?.value) generateMonthlyBackup(input.value);
+                      }}
+                      className="px-4 py-2.5 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 flex-shrink-0"
+                    >
+                      <Download size={14} /> Generate
+                    </button>
+                  </div>
+                </div>
+
+                {/* Saved backups list */}
+                {backupsLoading ? (
+                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-10 text-center">
+                    <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-sm text-[#9CA3AF]">Loading backups...</p>
+                  </div>
+                ) : backups.length === 0 ? (
+                  <div className="bg-white rounded-xl border-2 border-dashed border-[#E5E7EB] p-12 text-center">
+                    <Archive size={36} className="text-[#D1D5DB] mx-auto mb-3" />
+                    <p className="text-sm font-medium text-[#374151] mb-1">No backups yet</p>
+                    <p className="text-xs text-[#9CA3AF]">Click "Backup This Month" to create your first backup.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {backups.map(backup => (
+                      <div key={backup.month} className="bg-white rounded-xl border border-[#E5E7EB] p-5 flex items-center justify-between gap-4 hover:shadow-md transition-all">
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="w-11 h-11 bg-[#F8F9FA] rounded-xl border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
+                            <Archive size={18} className="text-[#6B7280]" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-[#111827] text-sm">
+                              {new Date(backup.month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                            </p>
+                            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                              <span className="text-xs text-[#6B7280]">📦 {backup.totalOrders} orders</span>
+                              <span className="text-xs text-emerald-700 font-semibold">৳{(backup.totalRevenue || 0).toLocaleString('en-BD')} revenue</span>
+                              <span className="text-[11px] text-[#9CA3AF]">
+                                Saved {backup.createdAt ? new Date(backup.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => downloadBackupCSV(backup)}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
+                          >
+                            <Download size={13} /> Download CSV
+                          </button>
+                          <button
+                            onClick={() => generateMonthlyBackup(backup.month)}
+                            title="Re-generate this month's backup with latest data"
+                            className="flex items-center gap-1.5 px-3 py-2 border border-[#E5E7EB] text-[#374151] text-xs font-medium rounded-lg hover:border-[#374151] transition-colors"
+                          >
+                            <RefreshCw size={13} /> Sync
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
             {/* ── SETTINGS ── */}
             {activeTab === 'settings' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-2xl space-y-5">
@@ -2716,6 +2962,32 @@ export default function AdminPage() {
                     <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-0.5">Location</p>
                     <p className="text-sm font-semibold text-[#111827]">{viewOrder.location}</p>
                   </div>
+                  {/* Price display — discounted if promo used */}
+                  {(() => {
+                    const pkgData = packages.find(p => p.name.toLowerCase() === viewOrder.package?.toLowerCase());
+                    const rawPrice = pkgData ? parseInt(pkgData.price.replace(/\D/g, '')) || 0 : 0;
+                    const discountPct = viewOrder.discount || 0;
+                    const finalPrice = discountPct > 0 ? Math.round(rawPrice * (1 - discountPct / 100)) : rawPrice;
+                    if (!rawPrice) return null;
+                    return (
+                      <div className="col-span-2 mt-1 pt-2 border-t border-[#E5E7EB]">
+                        <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wide mb-1.5">Package Price</p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-lg font-bold text-[#111827]">
+                            ৳{finalPrice.toLocaleString('en-BD')}
+                          </span>
+                          {discountPct > 0 && (
+                            <>
+                              <span className="text-sm text-[#9CA3AF] line-through">৳{rawPrice.toLocaleString('en-BD')}</span>
+                              <span className="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
+                                {discountPct}% OFF via {viewOrder.promoApplied || viewOrder.promoCode}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 {viewOrder.notes && (
                   <div className="mt-3 pt-3 border-t border-[#E5E7EB]">

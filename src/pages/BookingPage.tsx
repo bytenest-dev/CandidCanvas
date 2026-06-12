@@ -36,16 +36,16 @@ const STEPS = [
 async function generateBookingId(): Promise<string> {
   const { doc, runTransaction } = await import('firebase/firestore');
   const { db } = await import('../lib/firebase');
-  const year = new Date().getFullYear();
-  const counterRef = doc(db, 'siteData', `bookingCounter_${year}`);
+  // Global counter — format: CCB-001, CCB-002, ...
+  const counterRef = doc(db, 'siteData', 'bookingCounterGlobal');
   const newNum = await runTransaction(db, async (transaction) => {
     const counterDoc = await transaction.get(counterRef);
     const current = counterDoc.exists() ? (counterDoc.data()?.count || 0) : 0;
     const next = current + 1;
-    transaction.set(counterRef, { count: next, year });
+    transaction.set(counterRef, { count: next });
     return next;
   });
-  return `CC-${year}-${String(newNum).padStart(4, '0')}`;
+  return `CCB-${String(newNum).padStart(3, '0')}`;
 }
 
 // ── Availability Calendar Component ──────────────────────────────────────────

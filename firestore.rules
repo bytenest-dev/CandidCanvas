@@ -91,6 +91,11 @@ service cloud.firestore {
       allow delete: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
     }
 
+    // Monthly backups — admin only
+    match /monthlyBackups/{month} {
+      allow read, write: if isAdmin();
+    }
+
     // Users — admin can read/write ALL user docs; users can read/write own
     match /users/{uid} {
       allow read: if request.auth != null &&
