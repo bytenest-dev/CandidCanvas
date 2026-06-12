@@ -343,6 +343,15 @@ export default function BookingPage() {
       });
 
       setBookingId(id);
+
+      // Increment promo usage count
+      if (promoState.valid && promoState.promoData?.id) {
+        try {
+          const { doc: promoDoc, updateDoc, increment } = await import('firebase/firestore');
+          await updateDoc(promoDoc(db, 'promoCodes', promoState.promoData.id), { usageCount: increment(1) });
+        } catch { /* non-critical */ }
+      }
+
       setSubmitted(true);
     } catch (error: any) {
       console.error('Booking error:', error);

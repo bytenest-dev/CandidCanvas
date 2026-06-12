@@ -219,48 +219,49 @@ export default function DashboardPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelSubmitting, setCancelSubmitting] = useState(false);
 
-  // ── Load bookings ────────────────────────────────────────────────────────
-  const loadBookings = useCallback(async () => {
+  // ── Real-time bookings — onSnapshot so status updates instantly ─────────
+  useEffect(() => {
     if (!user) return;
-    try {
-      const { collection, query, where, orderBy, getDocs } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
-      let data: Booking[] = [];
-      const mapDoc = (doc: { id: string; data: () => Record<string, string> }): Booking => {
-        const d = doc.data();
-        return {
-          id: d.id || doc.id,
-          packageName: d.package || d.packageName || '',
-          eventType: d.event || d.eventType || '',
-          eventDate: d.date || d.eventDate || '',
-          eventLocation: d.location || d.eventLocation || '',
-          status: d.status || 'submitted',
-          createdAt: d.createdAt || '',
-          notes: d.notes || '',
-        };
-      };
+    let unsub: (() => void) | null = null;
+    const setup = async () => {
       try {
-        // Try with composite index (userId + orderBy createdAt)
-        const q = query(
-          collection(db, 'bookings'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
-        );
-        const snapshot = await getDocs(q);
-        data = snapshot.docs.map(mapDoc);
-      } catch {
-        // Fallback: filter without orderBy (no index needed)
-        const q = query(collection(db, 'bookings'), where('userId', '==', user.uid));
-        const snapshot = await getDocs(q);
-        data = snapshot.docs.map(mapDoc);
-        data.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
-      }
-      setBookings(data);
-    } catch {
-      // Silent — permission denied or network error
-    } finally {
-      setLoading(false);
-    }
+        const { collection, query, where, orderBy, onSnapshot } = await import('firebase/firestore');
+        const { db } = await import('../lib/firebase');
+        const mapDoc = (doc: { id: string; data: () => Record<string, string> }): Booking => {
+          const d = doc.data();
+          return {
+            id: d.id || doc.id,
+            packageName: d.package || d.packageName || '',
+            eventType: d.event || d.eventType || '',
+            eventDate: d.date || d.eventDate || '',
+            eventLocation: d.location || d.eventLocation || '',
+            status: d.status || 'submitted',
+            createdAt: d.createdAt || '',
+            notes: d.notes || '',
+          };
+        };
+        try {
+          const q = query(collection(db, 'bookings'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+          unsub = onSnapshot(q, snap => {
+            setBookings(snap.docs.map(mapDoc));
+            setLoading(false);
+          }, () => {
+            // Fallback without orderBy if no composite index
+            const q2 = query(collection(db, 'bookings'), where('userId', '==', user.uid));
+            unsub = onSnapshot(q2, snap => {
+              const data = snap.docs.map(mapDoc);
+              data.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+              setBookings(data);
+              setLoading(false);
+            }, () => setLoading(false));
+          });
+        } catch {
+          setLoading(false);
+        }
+      } catch { setLoading(false); }
+    };
+    setup();
+    return () => { if (unsub) unsub(); };
   }, [user]);
 
   // ── Load user messages ───────────────────────────────────────────────────
@@ -307,9 +308,8 @@ export default function DashboardPage() {
   }, [user]);
 
   useEffect(() => {
-    loadBookings();
     loadMessages();
-  }, [loadBookings, loadMessages]);
+  }, [loadMessages]);
 
   // ── Real-time notifications ──────────────────────────────────────────────
   useEffect(() => {
@@ -375,13 +375,14 @@ export default function DashboardPage() {
       });
       setCancelModal(null);
       setCancelReason('');
-    } catch { /* silent */ }
-    finally { setCancelSubmitting(false); }
+    } catch {
+      alert('Failed to request cancellation. Please try again.');
+    } finally { setCancelSubmitting(false); }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadBookings(), loadMessages()]);
+    await loadMessages();
     setRefreshing(false);
   };
 

@@ -11,8 +11,6 @@ import { auth, db, googleProvider } from '../lib/firebase';
 import type { User } from '../types';
 
 const ADMIN_EMAILS = ['admin@candidcanvas.com', 'team.candidcanvas.bd@gmail.com', 'mdhasibulhasan0210@gmail.com'];
-const DEMO_ADMIN_EMAIL = 'admin@candidcanvas.com';
-const DEMO_ADMIN_PASSWORD = '1234567890';
 
 interface SuspendedInfo {
   reason: string;
@@ -149,24 +147,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInAsAdmin = async (email: string, password: string): Promise<{ error?: string }> => {
     setSuspendedInfo(null);
-    if (email === DEMO_ADMIN_EMAIL && password === DEMO_ADMIN_PASSWORD) {
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        return {};
-      } catch {
-        const demoAdmin: User = {
-          uid: 'demo-admin-uid',
-          email: DEMO_ADMIN_EMAIL,
-          displayName: 'Admin',
-          role: 'admin',
-          createdAt: new Date(),
-        };
-        setUser(demoAdmin);
-        setFirebaseUser(null);
-        setLoading(false);
-        return {};
-      }
-    }
     try {
       await signInWithEmailAndPassword(auth, email, password);
       return {};

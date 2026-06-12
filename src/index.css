@@ -83,7 +83,7 @@ body {
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  /* overflow-x: hidden removed — caused sticky positioning bugs and masked layout issues */
   line-height: 1.65;
   letter-spacing: -0.01em;
 }

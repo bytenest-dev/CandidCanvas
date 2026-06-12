@@ -325,63 +325,55 @@ export default function AdminPage() {
   const [emailsSent, setEmailsSent] = useState(0);
   const EMAIL_QUOTA = 200;
 
-  const loadStats = useCallback(async () => {
-    try {
-      const { collection, doc, onSnapshot } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
+  // ── Real-time stats — set up once, cleaned up on unmount ────────────────────
+  useEffect(() => {
+    const unsubs: (() => void)[] = [];
+    const setup = async () => {
+      try {
+        const { collection, doc, onSnapshot } = await import('firebase/firestore');
+        const { db } = await import('../lib/firebase');
 
-      // 1. Real-time total visitor counter
-      onSnapshot(doc(db, 'siteData', 'visitors'), snap => {
-        setTotalVisitors(snap.exists() ? (snap.data().count || 0) : 0);
-      });
+        unsubs.push(onSnapshot(doc(db, 'siteData', 'visitors'), snap => {
+          setTotalVisitors(snap.exists() ? (snap.data().count || 0) : 0);
+        }));
 
-      // 2. Real-time last 14 days visitor graph
-      const today = new Date();
-      const dateKeys: string[] = [];
-      for (let i = 13; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        dateKeys.push(d.toISOString().slice(0, 10));
-      }
-      const graphData: Record<string, number> = {};
-      dateKeys.forEach(k => { graphData[k] = 0; });
-      // Set initial empty graph
-      setVisitorGraph(dateKeys.map(k => ({ date: k.slice(5), visitors: 0 })));
-      // Then subscribe to real-time updates for each day
-      dateKeys.forEach(dateStr => {
-        onSnapshot(doc(db, 'siteData', `visitors_${dateStr}`), snap => {
-          graphData[dateStr] = snap.exists() ? (snap.data().count || 0) : 0;
-          setVisitorGraph(dateKeys.map(k => ({
-            date: k.slice(5),
-            visitors: graphData[k] || 0,
-          })));
+        const today = new Date();
+        const dateKeys: string[] = [];
+        for (let i = 13; i >= 0; i--) {
+          const d = new Date(today); d.setDate(d.getDate() - i);
+          dateKeys.push(d.toISOString().slice(0, 10));
+        }
+        const graphData: Record<string, number> = {};
+        dateKeys.forEach(k => { graphData[k] = 0; });
+        setVisitorGraph(dateKeys.map(k => ({ date: k.slice(5), visitors: 0 })));
+        dateKeys.forEach(dateStr => {
+          unsubs.push(onSnapshot(doc(db, 'siteData', `visitors_${dateStr}`), snap => {
+            graphData[dateStr] = snap.exists() ? (snap.data().count || 0) : 0;
+            setVisitorGraph(dateKeys.map(k => ({ date: k.slice(5), visitors: graphData[k] || 0 })));
+          }));
         });
-      });
 
-      // 3. Monthly comparison - this month vs last month
-      const thisMonthStr = today.toISOString().slice(0, 7);
-      const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const lastMonthStr = lastMonthDate.toISOString().slice(0, 7);
-      onSnapshot(doc(db, 'siteData', `visitors_month_${thisMonthStr}`), snap => {
-        setThisMonthVisitors(snap.exists() ? (snap.data().count || 0) : 0);
-      });
-      onSnapshot(doc(db, 'siteData', `visitors_month_${lastMonthStr}`), snap => {
-        setPrevMonthVisitors(snap.exists() ? (snap.data().count || 0) : 0);
-      });
-
-      // 4. Real-time user count
-      onSnapshot(collection(db, 'users'), snap => {
-        setTotalUsers(snap.size);
-        const googleCount = snap.docs.filter(d => {
-          const data = d.data();
-          return data.provider === 'google' || (data.photoURL && data.photoURL.includes('googleusercontent'));
-        }).length;
-        setGoogleUsers(googleCount);
-      });
-
-      // 5. Real-time email quota — in separate effect below for stability
-
-    } catch { /* silent */ }
+        const thisMonthStr = today.toISOString().slice(0, 7);
+        const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastMonthStr = lastMonthDate.toISOString().slice(0, 7);
+        unsubs.push(onSnapshot(doc(db, 'siteData', `visitors_month_${thisMonthStr}`), snap => {
+          setThisMonthVisitors(snap.exists() ? (snap.data().count || 0) : 0);
+        }));
+        unsubs.push(onSnapshot(doc(db, 'siteData', `visitors_month_${lastMonthStr}`), snap => {
+          setPrevMonthVisitors(snap.exists() ? (snap.data().count || 0) : 0);
+        }));
+        unsubs.push(onSnapshot(collection(db, 'users'), snap => {
+          setTotalUsers(snap.size);
+          const googleCount = snap.docs.filter(d => {
+            const data = d.data();
+            return data.provider === 'google' || (data.photoURL && data.photoURL.includes('googleusercontent'));
+          }).length;
+          setGoogleUsers(googleCount);
+        }));
+      } catch { /* silent */ }
+    };
+    setup();
+    return () => unsubs.forEach(u => u());
   }, []);
 
   const loadMessages = useCallback(async () => {
@@ -541,11 +533,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadOrders();
-    loadStats();
     loadMessages();
     loadPromos();
     loadBackups();
-  }, [loadOrders, loadStats, loadMessages, loadPromos, loadBackups]);
+  }, [loadOrders, loadMessages, loadPromos, loadBackups]);
 
   // Dedicated email quota listener — runs once, stays live
   // EmailJS free plan resets on the 5th of each month
@@ -997,7 +988,6 @@ export default function AdminPage() {
   const handleRefresh = () => {
     refreshSiteData();
     loadOrders();
-    loadStats();
     loadMessages();
     toast.success('Data refreshed!');
   };
@@ -1471,7 +1461,7 @@ export default function AdminPage() {
                     <span className="hidden sm:inline">{calendarView ? 'List' : 'Calendar'}</span>
                   </button>
                   <button
-                    onClick={() => { loadOrders(); loadStats(); toast.success('Orders refreshed!'); }}
+                    onClick={() => { loadOrders(); toast.success('Orders refreshed!'); }}
                     title="Refresh orders"
                     className="flex items-center gap-1.5 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm text-[#374151] hover:border-[#374151] hover:bg-[#F8F9FA] transition-colors bg-white"
                   >

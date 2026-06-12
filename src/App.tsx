@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -7,17 +7,25 @@ import { SiteProvider, useSite } from './context/SiteContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import FloatingContact from './components/layout/FloatingContact';
-import HomePage from './pages/HomePage';
-import GalleryPage from './pages/GalleryPage';
-import PackagesPage from './pages/PackagesPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import BookingPage from './pages/BookingPage';
-import DashboardPage from './pages/DashboardPage';
-import AdminPage from './pages/AdminPage';
-import SignInPage from './pages/SignInPage';
-import PrivacyPage from './pages/PrivacyPage';
-import TermsPage from './pages/TermsPage';
+
+// Route-level code splitting — only downloads the page the user navigates to
+const HomePage      = lazy(() => import('./pages/HomePage'));
+const GalleryPage   = lazy(() => import('./pages/GalleryPage'));
+const PackagesPage  = lazy(() => import('./pages/PackagesPage'));
+const AboutPage     = lazy(() => import('./pages/AboutPage'));
+const ContactPage   = lazy(() => import('./pages/ContactPage'));
+const BookingPage   = lazy(() => import('./pages/BookingPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AdminPage     = lazy(() => import('./pages/AdminPage'));
+const SignInPage    = lazy(() => import('./pages/SignInPage'));
+const PrivacyPage   = lazy(() => import('./pages/PrivacyPage'));
+const TermsPage     = lazy(() => import('./pages/TermsPage'));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+    <div className="w-8 h-8 border-2 border-[#111827] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Scroll to top on every route change
 function ScrollToTop() {
@@ -208,14 +216,14 @@ function Layout() {
 
   if (isBare) {
     return (
-      <>
+      <Suspense fallback={<PageLoader />}>
         <ScrollToTop />
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/sign-in" element={<PageTransition><SignInPage /></PageTransition>} />
           </Routes>
         </AnimatePresence>
-      </>
+      </Suspense>
     );
   }
 
@@ -226,40 +234,42 @@ function Layout() {
         <VisitorTracker />
         <Navbar />
         <main className="flex-1">
-          <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-              <Route path="/gallery" element={<PageTransition><GalleryPage /></PageTransition>} />
-              <Route path="/packages" element={<PageTransition><PackagesPage /></PageTransition>} />
-              <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
-              <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
-              <Route path="/book" element={<PageTransition><BookingPage /></PageTransition>} />
-              <Route path="/dashboard" element={<PageTransition><DashboardPage /></PageTransition>} />
-              <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
-              <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
-              <Route path="/admin" element={
-                <ProtectedAdmin>
-                  <PageTransition><AdminPage /></PageTransition>
-                </ProtectedAdmin>
-              } />
-              <Route path="*" element={
-                <PageTransition>
-                  <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
-                    <Helmet>
-                      <title>Page Not Found | Candid Canvas BD</title>
-                      <meta name="robots" content="noindex, nofollow" />
-                    </Helmet>
-                    <div className="text-center px-6">
-                      <h1 className="font-heading text-7xl text-[#111827] mb-4">404</h1>
-                      <p className="text-[#6B7280] mb-2 font-medium">Page not found</p>
-                      <p className="text-[#9CA3AF] text-sm mb-8">The page you're looking for doesn't exist or has been moved.</p>
-                      <a href="/" className="px-6 py-3 bg-[#111827] text-white text-sm rounded hover:bg-[#374151] transition-colors">← Back to Home</a>
+          <Suspense fallback={<PageLoader />}>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+                <Route path="/gallery" element={<PageTransition><GalleryPage /></PageTransition>} />
+                <Route path="/packages" element={<PageTransition><PackagesPage /></PageTransition>} />
+                <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+                <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+                <Route path="/book" element={<PageTransition><BookingPage /></PageTransition>} />
+                <Route path="/dashboard" element={<PageTransition><DashboardPage /></PageTransition>} />
+                <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+                <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
+                <Route path="/admin" element={
+                  <ProtectedAdmin>
+                    <PageTransition><AdminPage /></PageTransition>
+                  </ProtectedAdmin>
+                } />
+                <Route path="*" element={
+                  <PageTransition>
+                    <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+                      <Helmet>
+                        <title>Page Not Found | Candid Canvas BD</title>
+                        <meta name="robots" content="noindex, nofollow" />
+                      </Helmet>
+                      <div className="text-center px-6">
+                        <h1 className="font-heading text-7xl text-[#111827] mb-4">404</h1>
+                        <p className="text-[#6B7280] mb-2 font-medium">Page not found</p>
+                        <p className="text-[#9CA3AF] text-sm mb-8">The page you're looking for doesn't exist or has been moved.</p>
+                        <a href="/" className="px-6 py-3 bg-[#111827] text-white text-sm rounded hover:bg-[#374151] transition-colors">← Back to Home</a>
+                      </div>
                     </div>
-                  </div>
-                </PageTransition>
-              } />
-            </Routes>
-          </AnimatePresence>
+                  </PageTransition>
+                } />
+              </Routes>
+            </AnimatePresence>
+          </Suspense>
         </main>
         {showFooter && <Footer />}
         <FloatingContact />
