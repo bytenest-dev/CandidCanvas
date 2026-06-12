@@ -216,12 +216,7 @@ export default function BookingPage() {
   const pkgFromUrl = (searchParams.get('pkg') || '').trim();   // trim trailing spaces from URL encoding
   const eventFromUrl = (searchParams.get('event') || '').trim().toLowerCase();
 
-  // Referral code: URL param OR localStorage (saved before OAuth redirect)
-  const savedRef = typeof window !== 'undefined' ? (localStorage.getItem('ccbd_ref') || '') : '';
-  const resolvedRef = refFromUrl.startsWith('REF-') ? refFromUrl : savedRef;
-
-  const [promoCode, setPromoCode] = useState(resolvedRef.startsWith('REF-') ? '' : refFromUrl);
-  const [referralCode] = useState(resolvedRef);
+  const [promoCode, setPromoCode] = useState(refFromUrl.startsWith('REF-') ? '' : refFromUrl);
   const [promoState, setPromoState] = useState<{
     loading: boolean; valid: boolean | null; error: string; discount: number; promoData: any | null;
   }>({ loading: false, valid: null, error: '', discount: 0, promoData: null });
@@ -326,19 +321,6 @@ export default function BookingPage() {
 
       const id = await generateBookingId();
 
-      // Validate referral code if provided
-      let referrerUid: string | null = null;
-      const activeReferral = referralCode.trim().toUpperCase();
-      if (activeReferral.startsWith('REF-')) {
-        try {
-          const { validateReferralCode } = await import('../lib/referrals');
-          const refResult = await validateReferralCode(activeReferral);
-          if (refResult.valid && refResult.referrerUid && refResult.referrerUid !== user?.uid) {
-            referrerUid = refResult.referrerUid;
-          }
-        } catch { /* silent */ }
-      }
-
       await addDoc(collection(db, 'bookings'), {
         id,
         client: data.name,
@@ -353,53 +335,15 @@ export default function BookingPage() {
         createdAt: new Date().toISOString(),
         userId: user?.uid || '',
         userPhone: data.phone,
-        statusTimeline: [{
-          status: 'submitted',
-          timestamp: new Date().toISOString(),
-          note: 'Booking submitted by client',
-        }],
+        statusTimeline: [{ status: 'submitted', timestamp: new Date().toISOString(), note: 'Booking submitted by client' }],
         paymentStatus: 'not_paid',
         promoCode: promoState.valid ? promoCode : '',
         discount: promoState.discount || 0,
         promoApplied: promoState.valid ? (promoState.promoData?.code || '') : '',
-        referralCode: referrerUid ? activeReferral : '',
-        referrerUid: referrerUid || '',
       });
-
-      // Increment referrer's count and create reward notifications
-      if (referrerUid && user) {
-        try {
-          const { doc, updateDoc, increment, addDoc: addNotif } = await import('firebase/firestore');
-          // Increment referredCount on referrer's doc
-          await updateDoc(doc(db, 'referrals', referrerUid), {
-            referredCount: increment(1),
-            earnedDiscounts: increment(1),
-          });
-          // Notify the referrer
-          await addNotif(collection(db, 'notifications'), {
-            userId: referrerUid,
-            type: 'referral_reward',
-            title: '🎉 Someone used your referral!',
-            message: `${data.name} booked using your referral code ${activeReferral}. You'll earn a 10% discount reward once their booking is approved.`,
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-          // Notify the referee (current user)
-          await addNotif(collection(db, 'notifications'), {
-            userId: user.uid,
-            type: 'referral_welcome',
-            title: '🎁 Referral discount pending',
-            message: `Your referral discount will be activated once your booking is approved. Stay tuned!`,
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-        } catch { /* silent */ }
-      }
 
       setBookingId(id);
       setSubmitted(true);
-      // Clear saved referral code after successful booking
-      localStorage.removeItem('ccbd_ref');
     } catch (error: any) {
       console.error('Booking error:', error);
       const msg = error?.code || error?.message || 'Unknown error';
@@ -519,17 +463,6 @@ export default function BookingPage() {
                     <Input label="Full Name *" placeholder="Your full name" error={errors.name?.message} {...register('name')} />
                     <Input label="Email Address *" type="email" placeholder="you@email.com" error={errors.email?.message} {...register('email')} />
                     <Input label="Phone / WhatsApp *" placeholder="+880 1xxx-xxxxxx" error={errors.phone?.message} {...register('phone')} />
-
-                    {/* Referral banner — shown when arriving via ref link */}
-                    {referralCode.startsWith('REF-') && (
-                      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-                        <span className="text-xl">🎁</span>
-                        <div>
-                          <p className="text-sm font-semibold text-emerald-800">Referral code applied!</p>
-                          <p className="text-xs text-emerald-600">You're booking via a friend's referral. You'll both get a discount once approved.</p>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Promo Code */}
                     <div>
@@ -697,12 +630,6 @@ export default function BookingPage() {
                           <div className="flex justify-between">
                             <span className="text-[#6B7280]">Promo</span>
                             <span className="text-green-600 font-semibold">{promoCode} ✅</span>
-                          </div>
-                        )}
-                        {referralCode.startsWith('REF-') && (
-                          <div className="flex justify-between">
-                            <span className="text-[#6B7280]">Referral</span>
-                            <span className="text-emerald-600 font-semibold">{referralCode} 🎁</span>
                           </div>
                         )}
                       </div>

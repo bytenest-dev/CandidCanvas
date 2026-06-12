@@ -93,10 +93,10 @@ export async function uploadMultipleToCloudinary(
 
 /**
  * Get an optimized Cloudinary URL with transformations.
- * Automatically converts to WebP and resizes for best quality/size balance.
+ * Uses AVIF → WebP → JPEG fallback via f_auto, lazy-load friendly.
  *
  * @param publicId  The Cloudinary public_id
- * @param width     Target width in pixels
+ * @param width     Target width in pixels (for responsive sizing)
  * @param quality   'auto' | number (1-100)
  */
 export function getCloudinaryUrl(
@@ -104,14 +104,27 @@ export function getCloudinaryUrl(
   width = 800,
   quality: 'auto' | number = 'auto',
 ): string {
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${width},q_${quality},f_auto,c_limit/${publicId}`;
+  // f_auto picks AVIF on Chrome, WebP on Safari, JPEG fallback
+  // q_auto optimizes quality automatically per-image
+  // c_limit prevents upscaling
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${width},q_${quality},f_auto,c_limit,dpr_auto/${publicId}`;
 }
 
 /**
- * Get a thumbnail URL (square crop).
+ * Get a thumbnail URL (square crop) — optimized WebP/AVIF.
  */
 export function getCloudinaryThumb(publicId: string, size = 400): string {
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${size},h_${size},c_fill,g_auto,q_auto,f_auto/${publicId}`;
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${size},h_${size},c_fill,g_auto,q_auto,f_auto,dpr_auto/${publicId}`;
+}
+
+/**
+ * Get a responsive srcSet string for <img srcSet="..."> usage.
+ * Returns widths: 400w, 800w, 1200w, 1600w
+ */
+export function getCloudinarySrcSet(publicId: string, quality: 'auto' | number = 'auto'): string {
+  return [400, 800, 1200, 1600]
+    .map(w => `${getCloudinaryUrl(publicId, w, quality)} ${w}w`)
+    .join(', ');
 }
 
 /**

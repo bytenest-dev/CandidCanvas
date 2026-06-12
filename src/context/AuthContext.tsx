@@ -10,7 +10,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
 import type { User } from '../types';
 
-const ADMIN_EMAILS = ['admin@candidcanvas.com', 'team.candidcanvas.bd@gmail.com'];
+const ADMIN_EMAILS = ['admin@candidcanvas.com', 'team.candidcanvas.bd@gmail.com', 'mdhasibulhasan0210@gmail.com'];
 const DEMO_ADMIN_EMAIL = 'admin@candidcanvas.com';
 const DEMO_ADMIN_PASSWORD = '1234567890';
 

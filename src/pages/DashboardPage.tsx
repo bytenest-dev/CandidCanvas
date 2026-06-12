@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import {
   Camera, CalendarCheck, Star, Bell, User, LogOut, Clock, CheckCircle,
   Menu, X, Send, MessageSquare, Package, ChevronRight, RefreshCw,
-  MapPin, Calendar, FileText, AlertCircle, Sparkles, Gift, Copy, Share2, XCircle,
+  MapPin, Calendar, FileText, AlertCircle, Sparkles, XCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
@@ -89,7 +89,6 @@ const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: Camera },
   { id: 'bookings', label: 'My Bookings', icon: CalendarCheck },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  { id: 'referral', label: 'Referral', icon: Gift },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'profile', label: 'Profile', icon: User },
 ];
@@ -215,11 +214,6 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notiLoading, setNotiLoading] = useState(true);
 
-  // Referral state
-  const [referral, setReferral] = useState<{ code: string; referredCount: number; earnedDiscounts: number } | null>(null);
-  const [referralLoading, setReferralLoading] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
-
   // Cancellation state
   const [cancelModal, setCancelModal] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -340,20 +334,6 @@ export default function DashboardPage() {
     setup();
     return () => { if (unsub) unsub(); };
   }, [user]);
-
-  // ── Load referral code ───────────────────────────────────────────────────
-  const loadReferral = useCallback(async () => {
-    if (!user) return;
-    setReferralLoading(true);
-    try {
-      const { getOrCreateReferral } = await import('../lib/referrals');
-      const data = await getOrCreateReferral(user.uid, user.displayName || 'User');
-      setReferral({ code: data.code, referredCount: data.referredCount, earnedDiscounts: data.earnedDiscounts });
-    } catch { /* silent */ }
-    finally { setReferralLoading(false); }
-  }, [user]);
-
-  useEffect(() => { loadReferral(); }, [loadReferral]);
 
   const markNotificationsRead = async () => {
     const unread = notifications.filter(n => !n.read);
@@ -771,6 +751,38 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
+                        {/* Event countdown — only for upcoming approved bookings */}
+                        {['approved', 'contacted'].includes(order.status) && order.eventDate && (() => {
+                          const eventDate = new Date(order.eventDate + 'T00:00:00');
+                          const today = new Date(); today.setHours(0, 0, 0, 0);
+                          const diffMs = eventDate.getTime() - today.getTime();
+                          const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                          if (days < 0) return null;
+                          const isUrgent = days <= 7;
+                          const isClose = days <= 30;
+                          return (
+                            <div className={`flex items-center gap-3 rounded-xl px-4 py-3 mb-3 border ${
+                              isUrgent ? 'bg-red-50 border-red-200' :
+                              isClose ? 'bg-amber-50 border-amber-200' :
+                              'bg-blue-50 border-blue-200'
+                            }`}>
+                              <div className={`text-2xl ${isUrgent ? '🔴' : isClose ? '🟡' : '📅'}`}>
+                                {isUrgent ? '🔴' : isClose ? '🟡' : '📅'}
+                              </div>
+                              <div>
+                                <p className={`text-sm font-bold ${isUrgent ? 'text-red-700' : isClose ? 'text-amber-700' : 'text-blue-700'}`}>
+                                  {days === 0 ? '🎉 Your event is today!' :
+                                   days === 1 ? '⚡ Tomorrow is your event!' :
+                                   `Your event starts in ${days} day${days !== 1 ? 's' : ''}`}
+                                </p>
+                                <p className={`text-xs mt-0.5 ${isUrgent ? 'text-red-500' : isClose ? 'text-amber-500' : 'text-blue-500'}`}>
+                                  {formatDate(order.eventDate)} · {order.packageName}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
                         {order.notes && (
                           <p className="text-xs text-[#6B7280] italic bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 mb-3 flex items-start gap-1.5">
                             <FileText size={11} className="text-amber-500 mt-0.5 flex-shrink-0" />
@@ -1119,122 +1131,7 @@ export default function DashboardPage() {
               </motion.div>
             )}
 
-            {/* ── REFERRAL ──────────────────────────────────────────────── */}
-            {activeTab === 'referral' && (
-              <motion.div key="referral" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <div className="mb-6">
-                  <h1 className="font-heading text-3xl text-[#111827]">Referral Program</h1>
-                  <p className="text-sm text-[#6B7280] mt-0.5">Share your code — earn discounts when friends book</p>
-                </div>
-
-                {/* Hero card */}
-                <div className="relative bg-gradient-to-br from-[#111827] to-[#1f2937] rounded-2xl p-6 sm:p-8 mb-6 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-48 h-48 opacity-5"
-                    style={{ backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
-                  <div className="relative">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center">
-                        <Gift size={18} className="text-white" />
-                      </div>
-                      <span className="text-white/60 text-sm font-medium">Your Referral Code</span>
-                    </div>
-
-                    {referralLoading ? (
-                      <div className="h-12 bg-white/10 rounded-xl animate-pulse w-48 mb-4" />
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-3 mb-4 flex-wrap">
-                          <span className="font-mono text-3xl sm:text-4xl font-bold text-white tracking-widest">
-                            {referral?.code || '—'}
-                          </span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(referral?.code || '');
-                              setCopySuccess(true);
-                              setTimeout(() => setCopySuccess(false), 2000);
-                            }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-colors"
-                          >
-                            {copySuccess ? <CheckCircle size={13} /> : <Copy size={13} />}
-                            {copySuccess ? 'Copied!' : 'Copy'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              const url = `${window.location.origin}/book?ref=${referral?.code}`;
-                              if (navigator.share) {
-                                navigator.share({ title: 'Book Candid Canvas BD', text: `Use my referral code ${referral?.code} for a discount!`, url });
-                              } else {
-                                navigator.clipboard.writeText(url);
-                                setCopySuccess(true);
-                                setTimeout(() => setCopySuccess(false), 2000);
-                              }
-                            }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-colors"
-                          >
-                            <Share2 size={13} /> Share Link
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-white/10 rounded-xl p-4">
-                            <p className="text-2xl font-bold text-white">{referral?.referredCount ?? 0}</p>
-                            <p className="text-white/50 text-xs mt-0.5">Friends Referred</p>
-                          </div>
-                          <div className="bg-white/10 rounded-xl p-4">
-                            <p className="text-2xl font-bold text-emerald-400">{referral?.earnedDiscounts ?? 0}</p>
-                            <p className="text-white/50 text-xs mt-0.5">Rewards Earned</p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* How it works */}
-                <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6 mb-6 shadow-sm">
-                  <h3 className="font-semibold text-[#111827] mb-5 flex items-center gap-2">
-                    <Sparkles size={16} className="text-amber-500" /> How it works
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { step: '1', icon: '📤', title: 'Share your code', desc: 'Send your unique referral code to friends and family planning events.' },
-                      { step: '2', icon: '📝', title: 'They book using it', desc: 'When they book a session and apply your code, both of you get a discount.' },
-                      { step: '3', icon: '🎁', title: 'You both win', desc: 'You get 10% off your next booking. They get 5% off theirs. Codes are auto-created.' },
-                    ].map(({ step, icon, title, desc }) => (
-                      <div key={step} className="flex items-start gap-4">
-                        <div className="w-10 h-10 bg-[#F8F9FA] rounded-xl flex items-center justify-center text-xl flex-shrink-0 border border-[#E5E7EB]">
-                          {icon}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm text-[#111827]">{title}</p>
-                          <p className="text-xs text-[#6B7280] mt-0.5 leading-relaxed">{desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Referral link for easy sharing */}
-                <div className="bg-[#F8F9FA] rounded-2xl border border-[#E5E7EB] p-5">
-                  <p className="text-xs font-semibold text-[#374151] uppercase tracking-wide mb-2">Your referral link</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-xs text-[#6B7280] bg-white border border-[#E5E7EB] rounded-lg px-3 py-2.5 truncate font-mono">
-                      {window.location.origin}/book?ref={referral?.code || '...'}
-                    </code>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/book?ref=${referral?.code}`);
-                        setCopySuccess(true);
-                        setTimeout(() => setCopySuccess(false), 2000);
-                      }}
-                      className="px-4 py-2.5 bg-[#111827] text-white text-xs font-semibold rounded-lg hover:bg-[#374151] transition-colors flex-shrink-0"
-                    >
-                      {copySuccess ? '✓ Copied' : 'Copy'}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+            {/* ── REFERRAL removed ── */}
 
           </div>
         </main>

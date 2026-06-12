@@ -161,9 +161,8 @@ export default function Navbar() {
                               <div key={n.id} className={`px-4 py-3 border-b border-[#F3F4F6] last:border-0 ${!n.read ? 'bg-blue-50/40' : ''}`}>
                                 <div className="flex items-start gap-2.5">
                                   <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                                    n.type === 'referral_reward' ? 'bg-emerald-500' :
-                                    n.type === 'referral_welcome' ? 'bg-purple-500' :
-                                    n.type?.includes('booking') ? 'bg-blue-500' : 'bg-[#9CA3AF]'
+                                    n.type?.includes('booking') ? 'bg-blue-500' :
+                                    n.type === 'message_reply' ? 'bg-emerald-500' : 'bg-[#9CA3AF]'
                                   }`} />
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-[#111827] leading-snug">{n.title}</p>
@@ -314,9 +313,8 @@ export default function Navbar() {
                 <div key={n.id} className={`px-4 py-3.5 border-b border-[#F3F4F6] last:border-0 ${!n.read ? 'bg-blue-50/40' : ''}`}>
                   <div className="flex items-start gap-3">
                     <div className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${
-                      n.type === 'referral_reward' ? 'bg-emerald-500' :
-                      n.type === 'referral_welcome' ? 'bg-purple-500' :
-                      n.type?.includes('booking') ? 'bg-blue-500' : 'bg-[#9CA3AF]'
+                      n.type?.includes('booking') ? 'bg-blue-500' :
+                      n.type === 'message_reply' ? 'bg-emerald-500' : 'bg-[#9CA3AF]'
                     }`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#111827] leading-snug">{n.title}</p>
