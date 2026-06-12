@@ -208,21 +208,20 @@ export default function BookingPage() {
 
   // Promo code state — auto-fill from ?ref= URL param
   const refFromUrl = searchParams.get('ref') || '';
-  const pkgFromUrl = searchParams.get('pkg') || '';   // e.g. /book?pkg=Birthday
-  const eventFromUrl = searchParams.get('event') || ''; // e.g. /book?event=birthday
+  const pkgFromUrl = searchParams.get('pkg') || '';
+  const eventFromUrl = searchParams.get('event') || '';
 
-  const [promoCode, setPromoCode] = useState(refFromUrl);
-  const [referralCode, setReferralCode] = useState(refFromUrl);
+  // Referral code: URL param OR localStorage (saved before OAuth redirect)
+  const savedRef = typeof window !== 'undefined' ? (localStorage.getItem('ccbd_ref') || '') : '';
+  const resolvedRef = refFromUrl.startsWith('REF-') ? refFromUrl : savedRef;
+
+  const [promoCode, setPromoCode] = useState(resolvedRef.startsWith('REF-') ? '' : refFromUrl);
+  const [referralCode] = useState(resolvedRef);
   const [promoState, setPromoState] = useState<{
     loading: boolean; valid: boolean | null; error: string; discount: number; promoData: any | null;
   }>({ loading: false, valid: null, error: '', discount: 0, promoData: null });
 
-  // Auto-validate referral code from URL on mount
-  useEffect(() => {
-    if (refFromUrl && refFromUrl.startsWith('REF-')) {
-      setReferralCode(refFromUrl);
-    }
-  }, [refFromUrl]);
+  // Auto-validate referral code from URL on mount — nothing needed, already resolved above
 
   const [calendarDate, setCalendarDate] = useState('');
 
@@ -394,6 +393,8 @@ export default function BookingPage() {
 
       setBookingId(id);
       setSubmitted(true);
+      // Clear saved referral code after successful booking
+      localStorage.removeItem('ccbd_ref');
     } catch (error) {
       console.error('Booking error:', error);
       alert('Failed to submit booking. Please try again.');

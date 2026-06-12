@@ -28,6 +28,19 @@ function ScrollToTop() {
   return null;
 }
 
+// Save referral code from URL to localStorage before it gets lost
+function ReferralCapture() {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get('ref');
+    if (ref && ref.startsWith('REF-')) {
+      localStorage.setItem('ccbd_ref', ref.toUpperCase());
+    }
+  }, [location.search]);
+  return null;
+}
+
 // Track visitor count in Firestore (once per session, with daily breakdown for graph)
 function VisitorTracker() {
   useEffect(() => {
@@ -223,6 +236,7 @@ function Layout() {
     <SiteGate>
       <div className="min-h-screen flex flex-col">
         <ScrollToTop />
+        <ReferralCapture />
         <VisitorTracker />
         <Navbar />
         <main className="flex-1">
