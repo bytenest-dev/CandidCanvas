@@ -7,7 +7,7 @@ import {
   Settings, LogOut, Search, CheckCircle, XCircle,
   Eye, Camera, Trash2, Edit, TrendingUp, Bell, Menu, Plus,
   Upload, RefreshCw, Calendar, Wrench, Mail, Users, Globe, MessageSquare,
-  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag, DollarSign, Archive,
+  Download, FileSpreadsheet, ChevronDown, CloudUpload, Phone, Tag, DollarSign, Archive, Send,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSite, type GalleryItem, type SliderItem, type PackageItem, type ReviewItem, type SiteSettings } from '../context/SiteContext';
@@ -238,6 +238,11 @@ export default function AdminPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(true);
   const [viewMessage, setViewMessage] = useState<Message | null>(null);
+
+  // In-app reply state
+  const [replyText, setReplyText] = useState('');
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replySending, setReplySending] = useState(false);
 
   // Promo codes state
   const [promos, setPromos] = useState<any[]>([]);
@@ -943,6 +948,45 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err);
       toast.error('Failed to delete message');
+    }
+  };
+
+  const sendReply = async () => {
+    if (!viewMessage || !replyText.trim()) return;
+    setReplySending(true);
+    try {
+      const { doc, updateDoc, addDoc, collection } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      // Save reply to the message doc
+      await updateDoc(doc(db, 'messages', viewMessage.id), {
+        reply: replyText.trim(),
+        repliedAt: new Date().toISOString(),
+        status: 'read',
+      });
+      // Notify the user in the notifications collection
+      if (viewMessage.userId) {
+        await addDoc(collection(db, 'notifications'), {
+          userId: viewMessage.userId,
+          type: 'message_reply',
+          title: '💬 Admin replied to your message',
+          message: replyText.trim(),
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      // Update local state
+      setMessages(prev => prev.map(m => m.id === viewMessage.id
+        ? { ...m, reply: replyText.trim(), status: 'read' }
+        : m
+      ));
+      setViewMessage({ ...viewMessage, reply: replyText.trim(), status: 'read' });
+      setReplyText('');
+      setShowReplyInput(false);
+      toast.success('Reply sent and user notified!');
+    } catch {
+      toast.error('Failed to send reply');
+    } finally {
+      setReplySending(false);
     }
   };
 
@@ -1729,7 +1773,13 @@ export default function AdminPage() {
                     <p className="text-xs text-[#9CA3AF] mt-1">Messages from registered users via contact form</p>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-medium">
+                    <button
+                      onClick={loadMessages}
+                      className="flex items-center gap-1.5 px-3 py-2 border border-[#E5E7EB] text-[#374151] text-sm rounded-lg hover:border-[#374151] hover:bg-[#F8F9FA] transition-colors"
+                    >
+                      <RefreshCw size={13} /> Refresh
+                    </button>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-medium self-center">
                       {messages.filter(m => m.status === 'unread').length} Unread
                     </span>
                   </div>
@@ -1754,7 +1804,7 @@ export default function AdminPage() {
                         className={`bg-white rounded-xl border p-5 cursor-pointer hover:shadow-md transition-all ${
                           msg.status === 'unread' ? 'border-blue-300 bg-blue-50/30' : 'border-[#E5E7EB]'
                         }`}
-                        onClick={() => setViewMessage(msg)}
+                        onClick={() => { setViewMessage(msg); setShowReplyInput(false); setReplyText(''); }}
                       >
                         <div className="flex items-start justify-between gap-4 mb-2">
                           <div className="flex-1">
@@ -3571,27 +3621,79 @@ export default function AdminPage() {
                 Received: {new Date(viewMessage.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
               </p>
             </div>
-            <div className="px-6 py-4 border-t border-[#E5E7EB] flex gap-3">
-              {viewMessage.status === 'unread' && (
-                <button
-                  onClick={() => { markAsRead(viewMessage.id); setViewMessage({ ...viewMessage, status: 'read' }); }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#111827] text-white text-sm font-medium rounded-xl hover:bg-[#374151] transition-colors"
-                >
-                  <CheckCircle size={14} /> Mark as Read
-                </button>
+            <div className="px-6 py-4 border-t border-[#E5E7EB] space-y-3">
+              {/* In-app reply section */}
+              {viewMessage.reply ? (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                  <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                    <CheckCircle size={11} /> Your Reply (sent)
+                  </p>
+                  <p className="text-sm text-[#374151] leading-relaxed">{viewMessage.reply}</p>
+                  <button
+                    onClick={() => { setReplyText(viewMessage.reply || ''); setShowReplyInput(true); }}
+                    className="mt-2 text-xs text-emerald-600 hover:text-emerald-800 underline"
+                  >
+                    Edit reply
+                  </button>
+                </div>
+              ) : null}
+
+              {showReplyInput ? (
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-[#374151] uppercase tracking-wide">
+                    Reply to {viewMessage.userName || viewMessage.name}
+                  </label>
+                  <textarea
+                    value={replyText}
+                    onChange={e => setReplyText(e.target.value)}
+                    rows={4}
+                    placeholder={`Hi ${viewMessage.userName || viewMessage.name || 'there'},\n\nThank you for reaching out to Candid Canvas BD. Regarding your inquiry about ${viewMessage.service || 'our services'}...`}
+                    className="w-full border border-[#E5E7EB] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111827] resize-none"
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setShowReplyInput(false); setReplyText(''); }}
+                      className="flex-1 py-2.5 border border-[#E5E7EB] text-[#374151] text-sm rounded-xl hover:border-[#374151] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={sendReply}
+                      disabled={replySending || !replyText.trim()}
+                      className="flex-1 py-2.5 bg-[#111827] text-white text-sm font-semibold rounded-xl hover:bg-[#374151] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {replySending ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending...</> : <><Send size={13} /> Send Reply</>}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  {viewMessage.status === 'unread' && (
+                    <button
+                      onClick={() => { markAsRead(viewMessage.id); setViewMessage({ ...viewMessage, status: 'read' }); }}
+                      className="flex items-center justify-center gap-2 py-2.5 px-4 bg-[#111827] text-white text-sm font-medium rounded-xl hover:bg-[#374151] transition-colors"
+                    >
+                      <CheckCircle size={14} /> Mark as Read
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setReplyText(`Hi ${viewMessage.userName || viewMessage.name || 'there'},\n\nThank you for contacting Candid Canvas BD. Regarding your inquiry about ${viewMessage.service || 'our services'}, `);
+                      setShowReplyInput(true);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-[#111827] text-[#111827] text-sm font-semibold rounded-xl hover:bg-[#111827] hover:text-white transition-colors"
+                  >
+                    <Send size={14} /> Reply
+                  </button>
+                  <button
+                    onClick={() => deleteMessage(viewMessage.id)}
+                    className="p-2.5 border border-red-200 text-red-500 rounded-xl hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
               )}
-              <a
-                href={`mailto:${viewMessage.userEmail || viewMessage.email}`}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-[#E5E7EB] text-[#374151] text-sm font-medium rounded-xl hover:border-[#374151] transition-colors"
-              >
-                <Mail size={14} /> Reply via Email
-              </a>
-              <button
-                onClick={() => deleteMessage(viewMessage.id)}
-                className="p-2.5 border border-red-200 text-red-500 rounded-xl hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={15} />
-              </button>
             </div>
           </div>
         </div>

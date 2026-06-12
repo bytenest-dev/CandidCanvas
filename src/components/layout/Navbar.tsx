@@ -278,6 +278,67 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile Notification Panel — full-width slide-down */}
+      <AnimatePresence>
+        {bellOpen && user && !isAdmin && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="lg:hidden fixed inset-0 bg-black/30 z-40"
+              onClick={() => setBellOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden absolute left-0 right-0 top-16 bg-white shadow-2xl border-b border-[#E5E7EB] z-50 max-h-[70vh] overflow-y-auto"
+            >
+              <div className="px-4 py-3 border-b border-[#E5E7EB] bg-[#F8F9FA] flex items-center justify-between">
+                <span className="text-sm font-semibold text-[#111827]">Notifications</span>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && <span className="text-xs text-[#6B7280] bg-white px-2 py-0.5 rounded-full border border-[#E5E7EB]">{unreadCount} new</span>}
+                  <button onClick={() => setBellOpen(false)} className="p-1 text-[#9CA3AF] hover:text-[#111827]">
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+              {notifications.length === 0 ? (
+                <div className="px-4 py-10 text-center">
+                  <Bell size={28} className="text-[#D1D5DB] mx-auto mb-2" />
+                  <p className="text-sm text-[#9CA3AF]">No notifications yet</p>
+                </div>
+              ) : notifications.map(n => (
+                <div key={n.id} className={`px-4 py-3.5 border-b border-[#F3F4F6] last:border-0 ${!n.read ? 'bg-blue-50/40' : ''}`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${
+                      n.type === 'referral_reward' ? 'bg-emerald-500' :
+                      n.type === 'referral_welcome' ? 'bg-purple-500' :
+                      n.type?.includes('booking') ? 'bg-blue-500' : 'bg-[#9CA3AF]'
+                    }`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#111827] leading-snug">{n.title}</p>
+                      <p className="text-sm text-[#6B7280] mt-0.5 leading-relaxed">{n.message}</p>
+                      <p className="text-xs text-[#9CA3AF] mt-1">
+                        {n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="px-4 py-3 border-t border-[#E5E7EB] bg-[#F8F9FA]">
+                <Link to="/dashboard" onClick={() => setBellOpen(false)}
+                  className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors">
+                  View all in Dashboard →
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Menu */}
       <AnimatePresence>
         {menuOpen && (
