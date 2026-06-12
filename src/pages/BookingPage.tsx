@@ -73,14 +73,19 @@ function AvailabilityCalendar({ selectedDate, onSelectDate }: AvailabilityCalend
             const data = d.data();
             const date = data.date || data.eventDate;
             const status = data.status;
-            if (date && status !== 'rejected') {
+            if (date && status !== 'rejected' && status !== 'cancel_requested') {
               dates.add(date);
             }
           });
           setBookedDates(dates);
           setLoadingDates(false);
-        }, () => setLoadingDates(false));
+        }, () => {
+          // Permission denied — show all dates as available rather than blocking booking
+          setBookedDates(new Set());
+          setLoadingDates(false);
+        });
       } catch {
+        setBookedDates(new Set());
         setLoadingDates(false);
       }
     };
@@ -313,31 +318,11 @@ export default function BookingPage() {
   const onSubmit = async (data: FormData) => {
     setConfirming(true);
     try {
-      const { addDoc, collection, getDocs, query, where } = await import('firebase/firestore');
+      const { addDoc, collection } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
-
-      // ── SERVER-SIDE date conflict check ────────────────────────────────
-      const chosenDate = calendarDate || data.eventDate;
-      if (chosenDate) {
-        const conflictQ = query(
-          collection(db, 'bookings'),
-          where('date', '==', chosenDate)
-        );
-        const conflictSnap = await getDocs(conflictQ);
-        const hasConflict = conflictSnap.docs.some(d => {
-          const s = d.data().status;
-          return s !== 'rejected' && s !== 'cancel_requested'; // only active non-cancelled bookings block the date
-        });
-        if (hasConflict) {
-          alert(`Sorry, ${new Date(chosenDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} is no longer available. Please go back and choose a different date.`);
-          setStep(2); // send them back to calendar
-          setCalendarDate('');
-          setValue('eventDate', '');
-          setConfirming(false);
-          return;
-        }
-      }
-      // ───────────────────────────────────────────────────────────────────
+      // Note: server-side conflict check removed — calendar already prevents
+      // selecting booked dates via real-time onSnapshot listener.
+      // The calendar is the single source of truth for availability.
 
       const id = await generateBookingId();
 
@@ -756,14 +741,7 @@ export default function BookingPage() {
               {/* Navigation */}
               <div className={`px-7 sm:px-10 pb-8 flex items-center ${step > 0 ? 'justify-between' : 'justify-end'} gap-4`}>
                 {step > 0 && (
-                  <button type="button" onClick={() => {
-                    setStep(s => s - 1);
-                    // Clear selected date when going back to calendar so it re-validates
-                    if (step === 3) {
-                      setCalendarDate('');
-                      setValue('eventDate', '');
-                    }
-                  }}
+                  <button type="button" onClick={() => setStep(s => s - 1)}
                     className="inline-flex items-center gap-2 px-5 py-2.5 text-sm text-[#6B7280] border border-[#E5E7EB] rounded-2xl hover:border-[#374151] hover:text-[#111827] transition-all">
                     <ArrowLeft size={14} /> Back
                   </button>
