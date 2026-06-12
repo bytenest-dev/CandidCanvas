@@ -117,7 +117,7 @@ function DashSidebar({ user, activeTab, setActiveTab, setMobileNavOpen, onLogout
           />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-[#111827] truncate">{user?.displayName || 'User'}</p>
-            <p className="text-xs text-[#9CA3AF] truncate">{user?.email}</p>
+            <p className="text-xs text-[#9CA3AF] truncate">{(user?.email || '').toLowerCase()}</p>
           </div>
         </div>
       </div>
@@ -958,7 +958,7 @@ export default function DashboardPage() {
                     />
                     <div>
                       <h2 className="font-heading text-2xl text-[#111827]">{user.displayName}</h2>
-                      <p className="text-sm text-[#6B7280]">{user.email}</p>
+                      <p className="text-sm text-[#6B7280]">{(user.email || '').toLowerCase()}</p>
                       <span className="inline-flex items-center gap-1 mt-1.5 text-xs bg-[#F3F4F6] text-[#374151] px-3 py-1 rounded-full font-semibold capitalize">
                         <User size={10} /> {user.role}
                       </span>

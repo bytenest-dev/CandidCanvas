@@ -208,8 +208,8 @@ export default function BookingPage() {
 
   // Promo code state — auto-fill from ?ref= URL param
   const refFromUrl = searchParams.get('ref') || '';
-  const pkgFromUrl = searchParams.get('pkg') || '';
-  const eventFromUrl = searchParams.get('event') || '';
+  const pkgFromUrl = (searchParams.get('pkg') || '').trim();   // trim trailing spaces from URL encoding
+  const eventFromUrl = (searchParams.get('event') || '').trim().toLowerCase();
 
   // Referral code: URL param OR localStorage (saved before OAuth redirect)
   const savedRef = typeof window !== 'undefined' ? (localStorage.getItem('ccbd_ref') || '') : '';
@@ -221,8 +221,6 @@ export default function BookingPage() {
     loading: boolean; valid: boolean | null; error: string; discount: number; promoData: any | null;
   }>({ loading: false, valid: null, error: '', discount: 0, promoData: null });
 
-  // Auto-validate referral code from URL on mount — nothing needed, already resolved above
-
   const [calendarDate, setCalendarDate] = useState('');
 
   const { register, handleSubmit, trigger, getValues, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -230,16 +228,38 @@ export default function BookingPage() {
     defaultValues: {
       name: user?.displayName || '',
       email: user?.email || '',
-      package: pkgFromUrl || '',
-      eventType: eventFromUrl || '',
+      package: pkgFromUrl,
+      eventType: eventFromUrl,
     },
   });
 
-  // Auto-select package and event from URL params — runs after form is initialized
+  // Auto-select package and event when packages load from Firestore (async)
   useEffect(() => {
-    if (pkgFromUrl) setValue('package', pkgFromUrl.trim());
-    if (eventFromUrl) setValue('eventType', eventFromUrl.trim().toLowerCase());
-  }, [pkgFromUrl, eventFromUrl, setValue]);
+    if (!pkgFromUrl) return;
+    // Match package name case-insensitively against loaded packages
+    const matched = activePackages.find(p => p.name.toLowerCase().trim() === pkgFromUrl.toLowerCase());
+    const exactName = matched ? matched.name : pkgFromUrl;
+    setValue('package', exactName);
+
+    // Auto-derive event type from package category if not provided
+    if (!eventFromUrl && matched) {
+      const cat = matched.category.toLowerCase();
+      const eventMap: Record<string, string> = {
+        'events': 'birthday',
+        'wedding': 'wedding',
+        'photo': 'wedding',
+        'cine': 'wedding',
+        'reels': 'social media reels',
+        'corporate': 'corporate event',
+        'full': 'wedding',
+      };
+      const derivedEvent = Object.entries(eventMap).find(([k]) => cat.includes(k))?.[1] || '';
+      if (derivedEvent) setValue('eventType', derivedEvent);
+    } else if (eventFromUrl) {
+      setValue('eventType', eventFromUrl);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkgFromUrl, eventFromUrl, activePackages.length]);
 
   const applyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -306,7 +326,7 @@ export default function BookingPage() {
         const conflictSnap = await getDocs(conflictQ);
         const hasConflict = conflictSnap.docs.some(d => {
           const s = d.data().status;
-          return s !== 'rejected'; // any active booking blocks the date
+          return s !== 'rejected' && s !== 'cancel_requested'; // only active non-cancelled bookings block the date
         });
         if (hasConflict) {
           alert(`Sorry, ${new Date(chosenDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} is no longer available. Please go back and choose a different date.`);
@@ -395,9 +415,10 @@ export default function BookingPage() {
       setSubmitted(true);
       // Clear saved referral code after successful booking
       localStorage.removeItem('ccbd_ref');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Booking error:', error);
-      alert('Failed to submit booking. Please try again.');
+      const msg = error?.code || error?.message || 'Unknown error';
+      alert(`Failed to submit booking: ${msg}. Please try again.`);
     } finally {
       setConfirming(false);
     }
