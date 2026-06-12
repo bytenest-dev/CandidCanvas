@@ -27,7 +27,7 @@ type OrderStatus = 'submitted' | 'under_review' | 'contacted' | 'approved' | 'co
 interface Order {
   id: string; client: string; email: string; phone?: string; package: string;
   event: string; date: string; location: string; notes?: string;
-  status: OrderStatus; createdAt: string;
+  status: OrderStatus; createdAt: string; userId?: string;
   paymentStatus?: 'not_paid' | 'partial' | 'paid';
   paymentAmount?: number;
   paymentNote?: string;
@@ -67,6 +67,8 @@ interface Message {
   userId?: string;
   userName?: string;
   userEmail?: string;
+  reply?: string;
+  repliedAt?: string;
 }
 
 // ── Sidebar extracted outside AdminPage to prevent remount on every render ──
