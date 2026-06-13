@@ -17,10 +17,11 @@ service cloud.firestore {
     }
 
     // Bookings — users create own, admin manages all
-    // read is open to auth users for availability calendar
+    // read restricted to own bookings only (not all authenticated users)
     match /bookings/{bookingId} {
       allow create: if request.auth != null;
-      allow read:   if request.auth != null;
+      allow read:   if request.auth != null &&
+        (request.auth.uid == resource.data.userId || isAdmin());
       allow update: if request.auth != null &&
         (request.auth.uid == resource.data.userId || isAdmin());
       allow delete: if isAdmin();
@@ -98,7 +99,8 @@ service cloud.firestore {
     match /notifications/{docId} {
       allow read:   if request.auth != null &&
         (resource == null || request.auth.uid == resource.data.userId || isAdmin());
-      allow create: if request.auth != null;
+      allow create: if request.auth != null &&
+        (isAdmin() || request.auth.uid == request.resource.data.userId);
       allow update: if request.auth != null &&
         (request.auth.uid == resource.data.userId || isAdmin());
       allow delete: if request.auth != null &&
@@ -117,6 +119,13 @@ service cloud.firestore {
       allow update, delete: if request.auth != null &&
         (request.auth.uid == uid || isAdmin());
       allow create: if request.auth != null;
+    }
+
+    // Referrals — users read their own; only admin can write
+    match /referrals/{uid} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
     }
   }
 }

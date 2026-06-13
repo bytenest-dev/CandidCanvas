@@ -4,10 +4,9 @@ import emailjs from '@emailjs/browser'
 import './index.css'
 import App from './App.tsx'
 
-// Initialize EmailJS globally
+// Initialize EmailJS globally — only publicKey needed in browser SDK
 emailjs.init({ 
   publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-  privateKey: import.meta.env.VITE_EMAILJS_PRIVATE_KEY,
 });
 
 createRoot(document.getElementById('root')!).render(

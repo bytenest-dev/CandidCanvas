@@ -119,8 +119,15 @@ export default function SignInPage() {
     try {
       await signInWithGoogle();
       // Navigation handled by useEffect above
-    } catch {
-      setAuthError('Google sign-in failed. Please try again.');
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code === 'auth/network-request-failed') {
+        setAuthError('Network error. Please check your connection and try again.');
+      } else if (code === 'auth/popup-blocked') {
+        setAuthError('Popup was blocked by your browser. Please allow popups for this site.');
+      } else {
+        setAuthError('Google sign-in failed. Please try again.');
+      }
     } finally {
       setGoogleLoading(false);
     }

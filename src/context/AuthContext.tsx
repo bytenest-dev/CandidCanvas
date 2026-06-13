@@ -141,7 +141,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: unknown) {
       const code = (error as { code?: string })?.code;
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+      // Re-throw so the caller (SignInPage) can display the error
       console.error('Google sign-in error:', code || error);
+      throw error;
     }
   };
 

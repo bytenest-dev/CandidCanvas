@@ -6,3 +6,17 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Security & COOP headers — fixes Firebase Google Sign-In popup COOP errors
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Allow Firebase popup sign-in to work correctly
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Embedder-Policy = "unsafe-none"
+    # Prevent clickjacking
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Remove server fingerprint
+    X-Powered-By = ""
