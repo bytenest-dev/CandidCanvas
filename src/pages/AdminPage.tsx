@@ -34,8 +34,24 @@ interface Order {
   promoCode?: string;
   promoApplied?: string;
   discount?: number;
+  discountType?: 'percentage' | 'fixed';
   cancelReason?: string;
   cancelledByClient?: boolean;
+}
+
+/**
+ * Resolve final price + discount label for an order, honoring the discount type.
+ * Older orders without a discountType are treated as percentage (legacy behavior).
+ */
+function computePricing(rawPrice: number, discount?: number, discountType?: 'percentage' | 'fixed') {
+  const d = discount || 0;
+  if (d <= 0 || rawPrice <= 0) return { finalPrice: rawPrice, discountAmount: 0, label: '' };
+  if (discountType === 'fixed') {
+    const discountAmount = Math.min(d, rawPrice);
+    return { finalPrice: rawPrice - discountAmount, discountAmount, label: `৳${d} off` };
+  }
+  const finalPrice = Math.round(rawPrice * (1 - d / 100));
+  return { finalPrice, discountAmount: rawPrice - finalPrice, label: `${d}% off` };
 }
 
 const ADMIN_NAV = [
@@ -285,6 +301,7 @@ export default function AdminPage() {
           promoCode: d.promoCode || '',
           promoApplied: d.promoApplied || '',
           discount: d.discount || 0,
+          discountType: (d.discountType || 'percentage') as Order['discountType'],
           cancelReason: d.cancelReason || '',
           cancelledByClient: d.cancelledByClient || false,
         };
@@ -488,6 +505,7 @@ export default function AdminPage() {
           paymentNote: o.paymentNote || '',
           promoCode: o.promoApplied || o.promoCode || '',
           discount: o.discount || 0,
+          discountType: o.discountType || 'percentage',
           createdAt: o.createdAt || '',
           notes: o.notes || '',
         })),
@@ -507,14 +525,14 @@ export default function AdminPage() {
     const headers = [
       'Order ID', 'Client', 'Email', 'Phone', 'Package', 'Event Type',
       'Event Date', 'Location', 'Status', 'Payment Status',
-      'Amount Received (৳)', 'Payment Note', 'Promo Code', 'Discount (%)', 'Created At', 'Notes',
+      'Amount Received (৳)', 'Payment Note', 'Promo Code', 'Discount', 'Created At', 'Notes',
     ];
     const rows = (backup.orders || []).map((o: any) => [
       o.id, o.client, o.email, o.phone, o.package, o.event,
       o.date, o.location, o.status,
       o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Not Paid',
       o.paymentAmount || 0, o.paymentNote || '',
-      o.promoCode || '', o.discount ? `${o.discount}%` : '',
+      o.promoCode || '', o.discount ? (o.discountType === 'fixed' ? `৳${o.discount}` : `${o.discount}%`) : '',
       o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '',
       o.notes || '',
     ]);
@@ -1006,8 +1024,7 @@ export default function AdminPage() {
       // Find package price from loaded packages
       const pkgData = packages.find(p => p.name.toLowerCase() === o.package?.toLowerCase());
       const rawPrice = pkgData ? parseInt(pkgData.price.replace(/\D/g, '')) || 0 : 0;
-      const discountPct = o.discount || 0;
-      const finalPrice = discountPct > 0 ? Math.round(rawPrice * (1 - discountPct / 100)) : rawPrice;
+      const { finalPrice, label: discountLabel } = computePricing(rawPrice, o.discount, o.discountType);
 
       return [
         o.id,
@@ -1021,7 +1038,7 @@ export default function AdminPage() {
         getStatusLabel(o.status),
         rawPrice > 0 ? rawPrice : '',
         o.promoApplied || o.promoCode || '',
-        discountPct > 0 ? `${discountPct}%` : '',
+        discountLabel,
         finalPrice > 0 ? finalPrice : '',
         o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Not Paid',
         o.paymentAmount || 0,
@@ -3033,8 +3050,7 @@ export default function AdminPage() {
                   {(() => {
                     const pkgData = packages.find(p => p.name.toLowerCase() === viewOrder.package?.toLowerCase());
                     const rawPrice = pkgData ? parseInt(pkgData.price.replace(/\D/g, '')) || 0 : 0;
-                    const discountPct = viewOrder.discount || 0;
-                    const finalPrice = discountPct > 0 ? Math.round(rawPrice * (1 - discountPct / 100)) : rawPrice;
+                    const { finalPrice, label: discountLabel } = computePricing(rawPrice, viewOrder.discount, viewOrder.discountType);
                     if (!rawPrice) return null;
                     return (
                       <div className="col-span-2 mt-1 pt-2 border-t border-[#E5E7EB]">
@@ -3043,11 +3059,11 @@ export default function AdminPage() {
                           <span className="text-lg font-bold text-[#111827]">
                             ৳{finalPrice.toLocaleString('en-BD')}
                           </span>
-                          {discountPct > 0 && (
+                          {discountLabel && (
                             <>
                               <span className="text-sm text-[#9CA3AF] line-through">৳{rawPrice.toLocaleString('en-BD')}</span>
                               <span className="text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
-                                {discountPct}% OFF via {viewOrder.promoApplied || viewOrder.promoCode}
+                                {discountLabel} via {viewOrder.promoApplied || viewOrder.promoCode}
                               </span>
                             </>
                           )}
@@ -3081,7 +3097,7 @@ export default function AdminPage() {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-emerald-700 font-medium">Discount Applied</span>
                           <span className="font-bold text-emerald-800">
-                            {viewOrder.discount}% off
+                            {viewOrder.discountType === 'fixed' ? `৳${viewOrder.discount} off` : `${viewOrder.discount}% off`}
                           </span>
                         </div>
                       )}

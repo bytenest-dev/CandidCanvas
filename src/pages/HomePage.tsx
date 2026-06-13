@@ -67,9 +67,9 @@ export default function HomePage() {
             <p className="text-[#6B7280] text-sm leading-relaxed max-w-3xl mx-auto">
               <strong>Candid Canvas BD</strong> (also known as <strong>Candid Canvas</strong>) is Bangladesh's premier
               photography and cinematography studio, proudly based in <strong>Bogura, Bangladesh</strong>.
-              We specialize in <strong>wedding photography</strong>, <strong>cinematic wedding films</strong>,
-              <strong>social media reels</strong>, <strong>corporate events</strong>, <strong>birthday sessions</strong>,
-              <strong>pre-wedding shoots</strong>, <strong>outdoor portrait photography</strong> and
+              We specialize in <strong>wedding photography</strong>, <strong>cinematic wedding films</strong>,{' '}
+              <strong>social media reels</strong>, <strong>corporate events</strong>, <strong>birthday sessions</strong>,{' '}
+              <strong>pre-wedding shoots</strong>, <strong>outdoor portrait photography</strong> and{' '}
               <strong>festival coverage</strong>. With <strong>500+ completed projects</strong> and{' '}
               <strong>98% client satisfaction</strong>, Candid Canvas BD is the most trusted photography studio
               across Bangladesh — based in <strong>Bogura</strong>, serving clients nationwide.

@@ -14,11 +14,18 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', onKeyDown);
+      };
     }
+    document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const sizes = {
     sm: 'max-w-md',
@@ -44,6 +51,9 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || 'Dialog'}
             className={`relative w-full ${sizes[size]} bg-white rounded-lg shadow-2xl overflow-hidden`}
           >
             {title && (
@@ -51,6 +61,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
                 <h2 className="font-heading text-xl font-semibold text-[#111827]">{title}</h2>
                 <button
                   onClick={onClose}
+                  aria-label="Close dialog"
                   className="p-1 text-[#6B7280] hover:text-[#111827] transition-colors"
                 >
                   <X size={20} />
@@ -60,6 +71,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
             {!title && (
               <button
                 onClick={onClose}
+                aria-label="Close dialog"
                 className="absolute top-4 right-4 z-10 p-1 text-[#6B7280] hover:text-[#111827] transition-colors bg-white rounded-full"
               >
                 <X size={20} />

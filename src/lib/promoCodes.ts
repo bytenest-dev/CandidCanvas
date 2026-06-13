@@ -22,7 +22,7 @@ export function calculateDiscount(promo: PromoCode, basePrice: number): number {
   if (promo.discountType === 'percentage') {
     return Math.round(basePrice * (promo.discountValue / 100));
   }
-  return Math.min(promo.discountValue, basePrice > 0 ? basePrice : promo.discountValue);
+  return Math.max(0, Math.min(promo.discountValue, basePrice));
 }
 
 export async function validatePromoCode(code: string): Promise<PromoValidationResult> {

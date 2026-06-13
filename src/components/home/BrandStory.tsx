@@ -37,7 +37,7 @@ export default function BrandStory() {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.5, duration: 0.8 }}
-              className="absolute -bottom-8 -right-8 bg-white p-6 rounded shadow-xl max-w-xs"
+              className="absolute -bottom-4 right-4 sm:-bottom-8 sm:-right-8 bg-white p-6 rounded shadow-xl max-w-[16rem] sm:max-w-xs"
             >
               <p className="font-heading text-lg italic text-[#111827] leading-relaxed">
                 "Photography is not about taking pictures."

@@ -42,11 +42,12 @@ export async function getOrCreateReferral(uid: string, displayName: string): Pro
  * Returns the referrer UID if valid, or null.
  */
 export async function validateReferralCode(code: string): Promise<{ valid: boolean; referrerUid?: string; error?: string }> {
-  if (!code.trim().startsWith('REF-')) return { valid: false, error: 'Not a referral code' };
+  const normalized = code.trim().toUpperCase();
+  if (!normalized.startsWith('REF-')) return { valid: false, error: 'Not a referral code' };
   try {
     const { collection, getDocs, query, where } = await import('firebase/firestore');
     const { db } = await import('./firebase');
-    const q = query(collection(db, 'referrals'), where('code', '==', code.trim().toUpperCase()));
+    const q = query(collection(db, 'referrals'), where('code', '==', normalized));
     const snap = await getDocs(q);
     if (snap.empty) return { valid: false, error: 'Referral code not found' };
     return { valid: true, referrerUid: snap.docs[0].id };

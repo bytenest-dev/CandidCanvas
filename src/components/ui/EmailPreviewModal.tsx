@@ -57,7 +57,7 @@ export default function EmailPreviewModal({ isOpen, onClose, data, onSend }: Pro
             initial={{ opacity: 0, scale: 0.95, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             style={{ maxHeight: '90vh' }}
           >
             {/* Header */}
@@ -74,7 +74,7 @@ export default function EmailPreviewModal({ isOpen, onClose, data, onSend }: Pro
               <button onClick={onClose} className="p-1.5 text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F3F4F6] rounded-lg"><X size={18} /></button>
             </div>
 
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+            <div className="overflow-y-auto flex-1 min-h-0">
               <div className="p-6 space-y-5">
                 {/* Status badge */}
                 <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${cfg.color}`}>

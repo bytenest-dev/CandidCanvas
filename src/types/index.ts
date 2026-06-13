@@ -42,6 +42,7 @@ export interface Booking {
   adminNotes?: string;
   promoCode?: string;
   discount?: number;
+  discountType?: 'percentage' | 'fixed';
   createdAt: Date;
   updatedAt: Date;
 }

@@ -67,7 +67,7 @@ export default function ContactSection() {
               href={SOCIAL_LINKS.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2.5 px-6 py-3 bg-[#25D366] text-white text-sm font-medium rounded hover:bg-green-600 transition-colors"
+              className="mt-8 inline-flex items-center gap-2.5 px-6 py-3 bg-[#25D366] text-white text-sm font-medium rounded hover:bg-[#1EBE5D] transition-colors"
             >
               <WhatsAppIcon />
               Chat on WhatsApp

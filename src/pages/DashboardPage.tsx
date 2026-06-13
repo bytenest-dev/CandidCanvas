@@ -11,6 +11,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
 import { getStatusColor, getStatusLabel, formatDate } from '../lib/utils';
 import UserAvatar from '../components/ui/UserAvatar';
+import ToastContainer from '../components/ui/Toast';
+import { useToast } from '../hooks/useToast';
 
 interface Booking {
   id: string;
@@ -171,6 +173,7 @@ function DashSidebar({ user, activeTab, setActiveTab, setMobileNavOpen, onLogout
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const { reviews, setReviews, packages } = useSite();
+  const { toasts, toast, dismiss } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -375,9 +378,12 @@ export default function DashboardPage() {
       });
       setCancelModal(null);
       setCancelReason('');
+      toast.success('Cancellation request sent successfully.');
     } catch {
-      alert('Failed to request cancellation. Please try again.');
-    } finally { setCancelSubmitting(false); }
+      toast.error('Failed to request cancellation. Please try again.');
+    } finally {
+      setCancelSubmitting(false);
+    }
   };
 
   const handleRefresh = async () => {
@@ -411,6 +417,7 @@ export default function DashboardPage() {
       }, 1800);
     } catch (err) {
       console.error(err);
+      toast.error('Failed to submit review. Please try again.');
     } finally {
       setReviewSubmitting(false);
     }
@@ -442,7 +449,7 @@ export default function DashboardPage() {
       await loadMessages();
     } catch (err) {
       console.error('Error sending message:', err);
-      alert('Failed to send message. Please try again.');
+      toast.error('Failed to send message. Please try again.');
     } finally {
       setContactSending(false);
     }
@@ -1006,18 +1013,18 @@ export default function DashboardPage() {
                     const form = e.target as HTMLFormElement;
                     const pw = (form.elements.namedItem('newpw') as HTMLInputElement).value;
                     const cpw = (form.elements.namedItem('confirmpw') as HTMLInputElement).value;
-                    if (pw !== cpw) { alert('Passwords do not match.'); return; }
-                    if (pw.length < 6) { alert('Password must be at least 6 characters.'); return; }
+                    if (pw !== cpw) { toast.error('Passwords do not match.'); return; }
+                    if (pw.length < 6) { toast.error('Password must be at least 6 characters.'); return; }
                     try {
                       const { updatePassword } = await import('firebase/auth');
                       const { auth } = await import('../lib/firebase');
                       if (auth.currentUser) {
                         await updatePassword(auth.currentUser, pw);
-                        alert('Password set successfully!');
+                        toast.success('Password set successfully!');
                         form.reset();
                       }
                     } catch {
-                      alert('Failed to set password. Please sign out and sign in again first.');
+                      toast.error('Failed to set password. Please sign out and sign in again first.');
                     }
                   }}>
                     <div>
@@ -1360,9 +1367,9 @@ export default function DashboardPage() {
                 <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
                   <XCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-red-800">This action cannot be undone</p>
+                    <p className="text-sm font-semibold text-red-800">Request cancellation?</p>
                     <p className="text-xs text-red-600 mt-0.5 leading-relaxed">
-                      Cancelling will mark your booking as rejected. Contact us if you'd like to rebook.
+                      This sends a cancellation request to our team for review. Your booking stays active until we confirm it.
                     </p>
                   </div>
                 </div>
@@ -1410,6 +1417,8 @@ export default function DashboardPage() {
           </div>
         )}
       </AnimatePresence>
+
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </>
   );
 }

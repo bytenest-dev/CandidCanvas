@@ -94,27 +94,19 @@ export default function CinematicSlider() {
   const padNum = (n: number) => String(n + 1).padStart(2, '0');
   const slide = activeSlides[current];
 
-  // Compute the best display style:
-  // Portrait images (h > w): show full image with natural ratio, max 95vh
-  // Landscape images (w >= h): fill width, fixed cinematic height
+  // Stable cinematic height for ALL slides so the section never jumps between
+  // portrait and landscape images. Portrait images are letterboxed (object-fit
+  // contain) against the dark background; landscape images fill (cover).
   const isPortrait = currentSize ? currentSize.h > currentSize.w : false;
-  const aspectStyle: React.CSSProperties = isPortrait
-    ? {
-        // Portrait: use natural aspect ratio so full image shows, cap at 95vh
-        aspectRatio: currentSize ? `${currentSize.w} / ${currentSize.h}` : '3/4',
-        maxHeight: '95vh',
-        width: '100%',
-      }
-    : {
-        // Landscape: full width, cinematic height
-        height: 'clamp(480px, 80vh, 90vh)',
-        width: '100%',
-      };
+  const sectionStyle: React.CSSProperties = {
+    height: 'clamp(420px, 80vh, 90vh)',
+    width: '100%',
+  };
 
   return (
     <section
       className="relative w-full overflow-hidden bg-[#0a0a0a]"
-      style={aspectStyle}
+      style={sectionStyle}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={handleTouchStart}
@@ -206,7 +198,7 @@ export default function CinematicSlider() {
         <div className="flex items-baseline gap-1 font-mono">
           <span className="text-white font-semibold text-base sm:text-lg leading-none">{padNum(current)}</span>
           <span className="text-white/35 text-xs">/</span>
-          <span className="text-white/35 text-xs">{padNum(total - 1)}</span>
+          <span className="text-white/35 text-xs">{String(total).padStart(2, '0')}</span>
         </div>
       </div>
 

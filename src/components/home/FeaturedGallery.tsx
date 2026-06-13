@@ -49,7 +49,7 @@ export default function FeaturedGallery() {
             <p className="text-sm text-[#9CA3AF]">Check back soon for our latest work</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5 auto-rows-[160px] sm:auto-rows-[200px] lg:auto-rows-[240px]">
             {FEATURED.map((img, i) => (
               <motion.div
                 key={img.id}
@@ -59,7 +59,6 @@ export default function FeaturedGallery() {
                 className={`relative group cursor-pointer rounded-xl overflow-hidden ${
                   i === 0 || i === 3 ? 'row-span-2' : ''
                 }`}
-                style={{ aspectRatio: i === 0 || i === 3 ? '3/4' : '4/3' }}
                 onClick={() => setLightbox(i)}
               >
                 <img
@@ -68,7 +67,6 @@ export default function FeaturedGallery() {
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover transition-transform duration-700"
-                  loading="lazy"
                   style={{ transform: 'scale(1)', transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1)' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.06)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}

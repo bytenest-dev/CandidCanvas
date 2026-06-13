@@ -160,7 +160,7 @@ export default function AboutPage() {
                   transition={{ delay: i * 0.1, duration: 0.7 }}
                   className="flex gap-8 pl-20 relative"
                 >
-                  <div className="absolute left-4 w-8 h-8 bg-[#111827] rounded-full flex items-center justify-center -translate-x-1/2">
+                  <div className="absolute left-8 w-8 h-8 bg-[#111827] rounded-full flex items-center justify-center -translate-x-1/2">
                     <Camera size={14} className="text-white" />
                   </div>
                   <div>

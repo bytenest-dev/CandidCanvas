@@ -339,6 +339,7 @@ export default function BookingPage() {
         paymentStatus: 'not_paid',
         promoCode: promoState.valid ? promoCode : '',
         discount: promoState.discount || 0,
+        discountType: promoState.valid ? (promoState.promoData?.discountType || 'percentage') : 'percentage',
         promoApplied: promoState.valid ? (promoState.promoData?.code || '') : '',
       });
 

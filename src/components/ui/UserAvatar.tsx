@@ -43,7 +43,7 @@ export default function UserAvatar({
   const showImage = !!(photoURL && !imgError);
 
   return (
-    <div className={`${sizeClass} ${shapeClass} flex-shrink-0 overflow-hidden flex-shrink-0 ${className}`}>
+    <div className={`${sizeClass} ${shapeClass} flex-shrink-0 overflow-hidden ${className}`}>
       {showImage ? (
         <img
           src={photoURL!}
