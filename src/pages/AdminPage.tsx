@@ -629,16 +629,36 @@ export default function AdminPage() {
   // ── Order helpers ────────────────────────────────────────────────────────
   const updateStatusWithEmail = async (order: Order, status: OrderStatus) => {
     try {
-      const { collection, query, where, getDocs, updateDoc, addDoc } = await import('firebase/firestore');
+      const { collection, query, where, getDocs, updateDoc, addDoc, doc, setDoc, deleteDoc } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
       const q = query(collection(db, 'bookings'), where('id', '==', order.id));
       const snap = await getDocs(q);
       if (!snap.empty) await updateDoc(snap.docs[0].ref, { status });
       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status } : o));
 
+      // Sync the bookedDates collection
+      if (order.date) {
+        const normalizedDate = order.date.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(order.date)
+          ? order.date
+          : (() => { try { return new Date(order.date).toISOString().slice(0, 10); } catch { return null; } })();
+        if (normalizedDate) {
+          if (status === 'rejected') {
+            // Cancellation confirmed — free the date
+            try { await deleteDoc(doc(db, 'bookedDates', normalizedDate)); } catch { /* silent */ }
+          } else if (['submitted', 'under_review', 'contacted', 'approved', 'completed'].includes(status)) {
+            // Active booking — ensure date is blocked
+            try {
+              await setDoc(doc(db, 'bookedDates', normalizedDate), {
+                blocked: true, bookingId: order.id, updatedAt: new Date().toISOString(),
+              });
+            } catch { /* silent */ }
+          }
+        }
+      }
+
       // Push a real-time notification to the client
       if (order.userId || snap.docs[0]?.data()?.userId) {
-        const userId = snap.docs[0]?.data()?.userId || order.id;
+        const userId = snap.docs[0]?.data()?.userId || order.userId;
         const msgMap: Record<string, string> = {
           approved: `🎉 Your booking ${order.id} has been approved! We'll contact you shortly to confirm details.`,
           rejected: `Your booking ${order.id} was not approved. Please contact us if you have questions.`,
@@ -646,7 +666,7 @@ export default function AdminPage() {
           completed: `✅ Your booking ${order.id} is marked complete. Thank you for choosing Candid Canvas BD!`,
           under_review: `Your booking ${order.id} is now under review. We'll get back to you soon.`,
         };
-        if (msgMap[status]) {
+        if (msgMap[status] && userId) {
           try {
             await addDoc(collection(db, 'notifications'), {
               userId,
@@ -656,7 +676,7 @@ export default function AdminPage() {
               read: false,
               createdAt: new Date().toISOString(),
             });
-          } catch { /* silent — notification is best-effort */ }
+          } catch { /* silent */ }
         }
       }
 
@@ -678,6 +698,16 @@ export default function AdminPage() {
       console.error(err);
       toast.error('Failed to update order status');
     }
+  };
+
+  /** Opens WhatsApp with a pre-filled cancellation SMS for the client */
+  const sendCancelSMS = (order: Order) => {
+    const phone = (order.phone || '').replace(/\D/g, '');
+    const internationalPhone = phone.startsWith('880') ? phone : phone.startsWith('0') ? `880${phone.slice(1)}` : `880${phone}`;
+    const msg = encodeURIComponent(
+      `Dear ${order.client},\n\nYour booking *${order.id}* for *${order.package}* on *${formatDate(order.date)}* has been cancelled by Candid Canvas BD.\n\nWe apologise for any inconvenience. Please contact us to reschedule or for any queries.\n\n📞 +8801849244610\n🌐 www.candidcanvas.pro.bd\n\n— Candid Canvas BD Team`
+    );
+    window.open(`https://wa.me/${internationalPhone}?text=${msg}`, '_blank');
   };
 
   // ── Slider helpers ───────────────────────────────────────────────────────
@@ -1627,31 +1657,31 @@ export default function AdminPage() {
                             <span className="capitalize">🎭 {o.event}</span>
                             <span>📅 {formatDate(o.date)}</span>
                           </div>
-                          {/* Action buttons — 2 per row on mobile */}
+                          {/* Action buttons */}
                           <div className="grid grid-cols-3 gap-1.5">
-                            <button onClick={() => { updateStatusWithEmail(o, 'under_review'); }}
+                            <button onClick={() => updateStatusWithEmail(o, 'under_review')}
                               className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-yellow-50 hover:text-yellow-700'}`}>
-                              <Eye size={11} /> Review
+                              🔍 Review
                             </button>
-                            <button onClick={() => { updateStatusWithEmail(o, 'contacted'); }}
+                            <button onClick={() => updateStatusWithEmail(o, 'contacted')}
                               className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-purple-50 hover:text-purple-700'}`}>
-                              <Mail size={11} /> Contact
+                              📞 Contact
                             </button>
-                            <button onClick={() => { updateStatusWithEmail(o, 'approved'); }}
+                            <button onClick={() => updateStatusWithEmail(o, 'approved')}
                               className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-green-50 hover:text-green-700'}`}>
-                              <CheckCircle size={11} /> Approve
+                              ✅ Approve
                             </button>
-                            <button onClick={() => { updateStatusWithEmail(o, 'completed'); }}
+                            <button onClick={() => updateStatusWithEmail(o, 'completed')}
                               className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-blue-50 hover:text-blue-700'}`}>
-                              <Star size={11} /> Complete
+                              ⭐ Complete
                             </button>
-                            <button onClick={() => { updateStatusWithEmail(o, 'rejected'); }}
+                            <button onClick={() => updateStatusWithEmail(o, 'rejected')}
                               className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600 border border-red-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-red-50 hover:text-red-600'}`}>
-                              <XCircle size={11} /> Reject
+                              ❌ Reject
                             </button>
                             <button onClick={() => setViewOrder(o)}
                               className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-[#111827] text-white border border-[#111827] hover:bg-[#374151] transition-all">
-                              <ChevronDown size={11} /> Details
+                              📋 Details
                             </button>
                             <button onClick={() => { setPaymentModal(o); setPaymentForm({ status: o.paymentStatus || 'not_paid', amount: String(o.paymentAmount || ''), note: o.paymentNote || '' }); }}
                               className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold border transition-all ${
@@ -1659,7 +1689,12 @@ export default function AdminPage() {
                                 o.paymentStatus === 'partial' ? 'bg-amber-100 text-amber-700 border-amber-300' :
                                 'bg-[#F8F9FA] text-[#6B7280] border-[#E5E7EB] hover:bg-emerald-50 hover:text-emerald-700'
                               }`}>
-                              <DollarSign size={11} /> {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Pay'}
+                              💰 {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Pay'}
+                            </button>
+                            <button onClick={() => sendCancelSMS(o)}
+                              title="Send cancellation via WhatsApp"
+                              className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-all">
+                              📱 Cancel SMS
                             </button>
                           </div>
                         </div>
@@ -1707,30 +1742,34 @@ export default function AdminPage() {
                                   </span>
                                 </td>
                                 <td className="px-4 py-4">
-                                  <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                  <div className="flex flex-wrap gap-1 max-w-[220px]">
                                     <button onClick={() => updateStatusWithEmail(o, 'under_review')} title="Mark Under Review"
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' : 'text-[#9CA3AF] hover:text-yellow-700 hover:bg-yellow-50'}`}>
-                                      <Eye size={11} /><span className="hidden xl:inline">Review</span>
+                                      🔍<span className="hidden xl:inline">Review</span>
                                     </button>
                                     <button onClick={() => updateStatusWithEmail(o, 'contacted')} title="Mark Contacted"
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700' : 'text-[#9CA3AF] hover:text-purple-700 hover:bg-purple-50'}`}>
-                                      <Mail size={11} /><span className="hidden xl:inline">Contact</span>
+                                      📞<span className="hidden xl:inline">Contact</span>
                                     </button>
                                     <button onClick={() => updateStatusWithEmail(o, 'approved')} title="Approve & Email"
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700' : 'text-[#9CA3AF] hover:text-green-700 hover:bg-green-50'}`}>
-                                      <CheckCircle size={11} /><span className="hidden xl:inline">Approve</span>
+                                      ✅<span className="hidden xl:inline">Approve</span>
                                     </button>
                                     <button onClick={() => updateStatusWithEmail(o, 'completed')} title="Mark Complete"
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'text-[#9CA3AF] hover:text-blue-700 hover:bg-blue-50'}`}>
-                                      <Star size={11} /><span className="hidden xl:inline">Complete</span>
+                                      ⭐<span className="hidden xl:inline">Complete</span>
                                     </button>
                                     <button onClick={() => updateStatusWithEmail(o, 'rejected')} title="Reject & Email"
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600' : 'text-[#9CA3AF] hover:text-red-600 hover:bg-red-50'}`}>
-                                      <XCircle size={11} /><span className="hidden xl:inline">Reject</span>
+                                      ❌<span className="hidden xl:inline">Reject</span>
+                                    </button>
+                                    <button onClick={() => sendCancelSMS(o)} title="Send Cancel SMS via WhatsApp"
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium bg-green-600 text-white hover:bg-green-700 transition-all">
+                                      📱<span className="hidden xl:inline">SMS</span>
                                     </button>
                                     <button onClick={() => setViewOrder(o)} title="View Full Details"
                                       className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
-                                      <ChevronDown size={11} /><span className="hidden xl:inline">Details</span>
+                                      📋<span className="hidden xl:inline">Details</span>
                                     </button>
                                     <button onClick={async () => {
                                       if (!window.confirm('Delete this order permanently?')) return;
@@ -1746,7 +1785,7 @@ export default function AdminPage() {
                                       } catch { toast.error('Failed to delete order'); }
                                     }} title="Delete Order"
                                       className="p-1.5 text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                      <Trash2 size={14} />
+                                      🗑️
                                     </button>
                                   </div>
                                 </td>
@@ -3161,24 +3200,36 @@ export default function AdminPage() {
                       {viewOrder.cancelReason && (
                         <p className="text-xs text-orange-700 mt-1 italic">"{viewOrder.cancelReason}"</p>
                       )}
-                      {viewOrder.status === 'cancel_requested' && (
+                    {viewOrder.status === 'cancel_requested' && (
                         <div className="flex gap-2 mt-3">
                           <button
                             onClick={async () => {
                               try {
-                                const { collection, query, where, getDocs, updateDoc } = await import('firebase/firestore');
+                                const { collection, query, where, getDocs, updateDoc, doc, deleteDoc } = await import('firebase/firestore');
                                 const { db } = await import('../lib/firebase');
                                 const q = query(collection(db, 'bookings'), where('id', '==', viewOrder.id));
                                 const snap = await getDocs(q);
                                 if (!snap.empty) await updateDoc(snap.docs[0].ref, { status: 'rejected' });
+                                // Free the date in bookedDates
+                                if (viewOrder.date) {
+                                  const d = viewOrder.date.length === 10 ? viewOrder.date : new Date(viewOrder.date).toISOString().slice(0, 10);
+                                  try { await deleteDoc(doc(db, 'bookedDates', d)); } catch { /* silent */ }
+                                }
                                 setOrders(prev => prev.map(o => o.id === viewOrder.id ? { ...o, status: 'rejected' } : o));
                                 setViewOrder(null);
-                                toast.success('Cancellation approved — date is now available again.');
+                                toast.success('✅ Cancellation approved — date is now available again.');
                               } catch { toast.error('Failed to approve cancellation'); }
                             }}
                             className="flex-1 py-2 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-colors"
                           >
-                            Approve Cancellation
+                            ✅ Approve Cancellation
+                          </button>
+                          <button
+                            onClick={() => sendCancelSMS(viewOrder)}
+                            className="px-3 py-2 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                            title="Send cancellation WhatsApp message to client"
+                          >
+                            📱 SMS
                           </button>
                           <button
                             onClick={async () => {
@@ -3195,7 +3246,7 @@ export default function AdminPage() {
                             }}
                             className="flex-1 py-2 bg-[#111827] text-white text-xs font-semibold rounded-lg hover:bg-[#374151] transition-colors"
                           >
-                            Decline — Keep Booking
+                            🔄 Keep Booking
                           </button>
                         </div>
                       )}
@@ -3211,11 +3262,11 @@ export default function AdminPage() {
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {([
-                    { s: 'under_review' as OrderStatus, label: 'Under Review', icon: Eye, active: 'bg-yellow-100 border-yellow-400 text-yellow-800 ring-2 ring-yellow-200', idle: 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100' },
-                    { s: 'contacted' as OrderStatus, label: 'Contacted', icon: Mail, active: 'bg-purple-100 border-purple-400 text-purple-800 ring-2 ring-purple-200', idle: 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100' },
-                    { s: 'approved' as OrderStatus, label: 'Approve + Email', icon: CheckCircle, active: 'bg-green-100 border-green-400 text-green-800 ring-2 ring-green-200', idle: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' },
-                    { s: 'completed' as OrderStatus, label: 'Mark Complete', icon: Star, active: 'bg-blue-100 border-blue-400 text-blue-800 ring-2 ring-blue-200', idle: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
-                    { s: 'rejected' as OrderStatus, label: 'Reject + Email', icon: XCircle, active: 'bg-red-100 border-red-400 text-red-800 ring-2 ring-red-200', idle: 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' },
+                    { s: 'under_review' as OrderStatus, label: '🔍 Under Review', icon: Eye, active: 'bg-yellow-100 border-yellow-400 text-yellow-800 ring-2 ring-yellow-200', idle: 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100' },
+                    { s: 'contacted' as OrderStatus, label: '📞 Contacted', icon: Mail, active: 'bg-purple-100 border-purple-400 text-purple-800 ring-2 ring-purple-200', idle: 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100' },
+                    { s: 'approved' as OrderStatus, label: '✅ Approve + Email', icon: CheckCircle, active: 'bg-green-100 border-green-400 text-green-800 ring-2 ring-green-200', idle: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' },
+                    { s: 'completed' as OrderStatus, label: '⭐ Mark Complete', icon: Star, active: 'bg-blue-100 border-blue-400 text-blue-800 ring-2 ring-blue-200', idle: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' },
+                    { s: 'rejected' as OrderStatus, label: '❌ Reject + Email', icon: XCircle, active: 'bg-red-100 border-red-400 text-red-800 ring-2 ring-red-200', idle: 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' },
                   ]).map(({ s, label, icon: Icon, active, idle }) => (
                     <button key={s}
                       onClick={() => { updateStatusWithEmail(viewOrder, s); setViewOrder(null); }}

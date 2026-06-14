@@ -354,12 +354,8 @@ export default function DashboardPage() {
     if (!cancelModal || !user) return;
     setCancelSubmitting(true);
     try {
-      const { collection, query, where, getDocs, updateDoc, addDoc, doc, getDoc } = await import('firebase/firestore');
+      const { collection, query, where, getDocs, updateDoc, addDoc, doc } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
-
-      // Try querying by the custom 'id' field first (CCB-XXX format)
-      const q = query(collection(db, 'bookings'), where('id', '==', cancelModal.id));
-      const snap = await getDocs(q);
 
       const updateData = {
         status: 'cancel_requested',
@@ -368,37 +364,42 @@ export default function DashboardPage() {
         cancelledAt: new Date().toISOString(),
       };
 
-      if (!snap.empty) {
-        // Found by custom id field
-        await updateDoc(snap.docs[0].ref, updateData);
-      } else {
-        // Fallback: try treating cancelModal.id as the Firestore document ID
-        const directRef = doc(db, 'bookings', cancelModal.id);
-        const directSnap = await getDoc(directRef);
-        if (directSnap.exists()) {
-          await updateDoc(directRef, updateData);
-        } else {
-          // Still not found — surface the error to the user
-          throw new Error('Booking document not found. Please refresh and try again.');
+      // First try querying by custom 'id' field (CCB-XXX)
+      let updated = false;
+      try {
+        const q = query(collection(db, 'bookings'), where('id', '==', cancelModal.id));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          await updateDoc(snap.docs[0].ref, updateData);
+          updated = true;
         }
+      } catch { /* permission on query — fall through to direct doc ID */ }
+
+      // Fallback: use the booking ID as the Firestore document ID directly
+      if (!updated) {
+        const directRef = doc(db, 'bookings', cancelModal.id);
+        await updateDoc(directRef, updateData);
       }
 
       setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: 'cancel_requested' } : b));
 
-      // Notify client
-      await addDoc(collection(db, 'notifications'), {
-        userId: user.uid,
-        type: 'cancel_requested',
-        title: '⏳ Cancellation Request Sent',
-        message: `Your cancellation request for booking ${cancelModal.id} has been sent to our team. We will contact you to confirm. Do not worry — your booking is still active until we respond.`,
-        read: false,
-        createdAt: new Date().toISOString(),
-      });
+      // Notify client (wrap in try so notification failure doesn't break the cancel)
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          userId: user.uid,
+          type: 'cancel_requested',
+          title: '⏳ Cancellation Request Sent',
+          message: `Your cancellation request for booking ${cancelModal.id} has been sent to our team. We will contact you to confirm. Your booking is still active until we respond.`,
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
+      } catch { /* non-critical */ }
 
       setCancelModal(null);
       setCancelReason('');
       toast.success('Cancellation request sent successfully.');
     } catch (err: any) {
+      console.error('Cancel booking error:', err);
       toast.error(err?.message || 'Failed to request cancellation. Please try again.');
     } finally {
       setCancelSubmitting(false);

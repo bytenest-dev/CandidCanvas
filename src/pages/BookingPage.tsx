@@ -51,39 +51,14 @@ async function generateBookingId(): Promise<string> {
 // ── Normalize any date string/Firestore Timestamp to YYYY-MM-DD ─────────────
 function normalizeDate(value: any): string | null {
   if (!value) return null;
-
-  // Already YYYY-MM-DD
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  // Firestore Timestamp object with .toDate()
-  if (value && typeof value.toDate === 'function') {
-    const d = value.toDate();
-    return d.toISOString().slice(0, 10);
-  }
-
-  // Firestore Timestamp-like { seconds, nanoseconds }
-  if (value && typeof value === 'object' && 'seconds' in value) {
-    const d = new Date(value.seconds * 1000);
-    return d.toISOString().slice(0, 10);
-  }
-
-  // Any other string — try to parse it ("June 29, 2026", "29/06/2026", ISO, etc.)
+  if (value && typeof value.toDate === 'function') return value.toDate().toISOString().slice(0, 10);
+  if (value && typeof value === 'object' && 'seconds' in value) return new Date(value.seconds * 1000).toISOString().slice(0, 10);
   if (typeof value === 'string') {
     const parsed = new Date(value);
-    if (!isNaN(parsed.getTime())) {
-      // Use UTC to avoid timezone shifting the date
-      const utc = new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
-      // If the original parse was clearly a local date string (no time component), use it directly
-      const iso = parsed.toISOString().slice(0, 10);
-      return iso;
-    }
+    if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
   }
-
-  // Number (Unix ms)
-  if (typeof value === 'number') {
-    return new Date(value).toISOString().slice(0, 10);
-  }
-
+  if (typeof value === 'number') return new Date(value).toISOString().slice(0, 10);
   return null;
 }
 
@@ -98,7 +73,7 @@ function AvailabilityCalendar({ selectedDate, onSelectDate }: AvailabilityCalend
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
   const [loadingDates, setLoadingDates] = useState(true);
 
-  // Real-time listener — picks up new bookings instantly
+  // Real-time listener on public bookedDates collection — no auth needed
   useEffect(() => {
     let unsub: (() => void) | null = null;
     const setup = async () => {
@@ -106,23 +81,20 @@ function AvailabilityCalendar({ selectedDate, onSelectDate }: AvailabilityCalend
       try {
         const { collection, onSnapshot } = await import('firebase/firestore');
         const { db } = await import('../lib/firebase');
-        unsub = onSnapshot(collection(db, 'bookings'), snap => {
+        // bookedDates collection: each doc id = YYYY-MM-DD, blocked: true/false
+        unsub = onSnapshot(collection(db, 'bookedDates'), snap => {
           const dates = new Set<string>();
           snap.docs.forEach(d => {
             const data = d.data();
-            const rawDate = data.date || data.eventDate;
-            const status = data.status;
-            // Block dates for all active bookings — only free up when fully rejected
-            if (rawDate && status !== 'rejected') {
-              // Normalize to YYYY-MM-DD regardless of how it was stored
-              const normalized = normalizeDate(rawDate);
+            // doc id is the date string; blocked field controls visibility
+            if (data.blocked !== false) {
+              const normalized = normalizeDate(d.id);
               if (normalized) dates.add(normalized);
             }
           });
           setBookedDates(dates);
           setLoadingDates(false);
         }, () => {
-          // Permission denied — show all dates as available rather than blocking booking
           setBookedDates(new Set());
           setLoadingDates(false);
         });
@@ -384,6 +356,17 @@ export default function BookingPage() {
         discountType: promoState.valid ? (promoState.promoData?.discountType || 'percentage') : 'percentage',
         promoApplied: promoState.valid ? (promoState.promoData?.code || '') : '',
       });
+
+      // Block this date in the public bookedDates collection
+      const bookingDate = calendarDate || data.eventDate;
+      if (bookingDate) {
+        const { doc: firestoreDoc, setDoc: firestoreSetDoc } = await import('firebase/firestore');
+        await firestoreSetDoc(firestoreDoc(db, 'bookedDates', bookingDate), {
+          blocked: true,
+          bookingId: id,
+          updatedAt: new Date().toISOString(),
+        });
+      }
 
       setBookingId(id);
 
