@@ -354,19 +354,37 @@ export default function DashboardPage() {
     if (!cancelModal || !user) return;
     setCancelSubmitting(true);
     try {
-      const { collection, query, where, getDocs, updateDoc, addDoc } = await import('firebase/firestore');
+      const { collection, query, where, getDocs, updateDoc, addDoc, doc, getDoc } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
+
+      // Try querying by the custom 'id' field first (CCB-XXX format)
       const q = query(collection(db, 'bookings'), where('id', '==', cancelModal.id));
       const snap = await getDocs(q);
+
+      const updateData = {
+        status: 'cancel_requested',
+        cancelledByClient: true,
+        cancelReason: cancelReason.trim() || 'Cancelled by client',
+        cancelledAt: new Date().toISOString(),
+      };
+
       if (!snap.empty) {
-        await updateDoc(snap.docs[0].ref, {
-          status: 'cancel_requested',
-          cancelledByClient: true,
-          cancelReason: cancelReason.trim() || 'Cancelled by client',
-          cancelledAt: new Date().toISOString(),
-        });
+        // Found by custom id field
+        await updateDoc(snap.docs[0].ref, updateData);
+      } else {
+        // Fallback: try treating cancelModal.id as the Firestore document ID
+        const directRef = doc(db, 'bookings', cancelModal.id);
+        const directSnap = await getDoc(directRef);
+        if (directSnap.exists()) {
+          await updateDoc(directRef, updateData);
+        } else {
+          // Still not found — surface the error to the user
+          throw new Error('Booking document not found. Please refresh and try again.');
+        }
       }
+
       setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: 'cancel_requested' } : b));
+
       // Notify client
       await addDoc(collection(db, 'notifications'), {
         userId: user.uid,
@@ -376,11 +394,12 @@ export default function DashboardPage() {
         read: false,
         createdAt: new Date().toISOString(),
       });
+
       setCancelModal(null);
       setCancelReason('');
       toast.success('Cancellation request sent successfully.');
-    } catch {
-      toast.error('Failed to request cancellation. Please try again.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to request cancellation. Please try again.');
     } finally {
       setCancelSubmitting(false);
     }

@@ -197,7 +197,7 @@ export default function AdminPage() {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [orderSearch, setOrderSearch] = useState('');
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
-  const [orderTab, setOrderTab] = useState<'all' | OrderStatus>('all');
+  const [orderTab, setOrderTab] = useState<'all' | OrderStatus | 'cancelled'>('all');
   const [calendarView, setCalendarView] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [emailModalData, setEmailModalData] = useState<OrderEmailData | null>(null);
@@ -517,6 +517,21 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err);
       toast.error('Failed to generate backup');
+    }
+  };
+
+  /** Deletes a specific month's backup document from Firestore */
+  const deleteBackup = async (monthStr: string) => {
+    if (!window.confirm(`Delete backup for ${monthStr}? This cannot be undone.`)) return;
+    try {
+      const { doc, deleteDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      await deleteDoc(doc(db, 'monthlyBackups', monthStr));
+      setBackups(prev => prev.filter(b => b.month !== monthStr));
+      toast.success(`Backup for ${monthStr} deleted.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete backup');
     }
   };
 
@@ -1063,7 +1078,15 @@ export default function AdminPage() {
 
   // ── Displayed orders based on filter ────────────────────────────────────
   const displayedOrders = orders.filter(o => {
-    const matchTab = orderTab === 'all' || o.status === orderTab;
+    let matchTab: boolean;
+    if (orderTab === 'all') {
+      matchTab = true;
+    } else if (orderTab === 'cancelled') {
+      // "Cancelled" tab = client-initiated cancellations that were approved (rejected + cancelledByClient)
+      matchTab = o.status === 'rejected' && !!o.cancelledByClient;
+    } else {
+      matchTab = o.status === orderTab;
+    }
     const q = orderSearch.toLowerCase();
     const matchSearch = !q || o.client.toLowerCase().includes(q) || o.id.toLowerCase().includes(q) || o.package.toLowerCase().includes(q);
     return matchTab && matchSearch;
@@ -1442,9 +1465,10 @@ export default function AdminPage() {
                     { key: 'approved', label: 'Approved', count: orders.filter(o => o.status === 'approved').length },
                     { key: 'completed', label: 'Completed', count: orders.filter(o => o.status === 'completed').length },
                     { key: 'rejected', label: 'Rejected', count: orders.filter(o => o.status === 'rejected').length },
+                    { key: 'cancelled', label: '🚫 Cancelled', count: orders.filter(o => o.status === 'rejected' && o.cancelledByClient).length },
                   ].map(tab => (
                     <button key={tab.key}
-                      onClick={() => setOrderTab(tab.key as typeof orderTab)}
+                      onClick={() => setOrderTab(tab.key as 'all' | OrderStatus | 'cancelled')}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                         orderTab === tab.key
                           ? 'bg-[#111827] text-white border-[#111827]'
@@ -2699,6 +2723,13 @@ export default function AdminPage() {
                             className="flex items-center gap-1.5 px-3 py-2 border border-[#E5E7EB] text-[#374151] text-xs font-medium rounded-lg hover:border-[#374151] transition-colors"
                           >
                             <RefreshCw size={13} /> Sync
+                          </button>
+                          <button
+                            onClick={() => deleteBackup(backup.month)}
+                            title="Delete this backup permanently"
+                            className="flex items-center gap-1.5 px-3 py-2 border border-red-200 text-red-500 text-xs font-medium rounded-lg hover:bg-red-50 hover:border-red-400 transition-colors"
+                          >
+                            <Trash2 size={13} /> Delete
                           </button>
                         </div>
                       </div>

@@ -73,7 +73,8 @@ function AvailabilityCalendar({ selectedDate, onSelectDate }: AvailabilityCalend
             const data = d.data();
             const date = data.date || data.eventDate;
             const status = data.status;
-            if (date && status !== 'rejected' && status !== 'cancel_requested') {
+            // Block dates for all active bookings — only free up when fully rejected
+            if (date && status !== 'rejected') {
               dates.add(date);
             }
           });
