@@ -547,23 +547,18 @@ export default function AdminPage() {
       const bookedSnap = await getDocs(collection(db, 'bookedDates'));
       const batch = writeBatch(db);
 
-      // Delete docs that no longer have an active booking
+      // Delete ALL existing bookedDates first, then re-add active ones (cleanest approach)
       bookedSnap.docs.forEach(d => {
-        if (!activeDates.has(d.id)) {
-          batch.delete(doc(db, 'bookedDates', d.id));
-        }
+        batch.delete(doc(db, 'bookedDates', d.id));
       });
 
-      // Ensure all active booking dates are present
-      const existingDates = new Set(bookedSnap.docs.map(d => d.id));
+      // Re-add only active dates
       activeDates.forEach(date => {
-        if (!existingDates.has(date)) {
-          batch.set(doc(db, 'bookedDates', date), { blocked: true, updatedAt: new Date().toISOString() });
-        }
+        batch.set(doc(db, 'bookedDates', date), { blocked: true, updatedAt: new Date().toISOString() });
       });
 
       await batch.commit();
-      toast.success(`✅ Calendar synced — ${activeDates.size} date(s) blocked, stale entries cleared.`);
+      toast.success(`✅ Calendar synced — ${activeDates.size} date(s) active, all stale entries cleared.`);
     } catch (err) {
       console.error(err);
       toast.error('Failed to sync calendar');
@@ -619,6 +614,10 @@ export default function AdminPage() {
     loadMessages();
     loadPromos();
     loadBackups();
+    // Auto-sync calendar on load to clear any stale bookedDates
+    // Use a short delay to avoid racing with loadOrders
+    setTimeout(() => syncCalendar(), 2000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadOrders, loadMessages, loadPromos, loadBackups]);
 
   // Dedicated email quota listener — runs once, stays live
@@ -1313,7 +1312,7 @@ export default function AdminPage() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6 bg-[#F8F9FA]">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-36 lg:pb-6 bg-[#F8F9FA]">
 
             {/* ── OVERVIEW ── */}
             {activeTab === 'overview' && (
@@ -2796,44 +2795,46 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-3">
                     {backups.map(backup => (
-                      <div key={backup.month} className="bg-white rounded-xl border border-[#E5E7EB] p-5 flex items-center justify-between gap-4 hover:shadow-md transition-all">
-                        <div className="flex items-center gap-4 min-w-0">
-                          <div className="w-11 h-11 bg-[#F8F9FA] rounded-xl border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
-                            <Archive size={18} className="text-[#6B7280]" />
+                      <div key={backup.month} className="bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-all">
+                        {/* Top row — icon + info */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-10 h-10 bg-[#F8F9FA] rounded-xl border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
+                            <Archive size={16} className="text-[#6B7280]" />
                           </div>
-                          <div className="min-w-0">
+                          <div className="flex-1 min-w-0">
                             <p className="font-semibold text-[#111827] text-sm">
                               {new Date(backup.month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
                             </p>
-                            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
                               <span className="text-xs text-[#6B7280]">📦 {backup.totalOrders} orders</span>
-                              <span className="text-xs text-emerald-700 font-semibold">৳{(backup.totalRevenue || 0).toLocaleString('en-BD')} revenue</span>
-                              <span className="text-[11px] text-[#9CA3AF]">
-                                Saved {backup.createdAt ? new Date(backup.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                              </span>
+                              <span className="text-xs text-emerald-700 font-semibold">৳{(backup.totalRevenue || 0).toLocaleString('en-BD')}</span>
                             </div>
+                            <span className="text-[10px] text-[#9CA3AF] mt-0.5 block">
+                              Saved {backup.createdAt ? new Date(backup.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex gap-2 flex-shrink-0">
+                        {/* Action buttons row */}
+                        <div className="flex gap-2">
                           <button
                             onClick={() => downloadBackupCSV(backup)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
                           >
-                            <Download size={13} /> Download CSV
+                            <Download size={12} /> CSV
                           </button>
                           <button
                             onClick={() => generateMonthlyBackup(backup.month)}
-                            title="Re-generate this month's backup with latest data"
-                            className="flex items-center gap-1.5 px-3 py-2 border border-[#E5E7EB] text-[#374151] text-xs font-medium rounded-lg hover:border-[#374151] transition-colors"
+                            title="Re-generate"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2 border border-[#E5E7EB] text-[#374151] text-xs font-medium rounded-lg hover:border-[#374151] transition-colors"
                           >
-                            <RefreshCw size={13} /> Sync
+                            <RefreshCw size={12} /> Sync
                           </button>
                           <button
                             onClick={() => deleteBackup(backup.month)}
-                            title="Delete this backup permanently"
-                            className="flex items-center gap-1.5 px-3 py-2 border border-red-200 text-red-500 text-xs font-medium rounded-lg hover:bg-red-50 hover:border-red-400 transition-colors"
+                            title="Delete backup"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2 border border-red-200 text-red-500 text-xs font-medium rounded-lg hover:bg-red-50 hover:border-red-400 transition-colors"
                           >
-                            <Trash2 size={13} /> Delete
+                            <Trash2 size={12} /> Del
                           </button>
                         </div>
                       </div>
@@ -3056,9 +3057,9 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Mobile Bottom Nav Bar - all 8 tabs scrollable */}
+      {/* Mobile Bottom Nav Bar - 2 rows grid, all items visible */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#111827] border-t border-white/10 shadow-2xl">
-        <div className="flex items-center overflow-x-auto px-1 py-1.5 gap-0.5" style={{scrollbarWidth:'none',msOverflowStyle:'none'}}>
+        <div className="grid grid-cols-5 gap-0 px-1 pt-1.5 pb-safe">
           {ADMIN_NAV.map(({ id, label, icon: Icon }) => {
             const pendingOrders = id === 'orders' ? orders.filter(o => ['submitted','under_review'].includes(o.status)).length : 0;
             const unreadMsgs = id === 'messages' ? messages.filter(m => m.status === 'unread').length : 0;
@@ -3068,22 +3069,26 @@ export default function AdminPage() {
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all flex-shrink-0 relative ${activeTab === id ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-all relative ${
+                  activeTab === id ? 'text-white' : 'text-white/40 hover:text-white/70'
+                }`}
               >
                 {activeTab === id && <span className="absolute inset-0 bg-white/10 rounded-xl" />}
                 <div className="relative">
-                  <Icon size={18} />
+                  <Icon size={17} />
                   {badge > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
                       {badge > 9 ? '9+' : badge}
                     </span>
                   )}
                 </div>
-                <span className="text-[9px] font-medium leading-none whitespace-nowrap">{label}</span>
+                <span className="text-[8px] font-medium leading-none text-center whitespace-nowrap px-0.5 truncate max-w-[52px]">{label}</span>
               </button>
             );
           })}
         </div>
+        {/* Safe area spacer for iOS */}
+        <div className="h-safe-area-inset-bottom bg-[#111827]" style={{height:'env(safe-area-inset-bottom)'}} />
       </div>
 
       <Modal isOpen={!!viewOrder} onClose={() => setViewOrder(null)} title="Order Details" size="lg">

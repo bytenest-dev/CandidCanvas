@@ -72,35 +72,47 @@ function AvailabilityCalendar({ selectedDate, onSelectDate }: AvailabilityCalend
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
   const [loadingDates, setLoadingDates] = useState(true);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
 
   // Real-time listener on public bookedDates collection — no auth needed
   useEffect(() => {
     let unsub: (() => void) | null = null;
     const setup = async () => {
       setLoadingDates(true);
+      setCalendarError(null);
       try {
         const { collection, onSnapshot } = await import('firebase/firestore');
         const { db } = await import('../lib/firebase');
-        // bookedDates collection: each doc id = YYYY-MM-DD, blocked: true/false
-        unsub = onSnapshot(collection(db, 'bookedDates'), snap => {
-          const dates = new Set<string>();
-          snap.docs.forEach(d => {
-            const data = d.data();
-            // doc id is the date string; blocked field controls visibility
-            if (data.blocked !== false) {
-              const normalized = normalizeDate(d.id);
-              if (normalized) dates.add(normalized);
+        unsub = onSnapshot(
+          collection(db, 'bookedDates'),
+          snap => {
+            const dates = new Set<string>();
+            snap.docs.forEach(d => {
+              const data = d.data();
+              if (data.blocked !== false) {
+                const normalized = normalizeDate(d.id);
+                if (normalized) dates.add(normalized);
+              }
+            });
+            setBookedDates(dates);
+            setLoadingDates(false);
+            setCalendarError(null);
+          },
+          err => {
+            console.warn('Calendar availability error:', err.code || err.message);
+            // Still show the calendar — just can't verify booked dates
+            setBookedDates(new Set());
+            setLoadingDates(false);
+            if (err.code === 'permission-denied') {
+              setCalendarError('Could not load availability. All dates shown — please contact us to confirm.');
             }
-          });
-          setBookedDates(dates);
-          setLoadingDates(false);
-        }, () => {
-          setBookedDates(new Set());
-          setLoadingDates(false);
-        });
-      } catch {
+          }
+        );
+      } catch (err: any) {
+        console.warn('Calendar setup error:', err);
         setBookedDates(new Set());
         setLoadingDates(false);
+        setCalendarError('Could not load availability data. Please try refreshing.');
       }
     };
     setup();
@@ -143,6 +155,14 @@ function AvailabilityCalendar({ selectedDate, onSelectDate }: AvailabilityCalend
           <div key={d} className="text-center text-[10px] font-semibold text-[#9CA3AF] py-2 uppercase tracking-wide">{d}</div>
         ))}
       </div>
+
+      {/* Error banner */}
+      {calendarError && (
+        <div className="mx-3 mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 flex items-start gap-2">
+          <span className="text-base flex-shrink-0">⚠️</span>
+          <span>{calendarError}</span>
+        </div>
+      )}
 
       {/* Calendar days */}
       {loadingDates ? (
