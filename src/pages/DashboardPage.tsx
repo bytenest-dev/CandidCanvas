@@ -15,7 +15,8 @@ import ToastContainer from '../components/ui/Toast';
 import { useToast } from '../hooks/useToast';
 
 interface Booking {
-  id: string;
+  id: string;       // CCB-XXX custom field
+  docId: string;    // actual Firestore document ID — used for direct updates
   packageName: string;
   eventType: string;
   eventDate: string;
@@ -234,6 +235,7 @@ export default function DashboardPage() {
           const d = doc.data();
           return {
             id: d.id || doc.id,
+            docId: doc.id,          // always the real Firestore document ID
             packageName: d.package || d.packageName || '',
             eventType: d.event || d.eventType || '',
             eventDate: d.date || d.eventDate || '',
@@ -354,7 +356,7 @@ export default function DashboardPage() {
     if (!cancelModal || !user) return;
     setCancelSubmitting(true);
     try {
-      const { collection, query, where, getDocs, updateDoc, addDoc, doc } = await import('firebase/firestore');
+      const { doc, updateDoc, addDoc, collection } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
 
       const updateData = {
@@ -364,36 +366,24 @@ export default function DashboardPage() {
         cancelledAt: new Date().toISOString(),
       };
 
-      // First try querying by custom 'id' field (CCB-XXX)
-      let updated = false;
-      try {
-        const q = query(collection(db, 'bookings'), where('id', '==', cancelModal.id));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          await updateDoc(snap.docs[0].ref, updateData);
-          updated = true;
-        }
-      } catch { /* permission on query — fall through to direct doc ID */ }
+      // Use docId (real Firestore doc ID) — no collection scan needed, no permission issues
+      await updateDoc(doc(db, 'bookings', cancelModal.docId), updateData);
 
-      // Fallback: use the booking ID as the Firestore document ID directly
-      if (!updated) {
-        const directRef = doc(db, 'bookings', cancelModal.id);
-        await updateDoc(directRef, updateData);
-      }
+      setBookings(prev => prev.map(b =>
+        b.docId === cancelModal.docId ? { ...b, status: 'cancel_requested' } : b
+      ));
 
-      setBookings(prev => prev.map(b => b.id === cancelModal.id ? { ...b, status: 'cancel_requested' } : b));
-
-      // Notify client (wrap in try so notification failure doesn't break the cancel)
+      // Notify client — wrap separately so it never blocks the cancel
       try {
         await addDoc(collection(db, 'notifications'), {
           userId: user.uid,
           type: 'cancel_requested',
           title: '⏳ Cancellation Request Sent',
-          message: `Your cancellation request for booking ${cancelModal.id} has been sent to our team. We will contact you to confirm. Your booking is still active until we respond.`,
+          message: `Your cancellation request for booking ${cancelModal.id} has been sent to our team. Your booking stays active until we confirm.`,
           read: false,
           createdAt: new Date().toISOString(),
         });
-      } catch { /* non-critical */ }
+      } catch { /* notification is non-critical */ }
 
       setCancelModal(null);
       setCancelReason('');
