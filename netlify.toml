@@ -7,6 +7,23 @@
   to = "/index.html"
   status = 200
 
+# Cache headers — HTML must never be cached; hashed assets can be cached long-term
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # Security & COOP headers — fixes Firebase Google Sign-In popup COOP errors
 [[headers]]
   for = "/*"

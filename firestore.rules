@@ -17,12 +17,10 @@ service cloud.firestore {
     }
 
     // Bookings — users create own, admin manages all
-    // read restricted to own bookings only (not all authenticated users)
     match /bookings/{bookingId} {
       allow create: if request.auth != null;
       allow read:   if request.auth != null &&
         (request.auth.uid == resource.data.userId || isAdmin());
-      // Allow unauthenticated read of only the date and status fields for availability calendar
       allow update: if request.auth != null &&
         (request.auth.uid == resource.data.userId || isAdmin());
       allow delete: if isAdmin();

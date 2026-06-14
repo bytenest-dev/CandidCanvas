@@ -614,10 +614,6 @@ export default function AdminPage() {
     loadMessages();
     loadPromos();
     loadBackups();
-    // Auto-sync calendar on load to clear any stale bookedDates
-    // Use a short delay to avoid racing with loadOrders
-    setTimeout(() => syncCalendar(), 2000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadOrders, loadMessages, loadPromos, loadBackups]);
 
   // Dedicated email quota listener — runs once, stays live
