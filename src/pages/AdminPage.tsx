@@ -520,6 +520,56 @@ export default function AdminPage() {
     }
   };
 
+  /** Rebuild bookedDates collection from active bookings — fixes stale/orphaned blocked dates */
+  const syncCalendar = async () => {
+    try {
+      const { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+
+      // 1. Get all active (non-rejected) bookings
+      const bookingsSnap = await getDocs(collection(db, 'bookings'));
+      const activeDates = new Set<string>();
+      bookingsSnap.docs.forEach(d => {
+        const data = d.data();
+        const rawDate = data.date || data.eventDate;
+        const status = data.status;
+        if (rawDate && status !== 'rejected') {
+          try {
+            const normalized = /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+              ? rawDate
+              : new Date(rawDate).toISOString().slice(0, 10);
+            activeDates.add(normalized);
+          } catch { /* skip bad dates */ }
+        }
+      });
+
+      // 2. Get all existing bookedDates docs
+      const bookedSnap = await getDocs(collection(db, 'bookedDates'));
+      const batch = writeBatch(db);
+
+      // Delete docs that no longer have an active booking
+      bookedSnap.docs.forEach(d => {
+        if (!activeDates.has(d.id)) {
+          batch.delete(doc(db, 'bookedDates', d.id));
+        }
+      });
+
+      // Ensure all active booking dates are present
+      const existingDates = new Set(bookedSnap.docs.map(d => d.id));
+      activeDates.forEach(date => {
+        if (!existingDates.has(date)) {
+          batch.set(doc(db, 'bookedDates', date), { blocked: true, updatedAt: new Date().toISOString() });
+        }
+      });
+
+      await batch.commit();
+      toast.success(`✅ Calendar synced — ${activeDates.size} date(s) blocked, stale entries cleared.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to sync calendar');
+    }
+  };
+
   /** Deletes a specific month's backup document from Firestore */
   const deleteBackup = async (monthStr: string) => {
     if (!window.confirm(`Delete backup for ${monthStr}? This cannot be undone.`)) return;
@@ -1540,6 +1590,14 @@ export default function AdminPage() {
                     <span className="hidden sm:inline">Refresh</span>
                   </button>
                   <button
+                    onClick={syncCalendar}
+                    title="Sync availability calendar with current bookings"
+                    className="flex items-center gap-1.5 px-3 py-2.5 border border-blue-200 rounded-lg text-sm text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-colors bg-white"
+                  >
+                    <Calendar size={14} />
+                    <span className="hidden sm:inline">Sync Calendar</span>
+                  </button>
+                  <button
                     onClick={exportOrdersToExcel}
                     title="Export to Excel/CSV"
                     className="flex items-center gap-1.5 px-3 py-2.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors"
@@ -1780,8 +1838,15 @@ export default function AdminPage() {
                                         const snap = await getDocs(q);
                                         if (!snap.empty) { await deleteDoc(snap.docs[0].ref); }
                                         else { await deleteDoc(doc(db, 'bookings', o.id)); }
+                                        // Free the date in bookedDates
+                                        if (o.date) {
+                                          try {
+                                            const dateKey = /^\d{4}-\d{2}-\d{2}$/.test(o.date) ? o.date : new Date(o.date).toISOString().slice(0, 10);
+                                            await deleteDoc(doc(db, 'bookedDates', dateKey));
+                                          } catch { /* silent */ }
+                                        }
                                         setOrders(prev => prev.filter(x => x.id !== o.id));
-                                        toast.success('Order deleted');
+                                        toast.success('Order deleted — date is now available');
                                       } catch { toast.error('Failed to delete order'); }
                                     }} title="Delete Order"
                                       className="p-1.5 text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
