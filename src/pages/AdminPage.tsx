@@ -58,11 +58,11 @@ const ADMIN_NAV = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders', icon: ShoppingBag },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  { id: 'slider', label: 'Featured Slider', icon: Image },
+  { id: 'slider', label: 'Slider', icon: Image },
   { id: 'gallery', label: 'Gallery', icon: Camera },
   { id: 'packages', label: 'Packages', icon: Package },
   { id: 'reviews', label: 'Reviews', icon: Star },
-  { id: 'promos', label: 'Promo Codes', icon: Tag },
+  { id: 'promos', label: 'Promos', icon: Tag },
   { id: 'backup', label: 'Backup', icon: Archive },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -1537,13 +1537,12 @@ export default function AdminPage() {
                 <div className="flex items-center gap-2 mb-5 flex-wrap">
                   {[
                     { key: 'all', label: 'All', count: orders.length },
-                    { key: 'submitted', label: 'Submitted', count: orders.filter(o => o.status === 'submitted').length },
-                    { key: 'under_review', label: 'Under Review', count: orders.filter(o => o.status === 'under_review').length },
-                    { key: 'cancel_requested', label: '⚠ Cancel Req.', count: orders.filter(o => o.status === 'cancel_requested').length },
-                    { key: 'contacted', label: 'Contacted', count: orders.filter(o => o.status === 'contacted').length },
-                    { key: 'approved', label: 'Approved', count: orders.filter(o => o.status === 'approved').length },
-                    { key: 'completed', label: 'Completed', count: orders.filter(o => o.status === 'completed').length },
-                    { key: 'rejected', label: 'Rejected', count: orders.filter(o => o.status === 'rejected').length },
+                    { key: 'submitted', label: '📥 Submitted', count: orders.filter(o => o.status === 'submitted').length },
+                    { key: 'under_review', label: '🔍 Under Review', count: orders.filter(o => o.status === 'under_review').length },
+                    { key: 'contacted', label: '📞 Contacted', count: orders.filter(o => o.status === 'contacted').length },
+                    { key: 'approved', label: '✅ Approved', count: orders.filter(o => o.status === 'approved').length },
+                    { key: 'completed', label: '⭐ Completed', count: orders.filter(o => o.status === 'completed').length },
+                    { key: 'rejected', label: '❌ Rejected', count: orders.filter(o => o.status === 'rejected').length },
                     { key: 'cancelled', label: '🚫 Cancelled', count: orders.filter(o => o.status === 'rejected' && o.cancelledByClient).length },
                   ].map(tab => (
                     <button key={tab.key}
@@ -1819,10 +1818,6 @@ export default function AdminPage() {
                                     <button onClick={() => updateStatusWithEmail(o, 'rejected')} title="Reject & Email"
                                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600' : 'text-[#9CA3AF] hover:text-red-600 hover:bg-red-50'}`}>
                                       ❌<span className="hidden xl:inline">Reject</span>
-                                    </button>
-                                    <button onClick={() => sendCancelSMS(o)} title="Send Cancel SMS via WhatsApp"
-                                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium bg-green-600 text-white hover:bg-green-700 transition-all">
-                                      📱<span className="hidden xl:inline">SMS</span>
                                     </button>
                                     <button onClick={() => setViewOrder(o)} title="View Full Details"
                                       className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-[#9CA3AF] hover:text-[#374151] hover:bg-gray-100 transition-colors active:scale-95">
@@ -3057,38 +3052,42 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Mobile Bottom Nav Bar - 2 rows grid, all items visible */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#111827] border-t border-white/10 shadow-2xl">
-        <div className="grid grid-cols-5 gap-0 px-1 pt-1.5 pb-safe">
+      {/* Mobile Bottom Nav Bar - 2 rows of 5, all items visible */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#0f172a] border-t border-white/10 shadow-2xl">
+        <div className="grid grid-cols-5 px-1 pt-1 pb-1">
           {ADMIN_NAV.map(({ id, label, icon: Icon }) => {
-            const pendingOrders = id === 'orders' ? orders.filter(o => ['submitted','under_review'].includes(o.status)).length : 0;
+            const pendingOrders = id === 'orders' ? orders.filter(o => ['submitted','under_review','cancel_requested'].includes(o.status)).length : 0;
             const unreadMsgs = id === 'messages' ? messages.filter(m => m.status === 'unread').length : 0;
             const pendingReviews = id === 'reviews' ? reviews.filter(r => !r.approved).length : 0;
             const badge = pendingOrders || unreadMsgs || pendingReviews;
+            const isActive = activeTab === id;
             return (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-xl transition-all relative ${
-                  activeTab === id ? 'text-white' : 'text-white/40 hover:text-white/70'
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl transition-all relative ${
+                  isActive ? 'text-white' : 'text-white/45 hover:text-white/75'
                 }`}
               >
-                {activeTab === id && <span className="absolute inset-0 bg-white/10 rounded-xl" />}
-                <div className="relative">
-                  <Icon size={17} />
+                {isActive && (
+                  <span className="absolute inset-0 bg-white/[0.12] rounded-xl" />
+                )}
+                <div className="relative z-10">
+                  <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
                   {badge > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
+                    <span className="absolute -top-1.5 -right-2 min-w-[14px] h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none px-0.5">
                       {badge > 9 ? '9+' : badge}
                     </span>
                   )}
                 </div>
-                <span className="text-[8px] font-medium leading-none text-center whitespace-nowrap px-0.5 truncate max-w-[52px]">{label}</span>
+                <span className={`text-[9px] leading-none text-center font-medium z-10 ${isActive ? 'text-white' : 'text-white/45'}`}>
+                  {label}
+                </span>
               </button>
             );
           })}
         </div>
-        {/* Safe area spacer for iOS */}
-        <div className="h-safe-area-inset-bottom bg-[#111827]" style={{height:'env(safe-area-inset-bottom)'}} />
+        <div style={{ height: 'env(safe-area-inset-bottom)' }} className="bg-[#0f172a]" />
       </div>
 
       <Modal isOpen={!!viewOrder} onClose={() => setViewOrder(null)} title="Order Details" size="lg">
