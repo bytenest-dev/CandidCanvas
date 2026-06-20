@@ -9,7 +9,12 @@ export default function Testimonials() {
   if (approvedReviews.length === 0) return null;
 
   return (
-    <section className="py-20 sm:py-28 bg-[#F8F9FA]">
+    <section className="py-16 sm:py-24 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #F8F9FA 0%, #F0F4FF 50%, #F8F9FA 100%)' }}>
+      {/* Subtle blobs */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'radial-gradient(ellipse at 70% 20%, rgba(99,102,241,0.07) 0%, transparent 50%), radial-gradient(ellipse at 10% 80%, rgba(245,158,11,0.05) 0%, transparent 50%)',
+      }} />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -17,19 +22,19 @@ export default function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-14"
+          className="text-center mb-10 sm:mb-14"
         >
           <span className="inline-block text-xs font-semibold tracking-[3px] uppercase text-[#9CA3AF] mb-4">
             Client Stories
           </span>
-          <h2 className="font-heading text-4xl sm:text-5xl text-[#111827] mb-4">What Our Clients Say</h2>
+          <h2 className="font-heading text-3xl sm:text-5xl text-[#111827] mb-4">What Our Clients Say</h2>
           <p className="text-[#6B7280] text-sm sm:text-base max-w-xl mx-auto">
             Real stories from real people — moments captured, memories preserved forever.
           </p>
         </motion.div>
 
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {approvedReviews.map((review, i) => (
             <motion.div
               key={review.id}
@@ -37,10 +42,17 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="bg-white rounded-2xl border border-[#E5E7EB] p-7 hover:shadow-lg hover:border-[#D1D5DB] transition-all duration-300 flex flex-col"
+              className="rounded-2xl p-5 sm:p-7 hover:shadow-xl transition-all duration-300 flex flex-col"
+              style={{
+                background: 'rgba(255,255,255,0.75)',
+                backdropFilter: 'blur(18px) saturate(160%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+                border: '1px solid rgba(255,255,255,0.65)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.85)',
+              }}
             >
               {/* Quote icon */}
-              <Quote size={28} className="text-[#E5E7EB] mb-4 flex-shrink-0" />
+              <Quote size={26} className="text-[#E5E7EB] mb-4 flex-shrink-0" />
 
               {/* Comment */}
               <p className="text-[#374151] text-sm leading-relaxed flex-1 mb-5 italic">

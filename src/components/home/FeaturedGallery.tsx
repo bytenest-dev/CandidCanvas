@@ -89,11 +89,19 @@ export default function FeaturedGallery() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.5 }}
-          className="text-center mt-12"
+          className="text-center mt-10 sm:mt-12"
         >
           <Link
             to="/gallery"
-            className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-[#111827] text-[#111827] text-sm font-medium tracking-widest uppercase hover:bg-[#111827] hover:text-white transition-all duration-300 rounded-xl"
+            className="inline-flex items-center gap-2 px-7 sm:px-8 py-3 sm:py-3.5 text-[#111827] text-sm font-medium tracking-widest uppercase transition-all duration-300 rounded-xl hover:shadow-lg"
+            style={{
+              border: '2px solid #111827',
+              background: 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#111827'; (e.currentTarget as HTMLAnchorElement).style.color = 'white'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.7)'; (e.currentTarget as HTMLAnchorElement).style.color = '#111827'; }}
           >
             View Full Gallery
           </Link>

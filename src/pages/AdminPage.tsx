@@ -104,7 +104,7 @@ function AdminSidebar({
   orders, messages, reviews, user, onLogout,
 }: AdminSidebarProps) {
   return (
-    <aside className="flex flex-col w-64 bg-gradient-to-b from-[#0f172a] to-[#1e293b] h-full overflow-hidden">
+    <aside className="flex flex-col w-64 frosted-sidebar h-full overflow-hidden">
       <div className="p-5 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
@@ -127,11 +127,7 @@ function AdminSidebar({
           <button
             key={id}
             onClick={() => { setActiveTab(id); setSidebarOpen(false); }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-              activeTab === id
-                ? 'bg-gradient-to-r from-white/20 to-white/10 text-white font-medium shadow-sm'
-                : 'text-white/50 hover:bg-white/10 hover:text-white'
-            }`}
+            className={`sidebar-item w-full text-left ${activeTab === id ? 'active' : ''}`}
           >
             <Icon size={16} />
             {label}
@@ -1246,7 +1242,6 @@ export default function AdminPage() {
 
       <div className="flex h-screen bg-[#F3F4F6] overflow-hidden">
 
-        {/* Desktop Sidebar */}
         <div className="hidden lg:flex flex-col w-64 flex-shrink-0">
           <AdminSidebar
             activeTab={activeTab}
@@ -1263,7 +1258,7 @@ export default function AdminPage() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
           {/* Top Bar */}
-          <header className="flex-shrink-0 bg-white border-b border-[#E5E7EB] px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 shadow-sm">
+          <header className="flex-shrink-0 page-header-glass border-b border-white/60 px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1.5 text-[#374151] hover:bg-[#F8F9FA] rounded-lg flex-shrink-0">
                 <Menu size={20} />
@@ -1308,20 +1303,21 @@ export default function AdminPage() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-36 lg:pb-6 bg-[#F8F9FA]">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-36 lg:pb-6 admin-bg">
 
             {/* ── OVERVIEW ── */}
             {activeTab === 'overview' && (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <div className="bg-gradient-to-r from-[#111827] to-[#1e293b] rounded-2xl p-5 mb-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-white/60 text-xs font-medium tracking-wider uppercase mb-1">Welcome back</p>
+                <div className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] rounded-2xl p-5 mb-6 flex items-center justify-between overflow-hidden">
+                  <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'radial-gradient(circle at 20% 50%, #6366f1 0%, transparent 50%), radial-gradient(circle at 80% 20%, #10b981 0%, transparent 40%)'}} />
+                  <div className="relative z-10">
+                    <p className="text-white/50 text-xs font-medium tracking-widest uppercase mb-1">Welcome back</p>
                     <h2 className="font-heading text-white text-xl">{user?.displayName || 'Admin'}</h2>
-                    <p className="text-white/40 text-xs mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="text-white/35 text-xs mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                   </div>
-                  <div className="hidden sm:flex flex-col items-end gap-1">
-                    <span className="text-xs text-white/40">Candid Canvas BD</span>
-                    <span className="text-xs text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>All Systems Live</span>
+                  <div className="relative z-10 hidden sm:flex flex-col items-end gap-1">
+                    <span className="text-xs text-white/35">Candid Canvas BD</span>
+                    <span className="text-xs text-emerald-400 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>All Systems Live</span>
                   </div>
                 </div>
 
@@ -1339,7 +1335,7 @@ export default function AdminPage() {
                     return (
                       <div
                         key={s.label}
-                        className={`bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-lg transition-all duration-200 ${s.onClick ? 'cursor-pointer active:scale-95' : ''}`}
+                        className={`admin-stat ${s.onClick ? 'cursor-pointer active:scale-95' : ''}`}
                         onClick={s.onClick}
                       >
                         <div className={`w-9 h-9 rounded-lg ${s.color} flex items-center justify-center mb-3`}>
@@ -1358,7 +1354,7 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
 
                   {/* Booking Trend chart */}
-                  <div className="lg:col-span-2 bg-white rounded-xl border border-[#E5E7EB] p-5 border-t-2 border-t-[#111827]">
+                  <div className="lg:col-span-2 admin-card p-5 border-t-2 border-t-[#111827]">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h2 className="font-semibold text-[#111827] text-sm">Booking Trend</h2>
@@ -1386,7 +1382,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* Order Status Pie Chart */}
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 border-t-2 border-t-purple-400">
+                  <div className="admin-card p-5 border-t-2 border-t-purple-400">
                     <h2 className="font-semibold text-[#111827] text-sm mb-1">Order Status</h2>
                     <p className="text-xs text-[#9CA3AF] mb-3">Distribution by status</p>
                     {orders.length === 0 ? (
@@ -1421,7 +1417,7 @@ export default function AdminPage() {
 
                 {/* Visitor Graph — last 14 days */}
                 {/* Website Visitors - Real-time with monthly comparison */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5 border-t-2 border-t-blue-400">
+                <div className="admin-card p-5 mb-5 border-t-2 border-t-blue-400">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                       <h2 className="font-semibold text-[#111827] text-sm">Website Visitors</h2>
@@ -1476,7 +1472,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Order status breakdown bar chart */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-6">
+                <div className="admin-card p-5 mb-6">
                   <h2 className="font-semibold text-[#111827] text-sm mb-4">Order Status Breakdown</h2>
                   <ResponsiveContainer width="100%" height={120}>
                     <BarChart data={[
@@ -1505,7 +1501,7 @@ export default function AdminPage() {
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
 
                 {/* Email Quota — top of orders */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 mb-5 flex items-center justify-between gap-4">
+                <div className="admin-card p-4 mb-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${emailsSent >= 180 ? "bg-red-50" : emailsSent >= 140 ? "bg-amber-50" : "bg-green-50"}`}>
                       <Mail size={16} className={emailsSent >= 180 ? "text-red-500" : emailsSent >= 140 ? "text-amber-500" : "text-green-500"} />
@@ -1543,11 +1539,7 @@ export default function AdminPage() {
                   ].map(tab => (
                     <button key={tab.key}
                       onClick={() => setOrderTab(tab.key as 'all' | OrderStatus | 'cancelled')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                        orderTab === tab.key
-                          ? 'bg-[#111827] text-white border-[#111827]'
-                          : 'bg-white text-[#374151] border-[#E5E7EB] hover:border-[#374151]'
-                      }`}>
+                      className={`status-tab ${orderTab === tab.key ? 'active' : ''}`}>
                       {tab.label}
                       {tab.count > 0 && (
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
@@ -1564,7 +1556,7 @@ export default function AdminPage() {
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
                     <input type="text" placeholder="Search by name, ID or package..."
                       value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#111827] bg-white" />
+                      className="input-glass w-full pl-9 pr-4 py-2.5 text-sm" />
                   </div>
                   {/* Calendar / List toggle */}
                   <button
@@ -1611,7 +1603,7 @@ export default function AdminPage() {
                   const monthName = calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
                   return (
-                    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mb-5">
+                    <div className="admin-card overflow-hidden mb-5">
                       {/* Header */}
                       <div className="flex items-center justify-between px-5 py-4 bg-[#F8F9FA] border-b border-[#E5E7EB]">
                         <button onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
@@ -1677,7 +1669,7 @@ export default function AdminPage() {
 
                 {/* Table */}
                 {ordersLoading ? (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-12 text-center">
+                  <div className="admin-card p-12 text-center">
                     <div className="w-10 h-10 border-4 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-sm text-[#9CA3AF]">Loading orders...</p>
                   </div>
@@ -1686,12 +1678,12 @@ export default function AdminPage() {
                     {/* ── MOBILE: Card layout (< md) ── */}
                     <div className="md:hidden space-y-3">
                       {displayedOrders.length === 0 ? (
-                        <div className="bg-white rounded-xl border border-[#E5E7EB] p-10 text-center">
+                        <div className="admin-card p-10 text-center">
                           <ShoppingBag size={28} className="mx-auto mb-3 text-[#D1D5DB]" />
                           <p className="text-sm text-[#9CA3AF]">No orders found.</p>
                         </div>
                       ) : displayedOrders.map(o => (
-                        <div key={o.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm">
+                        <div key={o.id} className="admin-card p-4 shadow-sm">
                           {/* Top row */}
                           <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="min-w-0">
@@ -1754,17 +1746,17 @@ export default function AdminPage() {
                     </div>
 
                     {/* ── DESKTOP: Table layout (>= md) ── */}
-                    <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+                    <div className="hidden md:block admin-card overflow-hidden">
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                          <thead><tr className="bg-white/60 border-b border-[#E5E7EB]/60">
                             {['Order ID', 'Client', 'Package', 'Event Date', 'Payment', 'Status', 'Actions'].map(h => (
                               <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider whitespace-nowrap">{h}</th>
                             ))}
                           </tr></thead>
                           <tbody className="divide-y divide-[#F3F4F6]">
                             {displayedOrders.map(o => (
-                              <tr key={o.id} className="hover:bg-[#F8F9FA] transition-colors">
+                              <tr key={o.id} className="admin-row">
                                 <td className="px-4 py-4 font-mono text-xs text-[#374151] whitespace-nowrap">{o.id}</td>
                                 <td className="px-4 py-4">
                                   <p className="font-medium text-[#111827]">{o.client}</p>
@@ -1865,7 +1857,7 @@ export default function AdminPage() {
                   const logs = JSON.parse(sessionStorage.getItem('email_logs') || '[]');
                   if (!logs.length) return null;
                   return (
-                    <div className="mt-5 bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+                    <div className="mt-5 admin-card overflow-hidden">
                       <div className="px-5 py-3 border-b border-[#E5E7EB] flex items-center gap-2">
                         <Mail size={14} className="text-[#374151]" />
                         <h3 className="font-semibold text-[#111827] text-sm">Email Log</h3>
@@ -1913,12 +1905,12 @@ export default function AdminPage() {
                 </div>
 
                 {messagesLoading ? (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-12 text-center">
+                  <div className="admin-card p-12 text-center">
                     <div className="w-10 h-10 border-4 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-3"></div>
                     <p className="text-sm text-[#9CA3AF]">Loading messages...</p>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-12 text-center">
+                  <div className="admin-card p-12 text-center">
                     <MessageSquare size={40} className="text-[#D1D5DB] mx-auto mb-4" />
                     <p className="text-[#6B7280] font-medium">No messages yet</p>
                     <p className="text-xs text-[#9CA3AF] mt-2">Messages from the contact form will appear here</p>
@@ -2004,7 +1996,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* ── Add / Edit Form ── */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-6 shadow-sm">
+                <div className="admin-card p-5 mb-6 shadow-sm">
                   <h3 className="font-semibold text-[#111827] text-sm mb-4">
                     {editSlide ? '✏️ Edit Slide' : '+ Add Custom Slide'}
                   </h3>
@@ -2099,7 +2091,7 @@ export default function AdminPage() {
 
                 {/* ── Gallery quick-add pool ── */}
                 {gallery.length > 0 && slider.length < 10 && !editSlide && (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-6 shadow-sm">
+                  <div className="admin-card p-5 mb-6 shadow-sm">
                     <h3 className="font-semibold text-[#111827] text-sm mb-1">Pick from Gallery</h3>
                     <p className="text-xs text-[#9CA3AF] mb-4">Click an image to add it directly as a slide</p>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
@@ -2147,7 +2139,7 @@ export default function AdminPage() {
                   <div className="space-y-3">
                     <h3 className="font-semibold text-[#111827] text-sm">Custom Slides ({slider.length})</h3>
                     {slider.map((slide, idx) => (
-                      <div key={slide.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 flex items-center gap-4 shadow-sm">
+                      <div key={slide.id} className="admin-card p-4 flex items-center gap-4 shadow-sm">
                         {/* Thumbnail */}
                         <div className="w-28 h-16 rounded-lg overflow-hidden bg-[#F8F9FA] flex-shrink-0">
                           <img src={slide.url} alt={slide.title} className="w-full h-full object-cover" />
@@ -2201,7 +2193,7 @@ export default function AdminPage() {
 
                 {/* Empty state for custom slides */}
                 {slider.length === 0 && gallery.length === 0 && (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-10 text-center">
+                  <div className="admin-card p-10 text-center">
                     <Image size={36} className="text-[#D1D5DB] mx-auto mb-3" />
                     <p className="text-[#374151] font-medium text-sm">No gallery images yet</p>
                     <p className="text-xs text-[#9CA3AF] mt-1">Upload images to the Gallery tab first — they will automatically appear in the homepage slider</p>
@@ -2238,7 +2230,7 @@ export default function AdminPage() {
                 </div>
                 {/* Category manager panel */}
                 {showCatManager && (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 mb-4">
+                  <div className="admin-card p-4 mb-4">
                     <p className="text-xs font-semibold text-[#374151] mb-3 uppercase tracking-wide">Gallery Categories</p>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {galleryCategories.map(cat => (
@@ -2294,7 +2286,7 @@ export default function AdminPage() {
 
                 {/* Upload Progress */}
                 {isUploading && uploadProgress.length > 0 && (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 mb-5">
+                  <div className="admin-card p-4 mb-5">
                     <p className="text-xs font-semibold text-[#374151] mb-3 flex items-center gap-2">
                       <CloudUpload size={14} className="text-blue-500" />
                       Uploading to Cloudinary…
@@ -2378,7 +2370,7 @@ export default function AdminPage() {
                     {/* Mobile: Card layout */}
                     <div className="md:hidden space-y-3">
                       {packages.map(pkg => (
-                        <div key={pkg.id} className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm">
+                        <div key={pkg.id} className="admin-card p-4 shadow-sm">
                           <div className="flex items-start gap-3">
                             {pkg.imageUrl ? (
                               <img src={pkg.imageUrl} alt="" className="w-14 h-14 rounded-xl object-cover border border-[#E5E7EB] flex-shrink-0" />
@@ -2432,10 +2424,10 @@ export default function AdminPage() {
                     </div>
 
                     {/* Desktop: Table layout */}
-                    <div className="hidden md:block bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+                    <div className="hidden md:block admin-card overflow-hidden">
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead><tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                          <thead><tr className="bg-white/60 border-b border-[#E5E7EB]/60">
                             {['Image', 'Name', 'Category', 'Price', 'Status', 'Actions'].map(h => (
                               <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">{h}</th>
                             ))}
@@ -2538,7 +2530,7 @@ export default function AdminPage() {
                     </div>
                   ))}
                   {reviews.length === 0 && (
-                    <div className="text-center py-16 bg-white rounded-xl border border-[#E5E7EB]">
+                    <div className="text-center py-16 admin-card">
                       <Star size={36} className="text-[#D1D5DB] mx-auto mb-3" />
                       <p className="text-[#374151] font-medium mb-1">No reviews yet</p>
                       <p className="text-xs text-[#9CA3AF] mb-4">Add your first client review to display on the home page</p>
@@ -2563,7 +2555,7 @@ export default function AdminPage() {
                 </div>
 
                 {showPromoForm && (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5 shadow-sm">
+                  <div className="admin-card p-5 mb-5">
                     <h3 className="font-semibold text-[#111827] text-sm mb-4">Create Promo Code</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -2627,12 +2619,12 @@ export default function AdminPage() {
                 )}
 
                 {promosLoading ? (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-12 text-center">
+                  <div className="admin-card p-12 text-center">
                     <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-sm text-[#9CA3AF]">Loading promo codes...</p>
                   </div>
                 ) : promos.length === 0 ? (
-                  <div className="text-center py-16 bg-white rounded-xl border border-[#E5E7EB]">
+                  <div className="text-center py-16 admin-card">
                     <Tag size={36} className="text-[#D1D5DB] mx-auto mb-3" />
                     <p className="text-[#374151] font-medium mb-1">No promo codes yet</p>
                     <p className="text-xs text-[#9CA3AF] mb-4">Create promo codes like EID25, SUMMER10, WELCOME500</p>
@@ -2747,7 +2739,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Backup this specific month */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 mb-5 shadow-sm">
+                <div className="admin-card p-5 mb-5">
                   <h3 className="text-sm font-semibold text-[#111827] mb-3">Generate Backup for Specific Month</h3>
                   <div className="flex gap-3 items-end">
                     <div className="flex-1">
@@ -2773,7 +2765,7 @@ export default function AdminPage() {
 
                 {/* Saved backups list */}
                 {backupsLoading ? (
-                  <div className="bg-white rounded-xl border border-[#E5E7EB] p-10 text-center">
+                  <div className="admin-card p-10 text-center">
                     <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-sm text-[#9CA3AF]">Loading backups...</p>
                   </div>
@@ -2786,7 +2778,7 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-3">
                     {backups.map(backup => (
-                      <div key={backup.month} className="bg-white rounded-xl border border-[#E5E7EB] p-4 hover:shadow-md transition-all">
+                      <div key={backup.month} className="admin-card p-4 hover:shadow-md transition-all">
                         {/* Top row — icon + info */}
                         <div className="flex items-start gap-3 mb-3">
                           <div className="w-10 h-10 bg-[#F8F9FA] rounded-xl border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
@@ -2840,7 +2832,7 @@ export default function AdminPage() {
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-2xl space-y-5">
 
                 {/* Hero */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+                <div className="admin-card p-6">
                   <h3 className="font-semibold text-[#111827] mb-4">Hero Section</h3>
                   <div className="space-y-3">
                     {(['heroTitle', 'heroSubtitle'] as const).map(key => (
@@ -2861,7 +2853,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Contact */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+                <div className="admin-card p-6">
                   <h3 className="font-semibold text-[#111827] mb-4">Contact Info</h3>
                   <div className="space-y-3">
                     {([
@@ -2999,7 +2991,7 @@ export default function AdminPage() {
                   </button>
 
                 {/* Change Password */}
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+                <div className="admin-card p-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Settings size={16} className="text-[#374151]" />
                     <h3 className="font-semibold text-[#111827]">Change Password</h3>
@@ -3049,7 +3041,7 @@ export default function AdminPage() {
       </div>
 
       {/* Mobile Bottom Nav Bar - 2 rows of 5, all items visible */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#0f172a] border-t border-white/10 shadow-2xl">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] mobile-nav-bar">
         <div className="grid grid-cols-5 px-1 pt-1 pb-1">
           {ADMIN_NAV.map(({ id, label, icon: Icon }) => {
             const pendingOrders = id === 'orders' ? orders.filter(o => ['submitted','under_review','cancel_requested'].includes(o.status)).length : 0;
@@ -3588,7 +3580,7 @@ export default function AdminPage() {
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+                    <tr className="bg-white/60 border-b border-[#E5E7EB]/60">
                       <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">User</th>
                       <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">Provider</th>
                       <th className="text-left px-5 py-3 text-xs font-medium text-[#9CA3AF] uppercase tracking-wider">Status</th>
@@ -3856,3 +3848,4 @@ export default function AdminPage() {
     </>
   );
 }
+

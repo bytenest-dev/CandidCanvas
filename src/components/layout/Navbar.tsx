@@ -345,7 +345,13 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="lg:hidden bg-white border-t border-[#E5E7EB] overflow-hidden shadow-lg"
+            className="lg:hidden overflow-hidden shadow-2xl"
+            style={{
+              background: 'rgba(255,255,255,0.92)',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+              borderTop: '1px solid rgba(229,231,235,0.5)',
+            }}
           >
             <div className="px-4 py-5 flex flex-col gap-1">
               {/* User info at top of mobile menu */}

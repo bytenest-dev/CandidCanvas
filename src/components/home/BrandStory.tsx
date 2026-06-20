@@ -32,14 +32,21 @@ export default function BrandStory() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             </div>
-            {/* Floating quote card */}
+            {/* Floating quote card — glass */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.5, duration: 0.8 }}
-              className="absolute -bottom-4 right-4 sm:-bottom-8 sm:-right-8 bg-white p-6 rounded shadow-xl max-w-[16rem] sm:max-w-xs"
+              className="absolute -bottom-4 right-2 sm:-bottom-8 sm:-right-8 p-5 sm:p-6 rounded-2xl max-w-[14rem] sm:max-w-xs"
+              style={{
+                background: 'rgba(255,255,255,0.88)',
+                backdropFilter: 'blur(20px) saturate(160%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+                border: '1px solid rgba(255,255,255,0.7)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,1)',
+              }}
             >
-              <p className="font-heading text-lg italic text-[#111827] leading-relaxed">
+              <p className="font-heading text-base sm:text-lg italic text-[#111827] leading-relaxed">
                 "Photography is not about taking pictures."
               </p>
               <p className="text-xs text-[#6B7280] mt-2 tracking-wide">— Candid Canvas BD</p>
@@ -77,11 +84,12 @@ export default function BrandStory() {
               </p>
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-10 flex flex-wrap gap-3 sm:gap-4">
               {['PHOTO', 'CINE', 'REELS', 'EVENTS'].map((service) => (
                 <span
                   key={service}
-                  className="px-4 py-2 border border-white/20 text-white/50 text-xs tracking-widest uppercase hover:border-white/50 hover:text-white/80 transition-all cursor-default"
+                  className="px-3 sm:px-4 py-2 text-white/50 text-xs tracking-widest uppercase cursor-default transition-all hover:text-white/80 rounded-lg"
+                  style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
                 >
                   {service}
                 </span>

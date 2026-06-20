@@ -39,20 +39,31 @@ export default function Stats() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-20 bg-white border-t border-b border-[#E5E7EB]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <section ref={ref} className="py-16 sm:py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #111827 100%)' }}>
+      {/* Decorative glow orbs */}
+      <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full pointer-events-none opacity-20" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.5) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      <div className="absolute bottom-0 right-1/4 w-56 h-56 rounded-full pointer-events-none opacity-15" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {STATS.map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: i * 0.1, duration: 0.7 }}
-              className="text-center py-8 px-4 bg-[#111827] rounded relative overflow-hidden group"
+              className="text-center py-6 sm:py-8 px-3 sm:px-4 rounded-2xl relative overflow-hidden group transition-all duration-300 hover:scale-[1.03]"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(16px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%)' }} />
               <Counter target={stat.value} suffix={stat.suffix} />
-              <p className="text-white/50 text-xs tracking-widest uppercase mt-3 font-body">{stat.label}</p>
+              <p className="text-white/50 text-[10px] sm:text-xs tracking-widest uppercase mt-3 font-body">{stat.label}</p>
             </motion.div>
           ))}
         </div>

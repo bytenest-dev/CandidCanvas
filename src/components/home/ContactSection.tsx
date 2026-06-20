@@ -14,9 +14,13 @@ export default function ContactSection() {
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-24 lg:py-32 bg-[#F8F9FA]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+    <section ref={ref} className="py-16 sm:py-24 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #F8F9FA 0%, #EEF2FF 50%, #F0FDF4 100%)' }}>
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 30%, rgba(16,185,129,0.05) 0%, transparent 50%)',
+      }} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           {/* Left */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -29,14 +33,15 @@ export default function ContactSection() {
               <br />
               Something Beautiful
             </h2>
-            <p className="text-[#6B7280] text-sm leading-relaxed mb-10">
+            <p className="text-[#6B7280] text-sm leading-relaxed mb-8 sm:mb-10">
               Whether you're planning a wedding, a corporate event, or simply want to preserve a moment that matters — we'd love to hear your story.
             </p>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               <a href={`tel:${SOCIAL_LINKS.phone}`} className="flex items-center gap-4 group">
-                <div className="w-12 h-12 bg-white border border-[#E5E7EB] rounded flex items-center justify-center group-hover:border-[#111827] transition-colors">
-                  <Phone size={18} className="text-[#374151]" />
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:shadow-md flex-shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(229,231,235,0.7)' }}>
+                  <Phone size={17} className="text-[#374151]" />
                 </div>
                 <div>
                   <p className="text-xs text-[#6B7280] mb-0.5">Phone / WhatsApp</p>
@@ -44,17 +49,19 @@ export default function ContactSection() {
                 </div>
               </a>
               <a href={`mailto:${SOCIAL_LINKS.email}`} className="flex items-center gap-4 group">
-                <div className="w-12 h-12 bg-white border border-[#E5E7EB] rounded flex items-center justify-center group-hover:border-[#111827] transition-colors">
-                  <Mail size={18} className="text-[#374151]" />
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:shadow-md flex-shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(229,231,235,0.7)' }}>
+                  <Mail size={17} className="text-[#374151]" />
                 </div>
                 <div>
                   <p className="text-xs text-[#6B7280] mb-0.5">Email</p>
-                  <p className="text-sm font-medium text-[#111827]">{SOCIAL_LINKS.email}</p>
+                  <p className="text-sm font-medium text-[#111827] break-all">{SOCIAL_LINKS.email}</p>
                 </div>
               </a>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white border border-[#E5E7EB] rounded flex items-center justify-center">
-                  <MapPin size={18} className="text-[#374151]" />
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(229,231,235,0.7)' }}>
+                  <MapPin size={17} className="text-[#374151]" />
                 </div>
                 <div>
                   <p className="text-xs text-[#6B7280] mb-0.5">Location</p>
@@ -67,7 +74,7 @@ export default function ContactSection() {
               href={SOCIAL_LINKS.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2.5 px-6 py-3 bg-[#25D366] text-white text-sm font-medium rounded hover:bg-[#1EBE5D] transition-colors"
+              className="mt-8 inline-flex items-center gap-2.5 px-5 sm:px-6 py-3 bg-[#25D366] text-white text-sm font-medium rounded-xl hover:bg-[#1EBE5D] transition-colors shadow-md hover:shadow-lg"
             >
               <WhatsAppIcon />
               Chat on WhatsApp
@@ -81,7 +88,8 @@ export default function ContactSection() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="rounded overflow-hidden border border-[#E5E7EB] aspect-square">
+            <div className="rounded-2xl overflow-hidden aspect-[4/3] lg:aspect-square shadow-xl"
+              style={{ border: '1px solid rgba(255,255,255,0.6)' }}>
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233667.8223950959!2d90.27923821870657!3d23.780573297952475!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka%2C%20Bangladesh!5e0!3m2!1sen!2s!4v1234567890"
                 width="100%"
