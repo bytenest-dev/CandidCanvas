@@ -1525,8 +1525,8 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Status tabs */}
-                <div className="flex items-center gap-2 mb-5 flex-wrap">
+                {/* Status tabs — horizontally scrollable on mobile */}
+                <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   {[
                     { key: 'all', label: 'All', count: orders.length },
                     { key: 'submitted', label: '📥 Submitted', count: orders.filter(o => o.status === 'submitted').length },
@@ -1539,7 +1539,7 @@ export default function AdminPage() {
                   ].map(tab => (
                     <button key={tab.key}
                       onClick={() => setOrderTab(tab.key as 'all' | OrderStatus | 'cancelled')}
-                      className={`status-tab ${orderTab === tab.key ? 'active' : ''}`}>
+                      className={`status-tab flex-shrink-0 ${orderTab === tab.key ? 'active' : ''}`}>
                       {tab.label}
                       {tab.count > 0 && (
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
@@ -1550,47 +1550,49 @@ export default function AdminPage() {
                   ))}
                 </div>
 
-                {/* Search + Export */}
-                <div className="flex items-center gap-3 mb-5">
+                {/* Search + Actions — stacked on mobile, row on desktop */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-5">
                   <div className="relative flex-1">
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
                     <input type="text" placeholder="Search by name, ID or package..."
                       value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
                       className="input-glass w-full pl-9 pr-4 py-2.5 text-sm" />
                   </div>
+                  <div className="flex items-center gap-2 flex-wrap">
                   {/* Calendar / List toggle */}
                   <button
                     onClick={() => setCalendarView(v => !v)}
                     title={calendarView ? 'Switch to list view' : 'Switch to calendar view'}
-                    className={`flex items-center gap-1.5 px-3 py-2.5 border rounded-lg text-sm transition-colors ${calendarView ? 'bg-[#111827] text-white border-[#111827]' : 'border-[#E5E7EB] text-[#374151] hover:border-[#374151] hover:bg-[#F8F9FA] bg-white'}`}
+                    className={`flex items-center gap-1.5 px-3 py-2.5 border rounded-lg text-sm transition-colors flex-1 sm:flex-none justify-center ${calendarView ? 'bg-[#111827] text-white border-[#111827]' : 'border-[#E5E7EB] text-[#374151] hover:border-[#374151] hover:bg-[#F8F9FA] bg-white'}`}
                   >
                     <Calendar size={14} />
-                    <span className="hidden sm:inline">{calendarView ? 'List' : 'Calendar'}</span>
+                    <span className="sm:inline">{calendarView ? 'List' : 'Calendar'}</span>
                   </button>
                   <button
                     onClick={() => { loadOrders(); toast.success('Orders refreshed!'); }}
                     title="Refresh orders"
-                    className="flex items-center gap-1.5 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm text-[#374151] hover:border-[#374151] hover:bg-[#F8F9FA] transition-colors bg-white"
+                    className="flex items-center gap-1.5 px-3 py-2.5 border border-[#E5E7EB] rounded-lg text-sm text-[#374151] hover:border-[#374151] hover:bg-[#F8F9FA] transition-colors bg-white flex-1 sm:flex-none justify-center"
                   >
                     <RefreshCw size={14} />
-                    <span className="hidden sm:inline">Refresh</span>
+                    <span className="sm:inline">Refresh</span>
                   </button>
                   <button
                     onClick={syncCalendar}
                     title="Sync availability calendar with current bookings"
-                    className="flex items-center gap-1.5 px-3 py-2.5 border border-blue-200 rounded-lg text-sm text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-colors bg-white"
+                    className="flex items-center gap-1.5 px-3 py-2.5 border border-blue-200 rounded-lg text-sm text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-colors bg-white flex-1 sm:flex-none justify-center"
                   >
                     <Calendar size={14} />
-                    <span className="hidden sm:inline">Sync Calendar</span>
+                    <span className="sm:inline">Sync</span>
                   </button>
                   <button
                     onClick={exportOrdersToExcel}
                     title="Export to Excel/CSV"
-                    className="flex items-center gap-1.5 px-3 py-2.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors flex-1 sm:flex-none justify-center"
                   >
                     <FileSpreadsheet size={14} />
-                    <span className="hidden sm:inline">Export</span>
+                    <span className="sm:inline">Export</span>
                   </button>
+                  </div>
                 </div>
 
                 {/* ── CALENDAR VIEW ── */}
@@ -1696,49 +1698,44 @@ export default function AdminPage() {
                             </span>
                           </div>
                           {/* Details row */}
-                          <div className="flex items-center gap-4 text-xs text-[#6B7280] mb-3 flex-wrap">
+                          <div className="flex items-center gap-3 text-xs text-[#6B7280] mb-4 flex-wrap">
                             <span className="capitalize">📦 {o.package}</span>
                             <span className="capitalize">🎭 {o.event}</span>
                             <span>📅 {formatDate(o.date)}</span>
                           </div>
-                          {/* Action buttons */}
-                          <div className="grid grid-cols-3 gap-1.5">
+                          {/* Action buttons — 2 cols, 3 rows, clean uniform grid */}
+                          <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => updateStatusWithEmail(o, 'under_review')}
-                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-yellow-50 hover:text-yellow-700'}`}>
+                              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${o.status === 'under_review' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' : 'bg-white text-[#6B7280] border border-[#E5E7EB] hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-200'}`}>
                               🔍 Review
                             </button>
                             <button onClick={() => updateStatusWithEmail(o, 'contacted')}
-                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-purple-50 hover:text-purple-700'}`}>
+                              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${o.status === 'contacted' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-white text-[#6B7280] border border-[#E5E7EB] hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200'}`}>
                               📞 Contact
                             </button>
                             <button onClick={() => updateStatusWithEmail(o, 'approved')}
-                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-green-50 hover:text-green-700'}`}>
+                              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${o.status === 'approved' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-white text-[#6B7280] border border-[#E5E7EB] hover:bg-green-50 hover:text-green-700 hover:border-green-200'}`}>
                               ✅ Approve
                             </button>
                             <button onClick={() => updateStatusWithEmail(o, 'completed')}
-                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-blue-50 hover:text-blue-700'}`}>
+                              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${o.status === 'completed' ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white text-[#6B7280] border border-[#E5E7EB] hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'}`}>
                               ⭐ Complete
                             </button>
                             <button onClick={() => updateStatusWithEmail(o, 'rejected')}
-                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600 border border-red-300' : 'bg-[#F8F9FA] text-[#6B7280] border border-[#E5E7EB] hover:bg-red-50 hover:text-red-600'}`}>
+                              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${o.status === 'rejected' ? 'bg-red-100 text-red-600 border border-red-300' : 'bg-white text-[#6B7280] border border-[#E5E7EB] hover:bg-red-50 hover:text-red-600 hover:border-red-200'}`}>
                               ❌ Reject
                             </button>
                             <button onClick={() => setViewOrder(o)}
-                              className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-[#111827] text-white border border-[#111827] hover:bg-[#374151] transition-all">
+                              className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold bg-[#111827] text-white border border-[#111827] hover:bg-[#374151] transition-all">
                               📋 Details
                             </button>
                             <button onClick={() => { setPaymentModal(o); setPaymentForm({ status: o.paymentStatus || 'not_paid', amount: String(o.paymentAmount || ''), note: o.paymentNote || '' }); }}
-                              className={`flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold border transition-all ${
+                              className={`col-span-2 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
                                 o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' :
                                 o.paymentStatus === 'partial' ? 'bg-amber-100 text-amber-700 border-amber-300' :
-                                'bg-[#F8F9FA] text-[#6B7280] border-[#E5E7EB] hover:bg-emerald-50 hover:text-emerald-700'
+                                'bg-white text-[#6B7280] border-[#E5E7EB] hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
                               }`}>
-                              💰 {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Pay'}
-                            </button>
-                            <button onClick={() => sendCancelSMS(o)}
-                              title="Send cancellation via WhatsApp"
-                              className="flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-all">
-                              📱 Cancel SMS
+                              💰 {o.paymentStatus === 'paid' ? 'Paid' : o.paymentStatus === 'partial' ? 'Partial' : 'Mark Payment'}
                             </button>
                           </div>
                         </div>

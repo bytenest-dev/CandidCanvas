@@ -694,11 +694,14 @@ input, select, textarea {
 .img-zoom:hover img { transform: scale(1.06); }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MASONRY GRID
+   MASONRY GRID — Pure CSS columns (better mobile support)
 ═══════════════════════════════════════════════════════════════════════ */
-.masonry-grid { columns: 3; column-gap: 16px; }
-@media (max-width: 1024px) { .masonry-grid { columns: 2; } }
-@media (max-width: 640px)  { .masonry-grid { columns: 1; } }
+.masonry-grid {
+  columns: 3;
+  column-gap: 16px;
+}
+@media (max-width: 1024px) { .masonry-grid { columns: 2; column-gap: 12px; } }
+@media (max-width: 480px)  { .masonry-grid { columns: 2; column-gap: 10px; } }
 .masonry-item { break-inside: avoid; margin-bottom: 16px; }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2166,5 +2169,18 @@ img {
   .grid > * {
     min-width: 0;
     overflow-wrap: break-word;
+  }
+}
+
+/* Hide scrollbars (status tab strips, category filters) */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Admin bottom nav — correct padding above content */
+@media (max-width: 1023px) {
+  .admin-main-content,
+  main.admin-bg {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
