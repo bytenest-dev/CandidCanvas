@@ -1321,30 +1321,33 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Stats Grid - 6 cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
+                {/* Stats Grid - 6 equal cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
                   {[
-                    { label: 'Total Orders', value: orders.length, color: 'bg-blue-50 text-blue-600', icon: ShoppingBag, onClick: undefined, isCurrency: false },
-                    { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, color: 'bg-yellow-50 text-yellow-600', icon: Eye, onClick: undefined, isCurrency: false },
-                    { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, color: 'bg-green-50 text-green-600', icon: CheckCircle, onClick: undefined, isCurrency: false },
-                    { label: 'Revenue Collected', value: orders.reduce((sum, o) => sum + (o.paymentAmount || 0), 0), color: 'bg-emerald-50 text-emerald-600', icon: DollarSign, onClick: undefined, isCurrency: true },
-                    { label: 'Registered Users', value: totalUsers, color: 'bg-pink-50 text-pink-600', icon: Users, onClick: () => { setShowUsersModal(true); loadUsers(); }, isCurrency: false },
-                    { label: 'Total Visitors', value: totalVisitors, color: 'bg-orange-50 text-orange-600', icon: Globe, onClick: undefined, isCurrency: false },
+                    { label: 'Total Orders', value: orders.length, iconBg: '#EFF6FF', iconColor: '#3B82F6', icon: ShoppingBag, onClick: undefined, isCurrency: false },
+                    { label: 'Pending Review', value: orders.filter(o => ['submitted', 'under_review'].includes(o.status)).length, iconBg: '#FFFBEB', iconColor: '#F59E0B', icon: Eye, onClick: undefined, isCurrency: false },
+                    { label: 'Completed', value: orders.filter(o => o.status === 'completed').length, iconBg: '#F0FDF4', iconColor: '#22C55E', icon: CheckCircle, onClick: undefined, isCurrency: false },
+                    { label: 'Revenue', value: orders.reduce((sum, o) => sum + (o.paymentAmount || 0), 0), iconBg: '#ECFDF5', iconColor: '#10B981', icon: DollarSign, onClick: undefined, isCurrency: true },
+                    { label: 'Users', value: totalUsers, iconBg: '#FDF2F8', iconColor: '#EC4899', icon: Users, onClick: () => { setShowUsersModal(true); loadUsers(); }, isCurrency: false },
+                    { label: 'Visitors', value: totalVisitors, iconBg: '#FFF7ED', iconColor: '#F97316', icon: Globe, onClick: undefined, isCurrency: false },
                   ].map(s => {
                     const Icon = s.icon;
                     return (
                       <div
                         key={s.label}
-                        className={`admin-stat ${s.onClick ? 'cursor-pointer active:scale-95' : ''}`}
                         onClick={s.onClick}
+                        className={`admin-stat-card ${s.onClick ? 'cursor-pointer' : ''}`}
                       >
-                        <div className={`w-9 h-9 rounded-lg ${s.color} flex items-center justify-center mb-3`}>
-                          <Icon size={16} />
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
+                          style={{ background: s.iconBg }}>
+                          <Icon size={15} style={{ color: s.iconColor }} />
                         </div>
-                        <div className="font-heading text-2xl sm:text-3xl text-[#111827] leading-none">
-                          {s.isCurrency ? `৳${s.value.toLocaleString('en-BD')}` : s.value.toLocaleString()}
+                        <div className="font-heading text-xl sm:text-2xl text-[#111827] leading-none truncate">
+                          {s.isCurrency
+                            ? (s.value === 0 ? '৳0' : `৳${(s.value as number).toLocaleString('en-BD')}`)
+                            : (s.value as number).toLocaleString()}
                         </div>
-                        <div className="text-xs text-[#6B7280] mt-1.5 leading-tight">{s.label}</div>
+                        <div className="text-[10px] sm:text-xs text-[#9CA3AF] mt-1.5 leading-tight">{s.label}</div>
                       </div>
                     );
                   })}

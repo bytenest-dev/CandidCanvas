@@ -650,7 +650,7 @@ input, select, textarea {
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 
@@ -662,12 +662,12 @@ input, select, textarea {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   CARD SYSTEM — Glass-enhanced with rounder corners
+   CARD SYSTEM — Unified shape with glass effect
 ═══════════════════════════════════════════════════════════════════════ */
 .card {
   background: var(--color-white);
   border: 1px solid rgba(229, 231, 235, 0.8);
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
 }
 
@@ -678,9 +678,9 @@ input, select, textarea {
 }
 
 .card-hover:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow: 0 16px 48px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
-  border-color: rgba(0,0,0,0.08);
+  border-color: rgba(0,0,0,0.07);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -747,7 +747,7 @@ input, select, textarea {
 
 .package-card:hover {
   border-color: var(--color-black);
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -763,7 +763,7 @@ input, select, textarea {
   background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 2rem;
+  padding: 1.75rem;
   transition: transform var(--duration-base) ease,
               box-shadow var(--duration-base) ease;
 }
@@ -817,7 +817,7 @@ input, select, textarea {
 .input-base {
   width: 100%;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: 12px 16px;
   font-family: var(--font-body);
   font-size: 14px;
@@ -1413,7 +1413,7 @@ html.lenis, html.lenis body { height: auto; }
   /* Modal — full screen on small phones */
   .modal-card {
     max-height: 95vh;
-    border-radius: 16px 16px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -1444,7 +1444,7 @@ html.lenis, html.lenis body { height: auto; }
 .card-premium {
   background: var(--color-white);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   transition: transform 0.4s var(--ease-spring),
               box-shadow 0.4s ease,
@@ -1452,9 +1452,9 @@ html.lenis, html.lenis body { height: auto; }
   overflow: hidden;
 }
 .card-premium:hover {
-  transform: translateY(-6px) scale(1.005);
+  transform: translateY(-5px) scale(1.005);
   box-shadow: var(--shadow-xl);
-  border-color: rgba(0,0,0,0.1);
+  border-color: rgba(0,0,0,0.09);
 }
 
 /* Stat card with colored accent bar on top */
@@ -1490,7 +1490,7 @@ html.lenis, html.lenis body { height: auto; }
 .chart-container {
   background: var(--color-white);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow-xs);
   transition: box-shadow 0.3s ease;
@@ -1721,7 +1721,7 @@ html.lenis, html.lenis body { height: auto; }
 .package-card-enhanced {
   background: var(--color-white);
   border: 1.5px solid var(--color-border);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   transition: transform 0.4s var(--ease-spring),
               box-shadow 0.4s ease,
@@ -1739,8 +1739,8 @@ html.lenis, html.lenis body { height: auto; }
   pointer-events: none;
 }
 .package-card-enhanced:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.12);
+  transform: translateY(-8px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.10);
 }
 .package-card-enhanced:hover::after { opacity: 1; }
 
@@ -1794,11 +1794,11 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Admin card — glass with ultra-thin border */
 .admin-card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-lg);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.8) inset,
     0 4px 20px rgba(0,0,0,0.05),
@@ -1809,12 +1809,43 @@ html.lenis, html.lenis body { height: auto; }
 .admin-card:hover {
   box-shadow:
     0 1px 0 rgba(255,255,255,0.8) inset,
-    0 12px 40px rgba(0,0,0,0.09),
-    0 2px 6px rgba(0,0,0,0.05);
-  transform: translateY(-2px);
+    0 12px 40px rgba(0,0,0,0.08),
+    0 2px 6px rgba(0,0,0,0.04);
 }
 
-/* Stat card gradient top border */
+/* ── Admin stat card — uniform shape, equal height ── */
+.admin-stat-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  border: 1px solid rgba(229, 231, 235, 0.7);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 110px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1)),
+              box-shadow 0.25s ease;
+}
+.admin-stat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, transparent 55%);
+  pointer-events: none;
+}
+.admin-stat-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.admin-stat-card.cursor-pointer:active {
+  transform: scale(0.97);
+}
+
+/* Keep old admin-stat as alias for any legacy usage */
 .admin-stat {
   background: rgba(255,255,255,0.9);
   border-radius: 20px;
@@ -1823,6 +1854,11 @@ html.lenis, html.lenis body { height: auto; }
   position: relative;
   overflow: hidden;
   transition: transform 0.3s var(--ease-spring), box-shadow 0.3s ease;
+  padding: 1rem;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 .admin-stat::after {
   content: '';
@@ -1919,24 +1955,29 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ENHANCED BORDER RADIUS — Softer, rounder
+   ENHANCED BORDER RADIUS — Softer, rounder — SINGLE SOURCE OF TRUTH
 ═══════════════════════════════════════════════════════════════════════ */
 :root {
-  --radius-xs:   6px;
-  --radius-sm:   10px;
-  --radius-md:   14px;
-  --radius-lg:   20px;
-  --radius-xl:   28px;
-  --radius-2xl:  36px;
-  --radius-full: 9999px;
+  --radius-xs:   6px;    /* micro chips, tiny tags */
+  --radius-sm:   10px;   /* buttons, small inputs */
+  --radius-md:   14px;   /* cards, inputs, modals */
+  --radius-lg:   18px;   /* section cards, gallery items */
+  --radius-xl:   24px;   /* large cards, overlays */
+  --radius-2xl:  32px;   /* hero panels, big CTAs */
+  --radius-full: 9999px; /* pills, avatars */
 }
+
+/* Universal card shape — use this for ALL card-like surfaces */
+.card-shape { border-radius: var(--radius-lg); }
+.card-shape-md { border-radius: var(--radius-md); }
+.card-shape-xl { border-radius: var(--radius-xl); }
 
 /* ═══════════════════════════════════════════════════════════════════════
    GRADIENT BORDERS — Premium card accent
 ═══════════════════════════════════════════════════════════════════════ */
 .gradient-border {
   position: relative;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background: white;
 }
 .gradient-border::before {
@@ -1966,7 +2007,7 @@ html.lenis, html.lenis body { height: auto; }
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   color: rgba(255,255,255,0.45);
