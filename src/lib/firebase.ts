@@ -23,9 +23,10 @@ const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "candid-canvas-bd.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "candid-canvas-bd",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "candid-canvas-bd.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef"
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "candid-canvas-bd.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "484324062684",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:484324062684:web:0a3903141829eac6db0b19",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-P7YZNJ53GJ"
 };
 
 const app = initializeApp(firebaseConfig);
