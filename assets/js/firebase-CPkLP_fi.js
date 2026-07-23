@@ -1,0 +1,2 @@
+import{r as e}from"./rolldown-runtime-Cyuzqnbw.js";import{h as t,l as n,o as r,t as i,u as a}from"./vendor-firebase-CfaEX2Sx.js";var o=e({auth:()=>c,db:()=>l,default:()=>s,googleProvider:()=>u}),s=t({apiKey:`AIzaSyDhjo_2I7vFLrpUY8noNmWNotfLiTRc4lQ`,authDomain:`candid-canvas-bd.firebaseapp.com`,projectId:`candid-canvas-bd`,storageBucket:`candid-canvas-bd.firebasestorage.app`,messagingSenderId:`484324062684`,appId:`1:484324062684:web:0a3903141829eac6db0b19`,measurementId:`G-P7YZNJ53GJ
+`}),c=a(s),l=r(s);i(s);var u=new n;export{u as i,l as n,o as r,c as t};
